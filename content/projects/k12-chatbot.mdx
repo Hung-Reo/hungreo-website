@@ -1,0 +1,110 @@
+---
+title: "K12 Chatbot AI"
+description: "AI-powered educational assistant helping K12 students with homework and learning"
+tech: ["OpenAI GPT-4.1-mini", "Next.js", "Vercel", "Prompt Engineering"]
+image: "/images/projects/k12-chatbot.jpg"
+github: "https://github.com/yourusername/k12-chatbot"
+demo: "https://k12-chatbot.vercel.app"
+---
+
+## The Problem
+
+K12 students often struggle with homework outside of school hours. Parents may not have time or expertise to help, and tutoring is expensive. Students need a patient, always-available assistant that can explain concepts clearly.
+
+### User Pain Points
+
+- 🕐 **No help after 10pm** when parents are sleeping
+- 💰 **Tutoring is expensive** ($50-100/hour)
+- 😰 **Fear of asking "dumb questions"** in class
+- 📚 **Different learning speeds** - one-size-fits-all doesn't work
+
+## The Solution
+
+An AI chatbot powered by OpenAI GPT-4.1-mini that:
+
+- ✅ Answers homework questions step-by-step
+- ✅ Explains concepts in simple terms
+- ✅ Adapts to student grade level
+- ✅ **Never gives direct answers** - guides learning instead
+
+## Technical Implementation
+
+### Architecture
+
+```typescript
+User Input → Prompt Engineering → OpenAI API → Response Formatting → UI
+```
+
+### Key Features
+
+**1. Grade-Level Adaptation**
+
+The chatbot asks for the student's grade level and adjusts explanation complexity accordingly.
+
+**2. Socratic Method**
+
+Instead of giving answers, it asks leading questions to help students discover solutions themselves.
+
+```typescript
+// Example prompt
+const systemPrompt = `You are a patient tutor for grade ${grade} students.
+Never give direct answers. Instead:
+1. Ask guiding questions
+2. Break down complex problems
+3. Encourage thinking
+4. Celebrate progress`;
+```
+
+**3. Safety Measures**
+
+- Content filtering for appropriate responses
+- Homework help only, no other topics
+- Parent dashboard for monitoring
+
+### Tech Stack Details
+
+- **Frontend:** Next.js 14 with TypeScript
+- **AI:** OpenAI GPT-4.1-mini API
+- **Styling:** Tailwind CSS
+- **Deployment:** Vercel
+- **Cost:** ~$5/month for 1000 conversations
+
+## Results & Learnings
+
+### What Worked Well ✅
+
+- Students engaged more when chatbot asked questions vs giving answers
+- Grade-level adaptation significantly improved comprehension
+- Parents appreciated transparency in conversation logs
+
+### Challenges Overcome 🎯
+
+**Prompt Engineering:** Took 20+ iterations to get the right "teacher" tone
+
+**Cost Management:** Implemented conversation length limits
+
+**Safety:** Added content filtering and topic restrictions
+
+### Key Metrics
+
+- Average conversation: 8 messages
+- Student satisfaction: 4.5/5
+- Cost per conversation: $0.005
+
+## Future Improvements
+
+1. Add image support for math problems
+2. Integrate with school curriculum
+3. Progress tracking dashboard
+4. Multi-language support
+
+## Lessons Learned
+
+1. **Problem-first approach works** - Started by interviewing students and parents, not by building features
+2. **Prompt engineering is critical** - The difference between "helpful" and "amazing" is in the prompts
+3. **Constraints drive creativity** - Budget limitations forced creative solutions like conversation limits
+4. **Real user feedback is gold** - Beta testers found issues I never considered
+
+---
+
+*Interested in building something similar? Feel free to check the [GitHub repo](https://github.com/yourusername/k12-chatbot)!*
