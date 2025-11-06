@@ -12,14 +12,20 @@ export function Footer() {
           </p>
           <div className="flex gap-6">
             <Link
-              href="https://linkedin.com/in/yourprofile"
+              href="mailto:hungreo2005@gmail.com"
+              className="text-slate-600 hover:text-primary-600"
+            >
+              Email
+            </Link>
+            <Link
+              href="https://www.linkedin.com/in/hưng-đinh-03742217b/"
               target="_blank"
               className="text-slate-600 hover:text-primary-600"
             >
               LinkedIn
             </Link>
             <Link
-              href="https://github.com/yourprofile"
+              href="https://github.com/Hung-Reo"
               target="_blank"
               className="text-slate-600 hover:text-primary-600"
             >
