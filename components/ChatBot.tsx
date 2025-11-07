@@ -12,6 +12,7 @@ export function ChatBot() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [videoId, setVideoId] = useState<string | undefined>(undefined)
+  const [streamingMessage, setStreamingMessage] = useState<string>('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Extract videoId from URL on client side only
@@ -36,9 +37,17 @@ export function ChatBot() {
   const messages = (currentSession?.messages || []).filter(m => m.content?.trim())
 
   // Add welcome message if no messages
-  const displayMessages = messages.length === 0
+  let displayMessages = messages.length === 0
     ? [{ id: 'welcome', role: 'assistant' as const, content: 'Hi! I can help you learn about Hung Dinh. Ask me anything!', timestamp: Date.now() }]
     : messages
+
+  // Add streaming message if currently streaming
+  if (streamingMessage) {
+    displayMessages = [
+      ...displayMessages,
+      { id: 'streaming', role: 'assistant' as const, content: streamingMessage, timestamp: Date.now() }
+    ]
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -46,7 +55,7 @@ export function ChatBot() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, streamingMessage])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,6 +68,7 @@ export function ChatBot() {
     // Add user message to history
     addMessage('user', userMessage)
     setIsLoading(true)
+    setStreamingMessage('') // Clear any previous streaming message
 
     try {
       // Get conversation context (last 10 messages)
@@ -85,9 +95,7 @@ export function ChatBot() {
 
       let assistantMessage = ''
 
-      // Add empty assistant message that will be filled in
-      const tempMessage = addMessage('assistant', '')
-
+      // Stream and display message in real-time
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -103,6 +111,7 @@ export function ChatBot() {
             try {
               const parsed = JSON.parse(data)
               assistantMessage += parsed.text
+              setStreamingMessage(assistantMessage) // Update streaming display
             } catch (e) {
               // Skip invalid JSON
             }
@@ -110,26 +119,16 @@ export function ChatBot() {
         }
       }
 
-      // Update the assistant message with final content
-      if (currentSession && assistantMessage) {
-        const updatedMessages = [...currentSession.messages]
-        const lastIndex = updatedMessages.length - 1
-        if (updatedMessages[lastIndex]?.role === 'assistant') {
-          updatedMessages[lastIndex] = {
-            ...updatedMessages[lastIndex],
-            content: assistantMessage,
-          }
-          // Manually update the session
-          const updatedSession = {
-            ...currentSession,
-            messages: updatedMessages,
-            updatedAt: Date.now(),
-          }
-          localStorage.setItem('hungreo_chat_history', JSON.stringify([updatedSession]))
-        }
+      // After streaming is complete, save the full message
+      if (assistantMessage.trim()) {
+        addMessage('assistant', assistantMessage)
       }
+
+      // Clear streaming state
+      setStreamingMessage('')
     } catch (error) {
       console.error('Chat error:', error)
+      setStreamingMessage('') // Clear streaming state on error
       addMessage('assistant', 'Sorry, I encountered an error. Please try again.')
     } finally {
       setIsLoading(false)
