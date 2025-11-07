@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOpenAIClient } from '@/lib/openai'
 import axios from 'axios'
 
-export const runtime = 'edge'
+// Use Node.js runtime for better compatibility
+export const runtime = 'nodejs'
 
 interface TranscriptSegment {
   text: string

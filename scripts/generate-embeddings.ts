@@ -5,10 +5,14 @@
  * Usage: npx tsx scripts/generate-embeddings.ts
  */
 
+import dotenv from 'dotenv'
 import * as fs from 'fs'
 import * as path from 'path'
 import { createEmbedding } from '../lib/openai'
 import { getPineconeIndex } from '../lib/pinecone'
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' })
 
 interface ContentMetadata {
   id: string

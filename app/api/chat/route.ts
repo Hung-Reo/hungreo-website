@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createEmbedding, getOpenAIClient } from '@/lib/openai'
 import { getPineconeIndex } from '@/lib/pinecone'
 
-export const runtime = 'edge'
+// Use Node.js runtime for Pinecone compatibility
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
