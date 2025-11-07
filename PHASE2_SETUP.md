@@ -37,8 +37,8 @@ You need to obtain API keys from the following services:
 
 **Cost**: Free tier includes:
 - 1 index
-- 100K vectors
-- Sufficient for personal website
+- 100K vectors (~4,300 1-hour videos or mixed content)
+- **Perfect for personal website** - You'll likely stay in free tier indefinitely
 
 ## Step 3: Get YouTube Data API Key
 
