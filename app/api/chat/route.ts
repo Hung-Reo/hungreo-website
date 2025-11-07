@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createEmbedding, getOpenAIClient } from '@/lib/openai'
 import { getPineconeIndex } from '@/lib/pinecone'
+import { logChat, shouldNotifyHuman, type ChatLog } from '@/lib/chatLogger'
 
 // Use Node.js runtime for Pinecone compatibility
 export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
+  const startTime = Date.now()
+  let assistantMessage = ''
+
   try {
-    const { message } = await req.json()
+    const { message, history, pageContext } = await req.json()
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
@@ -32,7 +36,17 @@ export async function POST(req: NextRequest) {
       })
       .join('\n---\n')
 
-    // Step 4: Generate response with OpenAI
+    // Step 4: Build context-aware system prompt
+    let contextInfo = ''
+    if (pageContext) {
+      if (pageContext.videoId) {
+        contextInfo = `\n\nThe user is currently viewing a YouTube video (ID: ${pageContext.videoId}). If they ask about "this video" or "the video", they're referring to this one.`
+      } else if (pageContext.page) {
+        contextInfo = `\n\nThe user is currently on page: ${pageContext.page}`
+      }
+    }
+
+    // Step 5: Generate response with OpenAI
     const openai = getOpenAIClient()
 
     const systemPrompt = `You are a helpful AI assistant for Hung Dinh's personal website.
@@ -40,35 +54,67 @@ You help visitors learn about Hung's background, projects, and blog posts.
 
 Use the following context from Hung's website to answer questions:
 
-${context}
+${context}${contextInfo}
 
-If the question cannot be answered using the context, politely say you don't have that information and suggest they contact Hung directly.
+If the question cannot be answered using the context, politely say you don't have that information and suggest they contact Hung directly at hungreo2005@gmail.com.
 
 Answer in a friendly, professional tone. If the user asks in Vietnamese, respond in Vietnamese.`
 
+    // Step 6: Build messages array with conversation history
+    const messages: any[] = [{ role: 'system', content: systemPrompt }]
+
+    // Add conversation history (last 10 messages for context)
+    if (history && Array.isArray(history) && history.length > 0) {
+      messages.push(...history.slice(-10))
+    }
+
+    // Add current user message
+    messages.push({ role: 'user', content: message })
+
     const stream = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message },
-      ],
+      messages,
       stream: true,
       temperature: 0.7,
       max_tokens: 500,
     })
 
-    // Step 5: Stream the response
+    // Step 7: Stream the response and collect full message
     const encoder = new TextEncoder()
+    const sessionId = `session_${startTime}_${Math.random().toString(36).substr(2, 9)}`
+
     const readableStream = new ReadableStream({
       async start(controller) {
         for await (const chunk of stream) {
           const text = chunk.choices[0]?.delta?.content || ''
           if (text) {
+            assistantMessage += text
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
           }
         }
         controller.enqueue(encoder.encode('data: [DONE]\n\n'))
         controller.close()
+
+        // Step 8: Log the chat interaction after streaming completes
+        const responseTime = Date.now() - startTime
+        const needsHumanReply = shouldNotifyHuman(assistantMessage)
+
+        const chatLog: ChatLog = {
+          id: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          sessionId,
+          userMessage: message,
+          assistantResponse: assistantMessage,
+          timestamp: Date.now(),
+          pageContext,
+          relevantDocs: queryResponse.matches.length,
+          responseTime,
+          needsHumanReply,
+        }
+
+        // Log asynchronously (don't block response)
+        logChat(chatLog).catch((error) => {
+          console.error('Failed to log chat:', error)
+        })
       },
     })
 

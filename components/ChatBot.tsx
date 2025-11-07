@@ -1,24 +1,44 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Button } from './ui/Button'
-
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-}
+import { useChatHistory } from '@/lib/hooks/useChatHistory'
+import type { Message } from '@/lib/hooks/useChatHistory'
 
 export function ChatBot() {
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Hi! I can help you learn about Hung Dinh. Ask me anything!',
-    },
-  ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [videoId, setVideoId] = useState<string | undefined>(undefined)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Extract videoId from URL on client side only
+  useEffect(() => {
+    if (typeof window !== 'undefined' && pathname.includes('/tools/youtube')) {
+      const params = new URLSearchParams(window.location.search)
+      setVideoId(params.get('v') || undefined)
+    } else {
+      setVideoId(undefined)
+    }
+  }, [pathname])
+
+  // Determine page context
+  const pageContext = {
+    page: pathname,
+    videoId,
+  }
+
+  const { currentSession, isLoading: historyLoading, addMessage, clearSession, getConversationContext } = useChatHistory(pageContext)
+
+  // Display messages from current session
+  const messages = currentSession?.messages || []
+
+  // Add welcome message if no messages
+  const displayMessages = messages.length === 0
+    ? [{ id: 'welcome', role: 'assistant' as const, content: 'Hi! I can help you learn about Hung Dinh. Ask me anything!', timestamp: Date.now() }]
+    : messages
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -31,20 +51,29 @@ export function ChatBot() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!input.trim() || isLoading) return
+    if (!input.trim() || isLoading || historyLoading) return
 
     const userMessage = input.trim()
     setInput('')
-    setMessages((prev) => [...prev, { role: 'user', content: userMessage }])
+
+    // Add user message to history
+    addMessage('user', userMessage)
     setIsLoading(true)
 
     try {
+      // Get conversation context (last 10 messages)
+      const conversationHistory = getConversationContext()
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({
+          message: userMessage,
+          history: conversationHistory.map(m => ({ role: m.role, content: m.content })),
+          pageContext,
+        }),
       })
 
       if (!response.ok) throw new Error('Failed to get response')
@@ -56,7 +85,8 @@ export function ChatBot() {
 
       let assistantMessage = ''
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
+      // Add empty assistant message that will be filled in
+      const tempMessage = addMessage('assistant', '')
 
       while (true) {
         const { done, value } = await reader.read()
@@ -73,32 +103,42 @@ export function ChatBot() {
             try {
               const parsed = JSON.parse(data)
               assistantMessage += parsed.text
-
-              setMessages((prev) => {
-                const newMessages = [...prev]
-                newMessages[newMessages.length - 1] = {
-                  role: 'assistant',
-                  content: assistantMessage,
-                }
-                return newMessages
-              })
             } catch (e) {
               // Skip invalid JSON
             }
           }
         }
       }
+
+      // Update the assistant message with final content
+      if (currentSession && assistantMessage) {
+        const updatedMessages = [...currentSession.messages]
+        const lastIndex = updatedMessages.length - 1
+        if (updatedMessages[lastIndex]?.role === 'assistant') {
+          updatedMessages[lastIndex] = {
+            ...updatedMessages[lastIndex],
+            content: assistantMessage,
+          }
+          // Manually update the session
+          const updatedSession = {
+            ...currentSession,
+            messages: updatedMessages,
+            updatedAt: Date.now(),
+          }
+          localStorage.setItem('hungreo_chat_history', JSON.stringify([updatedSession]))
+        }
+      }
     } catch (error) {
       console.error('Chat error:', error)
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
-        },
-      ])
+      addMessage('assistant', 'Sorry, I encountered an error. Please try again.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleClearHistory = () => {
+    if (window.confirm('Are you sure you want to clear the chat history?')) {
+      clearSession()
     }
   }
 
@@ -133,32 +173,56 @@ export function ChatBot() {
           {/* Header */}
           <div className="flex items-center justify-between border-b bg-primary-600 p-4 text-white">
             <h3 className="font-semibold">Chat with AI</h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="hover:text-gray-200"
-              aria-label="Close chat"
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && (
+                <button
+                  onClick={handleClearHistory}
+                  className="hover:text-gray-200 text-xs"
+                  aria-label="Clear history"
+                  title="Clear chat history"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="hover:text-gray-200"
+                aria-label="Close chat"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message, index) => (
+            {displayMessages.map((message) => (
               <div
-                key={index}
+                key={message.id}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div

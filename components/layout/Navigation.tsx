@@ -11,6 +11,7 @@ const navItems = [
   { href: '/blog', label: 'Blog' },
   { href: '/tools/youtube', label: 'AI Tools' },
   { href: '/contact', label: 'Contact' },
+  { href: '/admin/login', label: 'Admin' },
 ]
 
 export function Navigation() {
