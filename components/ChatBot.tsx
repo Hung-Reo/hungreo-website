@@ -32,8 +32,8 @@ export function ChatBot() {
 
   const { currentSession, isLoading: historyLoading, addMessage, clearSession, getConversationContext } = useChatHistory(pageContext)
 
-  // Display messages from current session
-  const messages = currentSession?.messages || []
+  // Display messages from current session, filter out empty messages
+  const messages = (currentSession?.messages || []).filter(m => m.content?.trim())
 
   // Add welcome message if no messages
   const displayMessages = messages.length === 0

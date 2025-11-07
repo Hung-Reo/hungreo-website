@@ -45,7 +45,24 @@ export function useChatHistory(pageContext?: PageContext) {
     const loadSession = () => {
       try {
         const stored = localStorage.getItem(STORAGE_KEY)
-        const sessions: ChatSession[] = stored ? JSON.parse(stored) : []
+        let sessions: ChatSession[] = stored ? JSON.parse(stored) : []
+
+        // Clean corrupted data: filter out empty messages
+        sessions = sessions.map(session => ({
+          ...session,
+          messages: session.messages.filter(m => m.content?.trim())
+        }))
+
+        // Remove old sessions with no valid messages (keep recent ones for 30min)
+        const thirtyMinutesAgo = Date.now() - 1800000 // 30 minutes in ms
+        sessions = sessions.filter(s =>
+          s.messages.length > 0 || s.updatedAt > thirtyMinutesAgo
+        )
+
+        // Save cleaned sessions back to localStorage
+        if (stored) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions))
+        }
 
         // Find existing session for current context or create new one
         let session = sessions.find((s) => {
@@ -71,6 +88,8 @@ export function useChatHistory(pageContext?: PageContext) {
         setCurrentSession(session)
       } catch (error) {
         console.error('Failed to load chat history:', error)
+        // Clear corrupted localStorage
+        localStorage.removeItem(STORAGE_KEY)
         // Create new session on error
         setCurrentSession({
           id: `session_${Date.now()}`,
@@ -113,10 +132,16 @@ export function useChatHistory(pageContext?: PageContext) {
     (role: 'user' | 'assistant', content: string) => {
       if (!currentSession) return
 
+      // Validate content: don't save empty messages
+      if (!content || !content.trim()) {
+        console.warn('Attempting to add empty message, skipping')
+        return
+      }
+
       const message: Message = {
         id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         role,
-        content,
+        content: content.trim(), // Trim whitespace
         timestamp: Date.now(),
       }
 
