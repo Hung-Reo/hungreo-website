@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { processDocument, chunkText, validateFile } from '@/lib/documentProcessor'
+import { processDocument, validateFile } from '@/lib/documentProcessor'
+import { chunkText } from '@/lib/textUtils'
 import { saveDocument, uploadToBlob, type Document } from '@/lib/documentManager'
 
 export const runtime = 'nodejs'

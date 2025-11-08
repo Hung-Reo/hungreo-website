@@ -1,10 +1,26 @@
 /**
  * Document management with Vercel KV
  * Handles 3-stage workflow: Draft → Review → Approved
+ *
+ * Note: In development without Vercel KV, documents are stored in-memory only
  */
 
 import { kv } from '@vercel/kv'
 import { put } from '@vercel/blob'
+
+// In-memory storage for development (when Vercel KV is not configured)
+const inMemoryDocs: Map<string, Document> = new Map()
+const inMemoryDocsByStatus: Map<string, Set<string>> = new Map([
+  ['draft', new Set()],
+  ['review', new Set()],
+  ['approved', new Set()],
+  ['rejected', new Set()],
+])
+
+// Check if Vercel KV is configured
+function isKVConfigured(): boolean {
+  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
+}
 
 export type DocumentStatus = 'draft' | 'review' | 'approved' | 'rejected'
 
@@ -30,10 +46,18 @@ export interface Document {
 }
 
 /**
- * Save document to Vercel KV
+ * Save document to Vercel KV or in-memory storage
  */
 export async function saveDocument(doc: Document): Promise<void> {
   try {
+    if (!isKVConfigured()) {
+      // Use in-memory storage for development
+      console.warn('[documentManager] Vercel KV not configured, using in-memory storage')
+      inMemoryDocs.set(doc.id, doc)
+      inMemoryDocsByStatus.get(doc.status)?.add(doc.id)
+      return
+    }
+
     const key = `doc:${doc.id}`
     await kv.set(key, doc)
 
@@ -53,6 +77,10 @@ export async function saveDocument(doc: Document): Promise<void> {
  */
 export async function getDocument(docId: string): Promise<Document | null> {
   try {
+    if (!isKVConfigured()) {
+      return inMemoryDocs.get(docId) || null
+    }
+
     const doc = await kv.get<Document>(`doc:${docId}`)
     return doc
   } catch (error) {
@@ -66,6 +94,21 @@ export async function getDocument(docId: string): Promise<Document | null> {
  */
 export async function getDocumentsByStatus(status: DocumentStatus): Promise<Document[]> {
   try {
+    if (!isKVConfigured()) {
+      // Use in-memory storage
+      const docIds = inMemoryDocsByStatus.get(status) || new Set()
+      const docs: Document[] = []
+
+      for (const id of docIds) {
+        const doc = inMemoryDocs.get(id)
+        if (doc) {
+          docs.push(doc)
+        }
+      }
+
+      return docs.sort((a, b) => b.uploadedAt - a.uploadedAt)
+    }
+
     const docIds = await kv.smembers(`docs:${status}`)
     const docs: Document[] = []
 
@@ -89,6 +132,13 @@ export async function getDocumentsByStatus(status: DocumentStatus): Promise<Docu
  */
 export async function getAllDocuments(limit: number = 50, offset: number = 0): Promise<Document[]> {
   try {
+    if (!isKVConfigured()) {
+      const allDocs = Array.from(inMemoryDocs.values())
+      return allDocs
+        .sort((a, b) => b.uploadedAt - a.uploadedAt)
+        .slice(offset, offset + limit)
+    }
+
     const docIds = await kv.zrange('docs:all', offset, offset + limit - 1, { rev: true })
     const docs: Document[] = []
 
@@ -135,6 +185,14 @@ export async function updateDocumentStatus(
       updatedDoc.rejectedAt = Date.now()
     }
 
+    if (!isKVConfigured()) {
+      // Update in-memory storage
+      inMemoryDocs.set(docId, updatedDoc)
+      inMemoryDocsByStatus.get(oldStatus)?.delete(docId)
+      inMemoryDocsByStatus.get(newStatus)?.add(docId)
+      return
+    }
+
     // Save updated document
     await kv.set(`doc:${docId}`, updatedDoc)
 
@@ -155,6 +213,13 @@ export async function deleteDocument(docId: string): Promise<void> {
     const doc = await getDocument(docId)
     if (!doc) {
       throw new Error('Document not found')
+    }
+
+    if (!isKVConfigured()) {
+      // Remove from in-memory storage
+      inMemoryDocs.delete(docId)
+      inMemoryDocsByStatus.get(doc.status)?.delete(docId)
+      return
     }
 
     // Remove from KV
@@ -189,6 +254,17 @@ export async function uploadToBlob(file: File): Promise<string> {
  */
 export async function getDocumentStats() {
   try {
+    if (!isKVConfigured()) {
+      // Use in-memory storage
+      return {
+        draft: inMemoryDocsByStatus.get('draft')?.size || 0,
+        review: inMemoryDocsByStatus.get('review')?.size || 0,
+        approved: inMemoryDocsByStatus.get('approved')?.size || 0,
+        rejected: inMemoryDocsByStatus.get('rejected')?.size || 0,
+        total: inMemoryDocs.size,
+      }
+    }
+
     const [draftCount, reviewCount, approvedCount, rejectedCount, totalCount] = await Promise.all([
       kv.scard('docs:draft'),
       kv.scard('docs:review'),

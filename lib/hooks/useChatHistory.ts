@@ -130,11 +130,9 @@ export function useChatHistory(pageContext?: PageContext) {
   // Add message to current session
   const addMessage = useCallback(
     (role: 'user' | 'assistant', content: string) => {
-      if (!currentSession) return
-
       // Validate content: don't save empty messages
       if (!content || !content.trim()) {
-        console.warn('Attempting to add empty message, skipping')
+        console.warn('[useChatHistory] Attempting to add empty message, skipping')
         return
       }
 
@@ -145,23 +143,33 @@ export function useChatHistory(pageContext?: PageContext) {
         timestamp: Date.now(),
       }
 
-      const updatedSession = {
-        ...currentSession,
-        messages: [...currentSession.messages, message],
-        updatedAt: Date.now(),
-      }
+      // Use functional state update to avoid stale state capture
+      setCurrentSession((prevSession) => {
+        if (!prevSession) {
+          console.error('[useChatHistory] No current session, cannot add message')
+          return prevSession
+        }
 
-      // Keep only last MAX_MESSAGES_PER_SESSION
-      if (updatedSession.messages.length > MAX_MESSAGES_PER_SESSION) {
-        updatedSession.messages = updatedSession.messages.slice(-MAX_MESSAGES_PER_SESSION)
-      }
+        const updatedSession = {
+          ...prevSession,
+          messages: [...prevSession.messages, message],
+          updatedAt: Date.now(),
+        }
 
-      setCurrentSession(updatedSession)
-      saveSession(updatedSession)
+        // Keep only last MAX_MESSAGES_PER_SESSION
+        if (updatedSession.messages.length > MAX_MESSAGES_PER_SESSION) {
+          updatedSession.messages = updatedSession.messages.slice(-MAX_MESSAGES_PER_SESSION)
+        }
+
+        // Save to localStorage
+        saveSession(updatedSession)
+
+        return updatedSession
+      })
 
       return message
     },
-    [currentSession, saveSession]
+    [saveSession]
   )
 
   // Get conversation context (last 10 messages for API)

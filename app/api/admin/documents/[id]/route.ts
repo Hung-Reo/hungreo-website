@@ -12,14 +12,15 @@ import { createEmbedding } from '@/lib/openai'
 export const runtime = 'nodejs'
 
 // GET single document
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     if (!session?.user || (session.user as any).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const document = await getDocument(params.id)
+    const { id } = await params
+    const document = await getDocument(id)
 
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
@@ -33,20 +34,21 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PATCH update document status
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     if (!session?.user || (session.user as any).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const { status, notes } = await req.json()
 
     if (!status || !['draft', 'review', 'approved', 'rejected'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    const document = await getDocument(params.id)
+    const document = await getDocument(id)
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
@@ -86,7 +88,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     // Update status
-    await updateDocumentStatus(params.id, status as DocumentStatus, notes)
+    await updateDocumentStatus(id, status as DocumentStatus, notes)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
@@ -96,14 +98,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE document
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     if (!session?.user || (session.user as any).role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const document = await getDocument(params.id)
+    const { id } = await params
+    const document = await getDocument(id)
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
@@ -114,7 +117,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       await index.deleteMany(document.pineconeIds)
     }
 
-    await deleteDocument(params.id)
+    await deleteDocument(id)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

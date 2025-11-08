@@ -3,8 +3,8 @@
  * Handles PDF, TXT, and DOCX file extraction
  */
 
-import * as pdfParse from 'pdf-parse'
 import mammoth from 'mammoth'
+import { extractText, getDocumentProxy } from 'unpdf'
 
 export interface ExtractedDocument {
   text: string
@@ -18,23 +18,26 @@ export interface ExtractedDocument {
 }
 
 /**
- * Extract text from PDF file
+ * Extract text from PDF file using unpdf
+ * unpdf is compatible with Next.js and edge runtime
  */
 export async function extractPDF(buffer: Buffer, fileName: string, fileSize: number): Promise<ExtractedDocument> {
   try {
-    const data = await pdfParse(buffer)
+    // Extract text using unpdf
+    const { text, totalPages } = await extractText(buffer, { mergePages: true })
 
     return {
-      text: data.text,
+      text,
       metadata: {
         fileName,
         fileType: 'pdf',
         fileSize,
-        pageCount: data.numpages,
-        wordCount: data.text.split(/\s+/).length,
+        pageCount: totalPages,
+        wordCount: text.split(/\s+/).filter(w => w.length > 0).length,
       },
     }
   } catch (error) {
+    console.error('PDF extraction error:', error)
     throw new Error(`Failed to extract PDF: ${error}`)
   }
 }
@@ -126,7 +129,7 @@ export function chunkText(text: string, maxTokens: number = 512, overlap: number
  */
 export function validateFile(file: File): { valid: boolean; error?: string } {
   const MAX_SIZE = 20 * 1024 * 1024 // 20MB
-  const ALLOWED_TYPES = ['pdf', 'docx', 'doc', 'txt']
+  const ALLOWED_TYPES = ['pdf', 'txt', 'docx', 'doc']
 
   const extension = file.name.split('.').pop()?.toLowerCase()
 
