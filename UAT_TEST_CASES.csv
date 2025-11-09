@@ -1,0 +1,254 @@
+Test ID,Feature,Priority,Test Scenario,Preconditions,Test Steps,Expected Result,Test Data,Status,Actual Result,Bug ID,Severity,Tested By,Test Date,Retest Status,Retest Date,Notes
+TC-P0-001,Public Video Library,P0 - Critical,Verify category grid page loads correctly,User is on homepage,"1. Navigate to /tools/knowledge
+2. Observe page load
+3. Verify all 5 categories display
+4. Check video counts appear","1. Page loads within 2 seconds
+2. All 5 category cards visible: Leadership, AI Works, Health, Entertaining, Human Philosophy
+3. Each card shows correct video count
+4. Icons render properly
+5. Cards are clickable",N/A,Not Tested,,,,,,,
+TC-P0-002,Public Video Library,P0 - Critical,Verify category card navigation,"User is on /tools/knowledge page","1. Click on 'Leadership' category card
+2. Observe page navigation
+3. Verify URL change","1. Navigates to /tools/knowledge/leadership
+2. Video list page loads
+3. Breadcrumb shows: Home > Knowledge > Leadership",N/A,Not Tested,,,,,,,
+TC-P0-003,Public Video Library,P0 - Critical,Verify video grid/list view toggle,"User is on /tools/knowledge/leadership page","1. Observe default view (grid)
+2. Click 'List View' button
+3. Observe layout change
+4. Click 'Grid View' button","1. Default shows grid layout (2-3 columns)
+2. List view shows single column with thumbnails
+3. Toggle buttons highlight active state
+4. Video data remains the same",N/A,Not Tested,,,,,,,
+TC-P0-004,Public Video Library,P0 - Critical,Verify video search functionality,"User is on video list page with 10+ videos","1. Type 'AI' in search box
+2. Observe results filter in real-time
+3. Clear search
+4. Verify all videos return","1. Only videos with 'AI' in title/description show
+2. Filtering happens without page reload
+3. 'No results' message if no match
+4. Clearing search shows all videos again","Search term: 'AI', 'leadership', 'xyz123'",Not Tested,,,,,,,
+TC-P0-005,Public Video Library,P0 - Critical,Verify video detail page loads,"User is on video list page","1. Click on first video card
+2. Observe page load
+3. Verify all components render","1. Navigates to /tools/knowledge/[category]/[slug]
+2. YouTube player loads and is playable
+3. Video title and metadata display
+4. Transcript section is collapsible
+5. Related videos sidebar shows (max 5)",Valid video slug,Not Tested,,,,,,,
+TC-P0-006,Public Video Library,P0 - Critical,Verify YouTube player functionality,"User is on video detail page","1. Click play on video player
+2. Adjust volume
+3. Toggle fullscreen
+4. Verify controls work","1. Video plays without errors
+2. Volume controls work
+3. Fullscreen mode works
+4. YouTube branding appears
+5. No CORS or embed errors",N/A,Not Tested,,,,,,,
+TC-P0-007,Public Video Library,P0 - Critical,Verify transcript expand/collapse,"User is on video detail page with transcript","1. Observe transcript default state (collapsed)
+2. Click 'Show more' button
+3. Observe full transcript
+4. Click 'Show less'","1. Shows first 500 characters by default
+2. 'Show more' expands to full text
+3. Scrollbar appears if content is long
+4. 'Show less' collapses back",Video with transcript >1000 chars,Not Tested,,,,,,,
+TC-P0-008,Public Video Library,P0 - Critical,Verify related videos,"User is on video detail page","1. Scroll to 'Related Videos' section
+2. Verify videos display
+3. Click on a related video","1. Shows up to 5 related videos
+2. Same category as current video
+3. Current video is excluded
+4. Clicking navigates to that video page",Category with 6+ videos,Not Tested,,,,,,,
+TC-P0-009,Public Video Library,P0 - Critical,Verify responsive design - Mobile,"User on mobile device (375px width)","1. Open /tools/knowledge on mobile
+2. Verify category cards stack
+3. Navigate to video list
+4. Verify single column layout","1. Category grid shows 1 column
+2. Cards are full width
+3. Touch targets are adequate (min 44px)
+4. No horizontal scroll
+5. Player is responsive",Mobile viewport 375x667,Not Tested,,,,,,,
+TC-P0-010,Public Video Library,P0 - Critical,Verify navigation link update,"User on any page","1. Click 'AI Tools' in main navigation
+2. Verify destination","1. Navigates to /tools/knowledge (not /tools/youtube)
+2. Link is active/highlighted when on knowledge pages",N/A,Not Tested,,,,,,,
+TC-P1-001,Document Review Workflow,P1 - High,Verify review modal opens after upload,"Admin logged in on /admin/dashboard Documents tab","1. Drag or select a PDF file (<20MB)
+2. Wait for upload to complete
+3. Observe modal appearance","1. Upload progress indicator shows
+2. Review modal opens automatically after upload
+3. Modal shows document metadata (filename, size, word count)
+4. Modal shows extracted text in editable textarea
+5. Shows first 5 chunks preview
+6. Shows cost estimate",Valid PDF: test-doc.pdf (1-5MB),Not Tested,,,,,,,
+TC-P1-002,Document Review Workflow,P1 - High,Verify text editing in review modal,"Review modal is open with document","1. Click in the extracted text area
+2. Edit some text (fix typos, add content)
+3. Observe character count update","1. Text area is editable
+2. Changes are visible in real-time
+3. Word count updates dynamically
+4. Chunk preview reflects changes if at start of doc",Text changes: Add 100 words,Not Tested,,,,,,,
+TC-P1-003,Document Review Workflow,P1 - High,Verify chunk preview display,"Review modal is open","1. Observe 'Chunk Preview' section
+2. Scroll through chunks
+3. Verify formatting","1. Shows first 5 chunks
+2. Each chunk has index number (0-4)
+3. Text is readable (not cut off mid-word)
+4. Shows total chunk count (e.g., 'Showing 5 of 23 chunks')",Document with 20+ chunks,Not Tested,,,,,,,
+TC-P1-004,Document Review Workflow,P1 - High,Verify cost estimation display,"Review modal is open","1. Locate cost estimate section
+2. Verify calculation
+3. Upload different sized docs to compare","1. Shows estimated cost in USD format ($0.0001)
+2. Formula: (chunks × 500 / 1000) × $0.00002
+3. Cost updates if text is edited and word count changes","Docs: 10 chunks ($0.0001), 100 chunks ($0.001)",Not Tested,,,,,,,
+TC-P1-005,Document Review Workflow,P1 - High,Verify 'Approve' action,"Review modal open with unedited document","1. Click 'Approve' button
+2. Wait for processing
+3. Verify success message
+4. Check document status","1. Loading indicator appears
+2. Success message: 'Document approved and added to Pinecone'
+3. Modal closes
+4. Document status = 'approved' in list
+5. Document appears in chatbot knowledge",Test document content,Not Tested,,,,,,,
+TC-P1-006,Document Review Workflow,P1 - High,Verify 'Approve' with edited text,"Review modal open, text has been edited","1. Edit document text (add/remove content)
+2. Click 'Approve' button
+3. Wait for processing
+4. Verify re-chunking","1. System re-chunks the edited text
+2. New chunk count may differ from original
+3. Embeddings generated for new chunks
+4. Document saved with edited text
+5. Success message appears","Edit: Change 500 words, add new paragraph",Not Tested,,,,,,,
+TC-P1-007,Document Review Workflow,P1 - High,Verify 'Reject' action,"Review modal open","1. Click 'Reject' button
+2. Verify confirmation (if any)
+3. Check document status","1. Modal closes immediately
+2. Message: 'Document rejected'
+3. Document status = 'rejected'
+4. Document NOT added to Pinecone
+5. Document visible in admin list with red badge",N/A,Not Tested,,,,,,,
+TC-P1-008,Document Review Workflow,P1 - High,Verify 'Save Draft' action,"Review modal open with edited text","1. Edit document text
+2. Click 'Save Draft' button
+3. Re-open document from list","1. Success message: 'Draft saved successfully'
+2. Modal closes
+3. Document status = 'draft'
+4. Re-opening shows edited text (not original)
+5. Changes are persisted",Edit content before saving,Not Tested,,,,,,,
+TC-P1-009,Document Review Workflow,P1 - High,Verify modal close without action,"Review modal open","1. Click 'X' close button or click outside modal
+2. Verify document status","1. Modal closes
+2. Document remains in 'draft' status
+3. No embeddings generated
+4. Can re-open document later for review",N/A,Not Tested,,,,,,,
+TC-P1-010,Document Review Workflow,P1 - High,Verify API returns correct preview data,"Upload endpoint test","1. Upload document via API
+2. Inspect response JSON","1. Response includes: extractedText, chunks (first 5), totalChunks, costEstimate
+2. extractedText is full text string
+3. chunks is array of 5 strings
+4. costEstimate is number format",Use Postman/curl to test API,Not Tested,,,,,,,
+TC-P2-001,Conditional Admin Nav,P2 - Medium,Verify admin link hidden when logged out,"User NOT logged in, on homepage","1. Observe main navigation
+2. Check for 'Admin' link","1. Navigation shows: Home, About, Projects, Blog, AI Tools, Contact
+2. 'Admin' link is NOT visible
+3. No broken link placeholders",N/A,Not Tested,,,,,,,
+TC-P2-002,Conditional Admin Nav,P2 - Medium,Verify admin link visible when logged in,"Admin user logged in","1. Complete login at /admin/login
+2. Navigate to homepage
+3. Observe navigation","1. Navigation includes 'Admin' link
+2. Link appears after 'Contact'
+3. Clicking navigates to /admin/dashboard
+4. Link is highlighted when on admin pages",Valid admin credentials,Not Tested,,,,,,,
+TC-P2-003,Conditional Admin Nav,P2 - Medium,Verify admin link active state,"Admin logged in and on /admin/dashboard","1. Observe 'Admin' link styling
+2. Navigate to home page
+3. Navigate back to admin","1. Admin link has primary color when active
+2. Link returns to normal color on other pages
+3. Active state works for all /admin/* routes",N/A,Not Tested,,,,,,,
+TC-P2-004,Drag & Drop Upload,P2 - Medium,Verify drag-drop zone visual feedback,"Admin on Documents tab","1. Drag a file over upload zone (don't drop yet)
+2. Observe visual changes
+3. Drag file away
+4. Observe reset","1. Zone border changes to solid blue
+2. Background becomes light blue (primary-50)
+3. Cursor shows copy icon
+4. Leaving zone resets to default gray dashed border",Valid PDF file,Not Tested,,,,,,,
+TC-P2-005,Drag & Drop Upload,P2 - Medium,Verify drag-drop upload success,"Admin on Documents tab","1. Drag PDF file into upload zone
+2. Drop file
+3. Wait for upload","1. Visual feedback shows (blue highlight)
+2. Upload starts immediately after drop
+3. Loading spinner appears
+4. Review modal opens after processing
+5. Success flow same as file input upload",Valid PDF <20MB,Not Tested,,,,,,,
+TC-P2-006,Drag & Drop Upload,P2 - Medium,Verify file type validation on drag-drop,"Admin on Documents tab","1. Drag an invalid file type (.jpg, .png, .zip)
+2. Drop file
+3. Observe error","1. Error alert: 'Invalid file type. Please upload PDF, DOCX, or TXT files.'
+2. Upload does NOT proceed
+3. Zone returns to default state
+4. No API call made","Invalid files: image.jpg, archive.zip",Not Tested,,,,,,,
+TC-P2-007,Drag & Drop Upload,P2 - Medium,Verify file size validation on drag-drop,"Admin on Documents tab","1. Drag file >20MB
+2. Drop file
+3. Observe error","1. Error message appears
+2. Upload blocked
+3. User informed of 20MB limit","File: large-doc.pdf (25MB)",Not Tested,,,,,,,
+TC-P2-008,Drag & Drop Upload,P2 - Medium,Verify upload during drag state disabled,"Admin dragging file","1. Start dragging file
+2. Attempt to interact with other UI
+3. Drop file","1. Upload zone accepts interaction
+2. Other buttons remain functional
+3. No broken state if user changes mind",N/A,Not Tested,,,,,,,
+TC-P2-009,Drag & Drop Upload,P2 - Medium,Verify both upload methods work,"Admin on Documents tab","1. Upload file via file input (click)
+2. Upload file via drag-drop
+3. Compare results","1. Both methods open review modal
+2. Same data structure returned
+3. Same validation rules apply
+4. Same user experience",2 different valid PDFs,Not Tested,,,,,,,
+TC-P3-001,Tooltips,P3 - Low,Verify stat card tooltips,"User on /admin/dashboard Documents tab","1. Hover over 'Total' stat card
+2. Hover over 'Draft' stat card
+3. Hover over other cards
+4. Move mouse away","1. Tooltip appears above card within 200ms
+2. Tooltip text: 'Total number of documents across all statuses' (for Total)
+3. Each card has unique helpful text
+4. Tooltip disappears on mouse leave
+5. Dark background, white text, readable",N/A,Not Tested,,,,,,,
+TC-P3-002,Tooltips,P3 - Low,Verify status badge tooltips,"Document row in list","1. Hover over status badge (e.g., 'draft')
+2. Observe tooltip
+3. Hover over badges in different statuses","1. Tooltip shows: 'Status: draft' (or current status)
+2. Positioned near badge
+3. Doesn't overlap other UI elements
+4. Readable on all status colors",Documents with all 4 statuses,Not Tested,,,,,,,
+TC-P3-003,Tooltips,P3 - Low,Verify action button tooltips,"Document row with actions","1. Hover over '→ Review' button
+2. Hover over '✓ Approve' button
+3. Hover over '✗ Reject' button","1. Each button shows helpful tooltip
+2. '→ Review': 'Move this document to review queue'
+3. '✓ Approve': 'Approve and add to knowledge base'
+4. '✗ Reject': 'Reject this document'",Documents in different statuses,Not Tested,,,,,,,
+TC-P3-004,Tooltips,P3 - Low,Verify tooltip positioning,"Various UI elements","1. Hover over element at top of page
+2. Hover over element at bottom
+3. Hover near screen edges","1. Tooltip adjusts position to stay visible
+2. No cutoff at screen edges
+3. Arrow indicator points to element
+4. Readable on all backgrounds",N/A,Not Tested,,,,,,,
+TC-P3-005,CLI Scripts,P3 - Low,Verify scrape script basic usage,"Terminal with npm available","1. Run: npm run scrape https://example.com
+2. Observe console output
+3. Check output file","1. Script shows: 'Fetching content from...'
+2. Shows character count
+3. Creates scraped-content.txt
+4. File contains readable text (no HTML tags)",Valid public URL,Not Tested,,,,,,,
+TC-P3-006,CLI Scripts,P3 - Low,Verify scrape script with custom output,"Terminal","1. Run: npm run scrape https://example.com -o custom.txt
+2. Check file created","1. Creates custom.txt (not default name)
+2. Contains scraped content
+3. Overwrites if file exists",N/A,Not Tested,,,,,,,
+TC-P3-007,CLI Scripts,P3 - Low,Verify scrape script with selector,"Terminal","1. Run: npm run scrape https://blog.com -s '.article-content'
+2. Compare output with full page scrape","1. Output contains only selected element content
+2. Other page content (header, footer) excluded
+3. Falls back to full page if selector not found",URL with known CSS class,Not Tested,,,,,,,
+TC-P3-008,Unit Tests,P3 - Low,Verify test suite runs,"Terminal with npm","1. Run: npm test
+2. Observe output","1. Shows '🧪 Running textUtils tests...'
+2. Lists all 8 test cases
+3. Shows: '✅ Passed: 8, ❌ Failed: 0'
+4. Exit code 0 (success)",N/A,Not Tested,,,,,,,
+TC-P3-009,Unit Tests,P3 - Low,Verify test coverage,"Terminal","1. Run npm test
+2. Review which functions tested","1. Tests cover: chunkText function
+2. Tests: empty input, short text, long text, special chars, newlines
+3. All tests passing",N/A,Not Tested,,,,,,,
+TC-CROSS-001,Cross-Feature,Critical,Verify end-to-end user journey,"Fresh browser session","1. Visit /tools/knowledge
+2. Browse videos
+3. Play a video
+4. Ask chatbot about video topic
+5. Login as admin
+6. Upload related document
+7. Approve document
+8. Test chatbot with new knowledge","1. All pages load correctly
+2. Video plays in detail page
+3. Chatbot responds with video knowledge
+4. Admin login works
+5. Document uploads and review modal works
+6. Chatbot can answer questions from new document
+7. No errors in console",Full UAT flow data,Not Tested,,,,,,,
+TC-CROSS-002,Cross-Feature,High,Verify performance across features,"Browser with DevTools open","1. Navigate through all pages
+2. Monitor network tab
+3. Check page load times
+4. Verify Lighthouse score","1. Homepage loads <2 seconds
+2. Video list page <3 seconds
+3. No failed API requests
+4. Images lazy load properly
+5. Lighthouse score >90 for performance",N/A,Not Tested,,,,,,,
