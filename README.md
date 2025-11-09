@@ -25,7 +25,9 @@ A personal portfolio website showcasing my transition from Business Analyst to P
 - ✅ SEO optimized
 
 ### Phase 2 (Weeks 4-6) - AI Features
-- 🔄 AI Chatbot (RAG-powered Q&A about website content)
+- ✅ AI Chatbot (RAG-powered Q&A about website content)
+- ✅ Document Upload & Management (PDF, DOCX, TXT)
+- ✅ Vector Database Management (Pinecone)
 - 🔄 YouTube Video Summarizer
 - 🔄 Advanced analytics
 
@@ -38,7 +40,10 @@ A personal portfolio website showcasing my transition from Business Analyst to P
 | **Styling** | Tailwind CSS | Rapid development, consistency |
 | **Content** | MDX | Git-based, no database needed |
 | **Deployment** | Vercel | Free tier, zero config |
-| **AI (Phase 2)** | OpenAI GPT-4.1-mini, Upstash Vector | Cost-effective, powerful |
+| **AI** | OpenAI GPT-4.1-mini | Cost-effective, powerful |
+| **Vector DB** | Pinecone | Fast semantic search, managed service |
+| **Storage** | Vercel KV, Vercel Blob | Key-value store, file storage |
+| **Auth** | NextAuth.js | Secure admin authentication |
 
 ## 📁 Project Structure
 
@@ -146,6 +151,51 @@ npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
 npm run type-check   # Run TypeScript checks
+```
+
+### Admin Features
+
+The website includes a powerful admin dashboard for content management:
+
+**Admin Login:**
+- URL: `/admin/login`
+- Email: `hungreo2005@gmail.com`
+- Password: `Admin@123`
+
+**Admin Dashboard Features:**
+1. **Documents Management** (`/admin/documents`)
+   - Upload documents (PDF, DOCX, TXT) up to 20MB
+   - 3-stage workflow: Draft → Review → Approved
+   - Automatic text extraction and chunking
+   - Integration with Pinecone vector database
+
+2. **Vector Database Management** (`/admin/vectors`)
+   - View statistics for all vector types (Website, Documents, Videos)
+   - List and inspect individual vectors with metadata
+   - Selective deletion by type or individual vectors
+   - "Reset All Data" option for complete database refresh
+
+3. **Chat Logs** (`/admin/chats`)
+   - Monitor all chatbot conversations
+   - Track user questions and AI responses
+
+4. **Website Scraping**
+   - One-click website content scraping
+   - Automatic vectorization for RAG chatbot
+
+**Pinecone Management Scripts:**
+```bash
+# Delete only website vectors
+node scripts/clear-pinecone-website.js
+
+# Delete only document vectors
+node scripts/clear-pinecone-documents.js
+
+# Delete only video vectors
+node scripts/clear-pinecone-videos.js
+
+# Delete ALL vectors (requires confirmation)
+node scripts/clear-pinecone.js
 ```
 
 ## 📚 Documentation

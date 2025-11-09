@@ -9,13 +9,25 @@ import { kv } from '@vercel/kv'
 import { put } from '@vercel/blob'
 
 // In-memory storage for development (when Vercel KV is not configured)
-const inMemoryDocs: Map<string, Document> = new Map()
-const inMemoryDocsByStatus: Map<string, Set<string>> = new Map([
-  ['draft', new Set()],
-  ['review', new Set()],
-  ['approved', new Set()],
-  ['rejected', new Set()],
-])
+// Use global object to persist across hot reloads in Next.js dev mode
+const globalForDocuments = global as unknown as {
+  inMemoryDocs: Map<string, Document> | undefined
+  inMemoryDocsByStatus: Map<string, Set<string>> | undefined
+}
+
+const inMemoryDocs: Map<string, Document> =
+  globalForDocuments.inMemoryDocs ?? new Map()
+const inMemoryDocsByStatus: Map<string, Set<string>> =
+  globalForDocuments.inMemoryDocsByStatus ?? new Map([
+    ['draft', new Set()],
+    ['review', new Set()],
+    ['approved', new Set()],
+    ['rejected', new Set()],
+  ])
+
+// Store in global to survive hot reloads
+globalForDocuments.inMemoryDocs = inMemoryDocs
+globalForDocuments.inMemoryDocsByStatus = inMemoryDocsByStatus
 
 // Check if Vercel KV is configured
 function isKVConfigured(): boolean {

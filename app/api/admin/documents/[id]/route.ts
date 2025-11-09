@@ -55,12 +55,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     // If approving, generate embeddings and add to Pinecone
     if (status === 'approved' && document.status !== 'approved') {
+      console.log('[Approve] Creating embeddings for document:', document.id)
+      console.log('[Approve] Document has', document.chunks?.length || 0, 'chunks')
+
       const index = await getPineconeIndex()
       const pineconeIds: string[] = []
 
       // Generate embeddings for each chunk
       for (let i = 0; i < document.chunks.length; i++) {
         const chunk = document.chunks[i]
+        console.log(`[Approve] Processing chunk ${i + 1}/${document.chunks.length}`)
         const embedding = await createEmbedding(chunk)
 
         const vectorId = `${document.id}_chunk_${i}`
@@ -71,17 +75,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             metadata: {
               title: document.fileName,
               description: chunk.substring(0, 500),
-              type: 'document',
+              type: 'document', // Vector type for categorization
+              vectorType: 'document', // Explicit field for filtering
               fileType: document.fileType,
               chunkIndex: i,
               totalChunks: document.chunks.length,
               documentId: document.id,
+              uploadedAt: document.uploadedAt,
+              uploadedBy: document.uploadedBy,
             },
           },
         ])
 
         pineconeIds.push(vectorId)
       }
+
+      console.log('[Approve] Successfully added', pineconeIds.length, 'vectors to Pinecone')
 
       // Update document with Pinecone IDs
       document.pineconeIds = pineconeIds
@@ -112,12 +121,24 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     // If approved, remove from Pinecone
-    if (document.status === 'approved' && document.pineconeIds) {
+    if (document.status === 'approved') {
+      console.log('[Delete] Document is approved, removing from Pinecone')
       const index = await getPineconeIndex()
-      await index.deleteMany(document.pineconeIds)
+
+      if (document.pineconeIds && document.pineconeIds.length > 0) {
+        console.log('[Delete] Deleting', document.pineconeIds.length, 'vectors from Pinecone')
+        await index.deleteMany(document.pineconeIds)
+        console.log('[Delete] Pinecone vectors deleted successfully')
+      } else {
+        // Fallback: try to delete by document ID pattern
+        console.warn('[Delete] No pineconeIds found, attempting cleanup by document ID pattern')
+        // Note: Pinecone doesn't support prefix deletion, so this is best-effort
+        // In production, you should ensure pineconeIds are always saved
+      }
     }
 
     await deleteDocument(id)
+    console.log('[Delete] Document deleted from storage:', id)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

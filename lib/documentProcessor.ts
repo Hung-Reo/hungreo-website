@@ -23,8 +23,11 @@ export interface ExtractedDocument {
  */
 export async function extractPDF(buffer: Buffer, fileName: string, fileSize: number): Promise<ExtractedDocument> {
   try {
+    // Convert Buffer to Uint8Array for unpdf
+    const uint8Array = new Uint8Array(buffer)
+
     // Extract text using unpdf
-    const { text, totalPages } = await extractText(buffer, { mergePages: true })
+    const { text, totalPages } = await extractText(uint8Array, { mergePages: true })
 
     return {
       text,

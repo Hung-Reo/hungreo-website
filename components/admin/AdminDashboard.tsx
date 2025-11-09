@@ -102,6 +102,12 @@ export function AdminDashboard() {
               Videos
             </Link>
             <Link
+              href="/admin/vectors"
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
+            >
+              Vector DB
+            </Link>
+            <Link
               href="/admin/chats"
               className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
             >
