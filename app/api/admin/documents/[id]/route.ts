@@ -4,10 +4,12 @@ import {
   getDocument,
   updateDocumentStatus,
   deleteDocument,
+  saveDocument,
   type DocumentStatus,
 } from '@/lib/documentManager'
 import { getPineconeIndex } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
+import { chunkText } from '@/lib/textUtils'
 
 export const runtime = 'nodejs'
 
@@ -42,7 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const { id } = await params
-    const { status, notes } = await req.json()
+    const { status, notes, extractedText } = await req.json()
 
     if (!status || !['draft', 'review', 'approved', 'rejected'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
@@ -51,6 +53,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const document = await getDocument(id)
     if (!document) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+    }
+
+    // If extractedText is provided, update the document's text and re-chunk
+    if (extractedText && extractedText !== document.extractedText) {
+      console.log('[Update] Updating extracted text and re-chunking')
+      document.extractedText = extractedText
+      document.chunks = chunkText(extractedText)
+      document.metadata.wordCount = extractedText.split(/\s+/).filter(Boolean).length
+      console.log('[Update] Re-chunked into', document.chunks.length, 'chunks')
+
+      // Save the updated document
+      await saveDocument(document)
     }
 
     // If approving, generate embeddings and add to Pinecone

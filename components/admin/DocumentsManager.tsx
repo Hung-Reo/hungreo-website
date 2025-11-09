@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { Button } from '../ui/Button'
+import { DocumentReviewModal } from './DocumentReviewModal'
 import type { Document, DocumentStatus } from '@/lib/documentManager'
 
 interface DocumentStats {
@@ -20,7 +21,14 @@ export function DocumentsManager() {
   const [selectedStatus, setSelectedStatus] = useState<DocumentStatus | 'all'>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null)
+  const [reviewDocument, setReviewDocument] = useState<(Document & {
+    extractedText?: string
+    chunks?: string[]
+    totalChunks?: number
+    costEstimate?: number
+  }) | null>(null)
 
   useEffect(() => {
     fetchDocuments()
@@ -48,10 +56,7 @@ export function DocumentsManager() {
     }
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const uploadFile = async (file: File) => {
     try {
       setIsUploading(true)
       const formData = new FormData()
@@ -65,10 +70,25 @@ export function DocumentsManager() {
       const data = await response.json()
 
       if (data.success) {
-        alert(`Document uploaded successfully!\n${data.document.chunkCount} chunks created.`)
-        fetchDocuments()
-        // Reset file input
-        e.target.value = ''
+        // Open review modal with the uploaded document data
+        setReviewDocument({
+          ...data.document,
+          id: data.document.id,
+          fileName: data.document.fileName,
+          fileType: data.document.fileType,
+          fileSize: data.document.fileSize,
+          status: data.document.status as DocumentStatus,
+          uploadedAt: Date.now(),
+          uploadedBy: 'admin',
+          extractedText: data.document.extractedText,
+          chunks: data.document.chunks,
+          totalChunks: data.document.totalChunks,
+          costEstimate: data.document.costEstimate,
+          metadata: {
+            pageCount: 0,
+            wordCount: data.document.wordCount,
+          },
+        })
       } else {
         alert(`Upload failed: ${data.error}`)
       }
@@ -77,6 +97,42 @@ export function DocumentsManager() {
     } finally {
       setIsUploading(false)
     }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    await uploadFile(file)
+    // Reset file input
+    e.target.value = ''
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    const file = e.dataTransfer.files[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['.pdf', '.docx', '.doc', '.txt']
+    const fileExt = '.' + file.name.split('.').pop()?.toLowerCase()
+    if (!validTypes.includes(fileExt)) {
+      alert('Invalid file type. Please upload PDF, DOCX, or TXT files.')
+      return
+    }
+
+    await uploadFile(file)
   }
 
   const handleStatusChange = async (docId: string, newStatus: DocumentStatus, notes?: string) => {
@@ -120,6 +176,78 @@ export function DocumentsManager() {
       }
     } catch (error) {
       alert('Delete failed. Please try again.')
+    }
+  }
+
+  const handleReviewApprove = async (docId: string, editedText?: string) => {
+    try {
+      const response = await fetch(`/api/admin/documents/${docId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'approved',
+          extractedText: editedText,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('Document approved and added to Pinecone successfully!')
+        fetchDocuments()
+        setReviewDocument(null)
+      } else {
+        alert(`Approval failed: ${data.error}`)
+      }
+    } catch (error) {
+      alert('Approval failed. Please try again.')
+    }
+  }
+
+  const handleReviewReject = async (docId: string) => {
+    try {
+      const response = await fetch(`/api/admin/documents/${docId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'rejected' }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('Document rejected.')
+        fetchDocuments()
+        setReviewDocument(null)
+      } else {
+        alert(`Rejection failed: ${data.error}`)
+      }
+    } catch (error) {
+      alert('Rejection failed. Please try again.')
+    }
+  }
+
+  const handleReviewSaveDraft = async (docId: string, editedText: string) => {
+    try {
+      const response = await fetch(`/api/admin/documents/${docId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'draft',
+          extractedText: editedText,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert('Draft saved successfully!')
+        fetchDocuments()
+        setReviewDocument(null)
+      } else {
+        alert(`Save failed: ${data.error}`)
+      }
+    } catch (error) {
+      alert('Save failed. Please try again.')
     }
   }
 
@@ -169,21 +297,56 @@ export function DocumentsManager() {
         {/* Upload Section */}
         <div className="mb-6 rounded-lg bg-white p-6 shadow">
           <h2 className="mb-4 text-lg font-semibold text-slate-900">Upload Document</h2>
-          <div className="flex items-center gap-4">
-            <label className="flex-1">
-              <input
-                type="file"
-                accept=".pdf,.docx,.doc,.txt"
-                onChange={handleFileUpload}
-                disabled={isUploading}
-                className="block w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary-700 hover:file:bg-primary-100 disabled:opacity-50"
-              />
-            </label>
-            {isUploading && <span className="text-sm text-slate-600">Uploading...</span>}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`relative rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
+              isDragging
+                ? 'border-primary-500 bg-primary-50'
+                : 'border-slate-300 bg-slate-50 hover:border-slate-400'
+            } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+          >
+            {isUploading ? (
+              <div className="py-4">
+                <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"></div>
+                <p className="text-sm font-medium text-slate-600">Uploading...</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <svg
+                    className="mx-auto h-12 w-12 text-slate-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <label className="cursor-pointer">
+                  <span className="text-sm font-medium text-primary-600 hover:text-primary-700">
+                    Click to upload
+                  </span>
+                  <span className="text-sm text-slate-600"> or drag and drop</span>
+                  <input
+                    type="file"
+                    accept=".pdf,.docx,.doc,.txt"
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                    className="hidden"
+                  />
+                </label>
+                <p className="mt-2 text-xs text-slate-500">PDF, DOCX, TXT up to 20MB</p>
+              </>
+            )}
           </div>
-          <p className="mt-2 text-xs text-slate-500">
-            Supported: PDF, DOCX, TXT (Max 20MB)
-          </p>
         </div>
 
         {/* Statistics */}
@@ -265,6 +428,17 @@ export function DocumentsManager() {
             onClose={() => setSelectedDoc(null)}
             onStatusChange={handleStatusChange}
             onDelete={handleDelete}
+          />
+        )}
+
+        {/* Document Review Modal */}
+        {reviewDocument && (
+          <DocumentReviewModal
+            document={reviewDocument}
+            onClose={() => setReviewDocument(null)}
+            onApprove={handleReviewApprove}
+            onReject={handleReviewReject}
+            onSaveDraft={handleReviewSaveDraft}
           />
         )}
       </div>

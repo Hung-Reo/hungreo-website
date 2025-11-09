@@ -69,6 +69,12 @@ export async function POST(req: NextRequest) {
     // Save to Vercel KV
     await saveDocument(document)
 
+    // Calculate cost estimate for embeddings
+    // OpenAI text-embedding-3-small: $0.00002 per 1K tokens
+    // Average chunk is ~500 tokens, so ~$0.00001 per chunk
+    const estimatedTokens = chunks.length * 500
+    const costEstimate = (estimatedTokens / 1000) * 0.00002
+
     return NextResponse.json({
       success: true,
       document: {
@@ -79,6 +85,10 @@ export async function POST(req: NextRequest) {
         status: document.status,
         wordCount: document.metadata.wordCount,
         chunkCount: chunks.length,
+        extractedText: extracted.text,
+        chunks: chunks.slice(0, 5), // Preview first 5 chunks
+        totalChunks: chunks.length,
+        costEstimate,
       },
     })
   } catch (error: any) {
