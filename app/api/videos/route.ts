@@ -10,6 +10,17 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category') as VideoCategory | null
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
+    const statsOnly = searchParams.get('stats') === 'true'
+
+    const stats = await getVideoStats()
+
+    // If only stats requested, return early
+    if (statsOnly) {
+      return NextResponse.json({
+        success: true,
+        ...stats,
+      })
+    }
 
     let videos
     if (category) {
@@ -30,8 +41,6 @@ export async function GET(req: NextRequest) {
       duration: v.duration,
       category: v.category,
     }))
-
-    const stats = await getVideoStats()
 
     return NextResponse.json({
       success: true,
