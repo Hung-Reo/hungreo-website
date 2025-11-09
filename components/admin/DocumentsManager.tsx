@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { Button } from '../ui/Button'
+import { Tooltip } from '../ui/Tooltip'
 import { DocumentReviewModal } from './DocumentReviewModal'
 import type { Document, DocumentStatus } from '@/lib/documentManager'
 
@@ -459,14 +460,24 @@ function StatCard({
   active: boolean
   onClick: () => void
 }) {
+  const tooltips: Record<string, string> = {
+    Total: 'Total number of documents across all statuses',
+    Draft: 'Documents uploaded but not yet submitted for review',
+    Review: 'Documents pending approval or rejection',
+    Approved: 'Documents approved and added to the knowledge base',
+    Rejected: 'Documents that were rejected during review',
+  }
+
   return (
-    <button
-      onClick={onClick}
-      className={`rounded-lg p-4 text-left transition-all ${color} ${active ? 'ring-2 ring-primary-500' : ''}`}
-    >
-      <div className="text-2xl font-bold">{count}</div>
-      <div className="text-sm font-medium">{title}</div>
-    </button>
+    <Tooltip content={tooltips[title] || ''}>
+      <button
+        onClick={onClick}
+        className={`w-full rounded-lg p-4 text-left transition-all ${color} ${active ? 'ring-2 ring-primary-500' : ''}`}
+      >
+        <div className="text-2xl font-bold">{count}</div>
+        <div className="text-sm font-medium">{title}</div>
+      </button>
+    </Tooltip>
   )
 }
 
@@ -500,22 +511,30 @@ function DocumentRow({
         </button>
       </div>
       <div className="flex items-center gap-3">
-        <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[document.status]}`}>
-          {document.status}
-        </span>
+        <Tooltip content={`Status: ${document.status}`}>
+          <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusColors[document.status]}`}>
+            {document.status}
+          </span>
+        </Tooltip>
         {document.status === 'draft' && (
-          <Button size="sm" onClick={() => onStatusChange(document.id, 'review')}>
-            → Review
-          </Button>
+          <Tooltip content="Move this document to review queue">
+            <Button size="sm" onClick={() => onStatusChange(document.id, 'review')}>
+              → Review
+            </Button>
+          </Tooltip>
         )}
         {document.status === 'review' && (
           <>
-            <Button size="sm" onClick={() => onStatusChange(document.id, 'approved')}>
-              ✓ Approve
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onStatusChange(document.id, 'rejected')}>
-              ✗ Reject
-            </Button>
+            <Tooltip content="Approve and add to knowledge base">
+              <Button size="sm" onClick={() => onStatusChange(document.id, 'approved')}>
+                ✓ Approve
+              </Button>
+            </Tooltip>
+            <Tooltip content="Reject this document">
+              <Button size="sm" variant="outline" onClick={() => onStatusChange(document.id, 'rejected')}>
+                ✗ Reject
+              </Button>
+            </Tooltip>
           </>
         )}
       </div>
