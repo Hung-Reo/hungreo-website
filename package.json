@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "extract": "tsx scripts/extract-content.ts",
-    "embed": "tsx scripts/generate-embeddings.ts"
+    "embed": "tsx scripts/generate-embeddings.ts",
+    "scrape": "tsx scripts/scrape-website.ts",
+    "test": "tsx __tests__/textUtils.test.ts"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.3",
