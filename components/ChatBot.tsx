@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { Button } from './ui/Button'
 import { useChatHistory } from '@/lib/hooks/useChatHistory'
 import type { Message } from '@/lib/hooks/useChatHistory'
@@ -168,7 +170,7 @@ export function ChatBot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex h-[500px] w-[350px] flex-col rounded-lg border bg-white shadow-xl">
+        <div className="fixed bottom-6 right-6 z-50 flex h-[600px] w-[420px] flex-col rounded-lg border bg-white shadow-xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b bg-primary-600 p-4 text-white">
             <h3 className="font-semibold">Chat with AI</h3>
@@ -231,7 +233,26 @@ export function ChatBot() {
                       : 'bg-slate-100 text-slate-900'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  {message.role === 'user' ? (
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  ) : (
+                    <div className="text-sm">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          // Custom styling for markdown elements
+                          p: ({children}) => <p className="my-2 leading-relaxed">{children}</p>,
+                          strong: ({children}) => <strong className="font-semibold text-slate-900">{children}</strong>,
+                          ul: ({children}) => <ul className="my-2 ml-5 space-y-1 list-disc">{children}</ul>,
+                          ol: ({children}) => <ol className="my-2 ml-5 space-y-1 list-decimal">{children}</ol>,
+                          li: ({children}) => <li className="leading-relaxed">{children}</li>,
+                          h3: ({children}) => <h3 className="font-semibold text-base mt-3 mb-2">{children}</h3>,
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

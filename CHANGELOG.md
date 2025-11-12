@@ -101,9 +101,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Enhanced - 2025-01-12
 
-#### Chatbot Rich Text Formatting
+#### Chatbot Rich Text Formatting with React Markdown
 - **Goal**: Make chatbot responses more engaging and readable with markdown formatting
-- **Implementation**: Enhanced system prompt with formatting guidelines (prompt engineering only)
+- **Implementation**: Two-part solution combining prompt engineering + React markdown renderer
+
+  **Part 1: Enhanced System Prompt**
   - **Bold text** for key points, names, important terms
   - Bullet points (•) for lists with 2+ items
   - Strategic emoji usage (1-2 per response):
@@ -118,17 +120,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - 🎯 goals, focus areas, objectives
   - Clear section structure with bold headings
   - Short paragraphs (2-3 sentences max) for readability
+
+  **Part 2: React Markdown Renderer**
+  - Installed `react-markdown` + `remark-gfm` packages
+  - Replaced plain text rendering with markdown parser
+  - Custom component styling for professional appearance:
+    - Paragraphs: `my-2` spacing with `leading-relaxed` line height
+    - Bold text: `font-semibold` weight (subtle, not overpowering)
+    - Lists: `ml-5` indent with `space-y-1` (4px gap between items)
+    - Headings: `font-semibold` with proper spacing hierarchy
+  - Increased chat window size: 350px → 420px width, 500px → 600px height
+  - Better mobile-friendly layout with max-w-80% message bubbles
+
 - **Technical Details**:
-  - Uses GPT-4o-mini native markdown support
-  - No frontend changes required (existing markdown renderer)
+  - Uses GPT-4o-mini native markdown support for generation
+  - Frontend renders with `react-markdown` library (XSS-safe)
   - Streaming response preserves formatting
+  - Separate rendering logic for user (plain text) vs assistant (markdown)
+
 - **Files Modified**:
-  - `app/api/chat/route.ts` - Enhanced system prompt (lines 80-96)
+  - `app/api/chat/route.ts` - Enhanced system prompt (lines 80-109)
+  - `components/ChatBot.tsx` - Added markdown renderer (lines 5-6, 237-254)
+  - `components/ChatBot.tsx` - Increased window size (line 171)
+  - `package.json` - Added dependencies: `react-markdown`, `remark-gfm`
+
 - **Impact**:
-  - More engaging, scannable responses
-  - Better visual hierarchy
-  - Professional + friendly tone maintained
-  - Improved user experience across all chatbot features
+  - More engaging, scannable responses with visual hierarchy
+  - Professional formatting: bold keywords, proper bullet spacing
+  - Improved readability with larger chat window
+  - Better user experience across all chatbot features
+  - Maintains streaming performance (no lag)
 >>>>>>> origin/claude/sync-github-updates-011CUtQekiA2HXsUE7CyheRc
 
 ### Added - 2025-01-09
