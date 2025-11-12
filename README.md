@@ -44,6 +44,7 @@ A personal portfolio website showcasing my transition from Business Analyst to P
 | **Vector DB** | Pinecone | Fast semantic search, managed service |
 | **Storage** | Vercel KV, Vercel Blob | Key-value store, file storage |
 | **Auth** | NextAuth.js | Secure admin authentication |
+| **Scraping** | Puppeteer | Full React rendering for accurate content extraction |
 
 ## 📁 Project Structure
 

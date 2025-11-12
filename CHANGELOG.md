@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - 2025-01-11
+
+#### Puppeteer Website Scraper
+- **Upgraded Website Scraping**: Replaced Cheerio with Puppeteer for full React rendering
+  - Scrapes complete page content including dynamically rendered components
+  - Extracts all sections: Professional Journey, Education, Training, Core Competencies
+  - Fixes incomplete content extraction from React-based pages
+  - Uses `puppeteer-core` + `@sparticuz/chromium` for Vercel compatibility
+
+#### Optimized Text Chunking
+- **Improved RAG Accuracy**: Reduced chunk size from 512 to 200 words with 50-word overlap
+  - Smaller chunks = more precise context matching in vector search
+  - 50-word overlap prevents information loss between chunks (critical lesson learned)
+  - Applied to ALL features: website scraping, document upload, video transcripts
+  - Result: 3-4x more vectors with complete information coverage
+  - Example: About page now creates 4 chunks (was 2), increased from 6 to 11 total vectors
+
+**Lesson Learned - Chunking Bug Fix:**
+- **Root Cause**: Initial 25-word overlap caused critical information to fall between chunks
+  - Education section (3 degrees) was split across chunks with MBA/Bachelor completely lost
+  - Only "Insearch Institute" (last degree) appeared in vectors, chatbot couldn't answer education questions
+- **Investigation**: Debug logs showed chunks 1 and 2 had gap at ~words 350-400 where education data lived
+- **Solution**: Increased overlap from 25 to 50 words ensures important sections appear in multiple chunks
+  - Chunk 1: words 150-350 (contains FULL education section)
+  - Chunk 2: words 300-479 (also contains education due to overlap)
+- **Impact**: Website vectors increased from 6 to 11 (+83%), chatbot now provides complete, accurate answers
+
+#### Bug Fixes
+- **Fixed**: Website scraping only captured partial content (missing React components)
+  - Solution: Puppeteer waits for `networkidle0` to ensure full React hydration
+- **Fixed**: Document metadata mismatch causing chatbot to ignore uploaded documents
+  - Solution: Updated chatbot to handle both website and document metadata structures
+- **Fixed**: Website vectors couldn't be deleted by type
+  - Solution: Added `vectorType: 'website'` metadata field
+- **Fixed**: Text cleaning regex was collapsing all whitespace
+  - Solution: Only collapse horizontal whitespace (spaces/tabs), preserve newlines
+
+#### Enhanced Features
+- **Chatbot Improvements**: Now reads from uploaded documents (CVs, PDFs)
+  - Updated system prompt to include document context
+  - Handles fallback for missing metadata fields
+  - Better context building for mixed vector types
+
 ### Added - 2025-01-09
 
 #### Vector Database Management System

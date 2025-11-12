@@ -24,15 +24,28 @@ export async function POST(req: NextRequest) {
     const index = await getPineconeIndex()
     const queryResponse = await index.query({
       vector: questionEmbedding,
-      topK: 3,
+      topK: 5, // Increased from 3 to support smaller chunk sizes (200 words)
       includeMetadata: true,
+    })
+
+    // Debug: Log retrieved vectors
+    console.log(`[Chat] Retrieved ${queryResponse.matches.length} vectors for query: "${message}"`)
+    queryResponse.matches.forEach((match, i) => {
+      const meta = match.metadata as any
+      console.log(`[Chat] Vector ${i+1}: ${match.id} (score: ${match.score?.toFixed(3)})`)
+      console.log(`[Chat]   Title: ${meta.title}`)
+      console.log(`[Chat]   Preview: ${(meta.description || meta.text || '').substring(0, 150)}...`)
     })
 
     // Step 3: Build context from relevant documents
     const context = queryResponse.matches
       .map((match) => {
         const metadata = match.metadata as any
-        return `Title: ${metadata.title}\nDescription: ${metadata.description}\nType: ${metadata.type}\n`
+        const title = metadata.title || 'Untitled'
+        const description = metadata.description || metadata.text || 'No description'
+        const type = metadata.vectorType || metadata.type || 'unknown'
+
+        return `Title: ${title}\nContent: ${description}\nType: ${type}\n`
       })
       .join('\n---\n')
 
@@ -50,11 +63,13 @@ export async function POST(req: NextRequest) {
     const openai = getOpenAIClient()
 
     const systemPrompt = `You are a helpful AI assistant for Hung Dinh's personal website.
-You help visitors learn about Hung's background, projects, and blog posts.
+You help visitors learn about Hung's background, projects, blog posts, and uploaded documents (including his CV/resume).
 
-Use the following context from Hung's website to answer questions:
+Use the following context from Hung's website and documents to answer questions:
 
 ${context}${contextInfo}
+
+When answering questions about Hung's experience, skills, or background, use information from both website pages and uploaded documents (like his CV).
 
 If the question cannot be answered using the context, politely say you don't have that information and suggest they contact Hung directly at hungreo2005@gmail.com.
 

@@ -56,8 +56,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       // Combine title, description, and transcript
       const content = `${video.title}\n${video.description}\n${video.transcript || ''}`
 
-      // Chunk the content
-      const chunks = chunkText(content, 512)
+      // Chunk the content (uses default 200 words for better RAG accuracy)
+      const chunks = chunkText(content)
 
       // Generate embeddings for each chunk
       for (let i = 0; i < chunks.length; i++) {
