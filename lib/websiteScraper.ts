@@ -90,11 +90,67 @@ export async function scrapePage(path: string): Promise<ScrapedPage> {
       const descriptionMeta = document.querySelector('meta[name="description"]')
       const description = descriptionMeta?.getAttribute('content') || ''
 
-      // Get main content - now fully rendered by React
+      // Get main content with smart structured extraction
       const mainElement = document.querySelector('main')
-      const content = mainElement?.innerText || document.body.innerText
+      if (!mainElement) {
+        return { title, description, content: document.body.innerText }
+      }
 
-      return { title, description, content }
+      // Smart extraction: detect and properly format structured sections
+      let content = ''
+      const sections = mainElement.querySelectorAll('section')
+
+      if (sections.length > 0) {
+        // Page has structured sections - extract each section intelligently
+        sections.forEach((section) => {
+          const heading = section.querySelector('h2, h3')?.textContent?.trim() || ''
+
+          if (heading === 'Training & Development') {
+            // Special handling for Training section to preserve card structure
+            content += `\n\n${heading}\n`
+            const cards = section.querySelectorAll('.rounded-lg.border')
+            cards.forEach((card) => {
+              const paragraphs = card.querySelectorAll('p')
+              if (paragraphs.length >= 2) {
+                const trainingName = paragraphs[0].textContent?.trim() || ''
+                const company = paragraphs[1].textContent?.trim() || ''
+                content += `${trainingName} - ${company}\n`
+              }
+            })
+          } else if (heading === 'Education & Expertise') {
+            // Special handling for Education section with multiple cards
+            content += `\n\n${heading}\n`
+            const cards = section.querySelectorAll('.rounded-lg.border')
+            cards.forEach((card) => {
+              const cardHeading = card.querySelector('h3')?.textContent?.trim() || ''
+              content += `\n${cardHeading}\n`
+              const listItems = card.querySelectorAll('li')
+              listItems.forEach((li) => {
+                content += `${li.textContent?.trim()}\n`
+              })
+            })
+          } else if (heading === 'Core Competencies') {
+            // Special handling for Core Competencies - extract as list
+            content += `\n\n${heading}\n`
+            const competencies = section.querySelectorAll('.rounded-lg.border span:last-child')
+            competencies.forEach((comp) => {
+              content += `• ${comp.textContent?.trim()}\n`
+            })
+          } else {
+            // Default: extract section heading + content
+            content += `\n\n${heading}\n`
+            const sectionText = section.innerText
+            // Remove the heading from content to avoid duplication
+            const contentWithoutHeading = sectionText.replace(heading, '').trim()
+            content += contentWithoutHeading + '\n'
+          }
+        })
+      } else {
+        // Fallback: no structured sections, use simple innerText
+        content = mainElement.innerText
+      }
+
+      return { title, description, content: content.trim() }
     })
 
     // Clean up content
@@ -105,6 +161,20 @@ export async function scrapePage(path: string): Promise<ScrapedPage> {
 
     const wordCount = cleanedContent.split(/\s+/).length
     console.log(`[Scraper] Extracted ${cleanedContent.length} characters (${wordCount} words) from ${path}`)
+
+    // Debug: Check if important sections are included
+    if (path === '/about') {
+      const hasBeyondWork = cleanedContent.includes('Beyond Work') || cleanedContent.includes('running') || cleanedContent.includes('traveling')
+      const hasEducation = cleanedContent.includes('MBA') || cleanedContent.includes('Bachelor')
+      const hasCoreComp = cleanedContent.includes('Core Competencies') || cleanedContent.includes('Integrity')
+      console.log(`[Scraper] /about sections check:`)
+      console.log(`  - Education: ${hasEducation ? '✅' : '❌'}`)
+      console.log(`  - Core Competencies: ${hasCoreComp ? '✅' : '❌'}`)
+      console.log(`  - Beyond Work: ${hasBeyondWork ? '✅' : '❌'}`)
+
+      // Log last 200 chars to see if Beyond Work section is at the end
+      console.log(`[Scraper] Last 200 chars: ...${cleanedContent.substring(cleanedContent.length - 200)}`)
+    }
 
     await browser.close()
 
@@ -168,7 +238,8 @@ export async function updateKnowledgeBase(pages: ScrapedPage[]): Promise<number>
     const fullContent = `${page.title}\n${page.description}\n${page.content}`
     const chunks = chunkText(fullContent) // Uses default 200 words for better RAG accuracy
 
-    console.log(`[Scraper] Creating ${chunks.length} chunks for ${page.url}`)
+    const fullWordCount = fullContent.split(/\s+/).length
+    console.log(`[Scraper] Creating ${chunks.length} chunks for ${page.url} (${fullWordCount} words total, ${page.content.split(/\s+/).length} content words)`)
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i]
@@ -182,7 +253,7 @@ export async function updateKnowledgeBase(pages: ScrapedPage[]): Promise<number>
           values: embedding,
           metadata: {
             title: page.title,
-            description: chunk.substring(0, 500),
+            description: chunk, // Store FULL chunk (no truncation)
             type: 'website',
             vectorType: 'website', // For vector type filtering
             page: page.url,

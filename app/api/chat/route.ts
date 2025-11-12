@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const index = await getPineconeIndex()
     const queryResponse = await index.query({
       vector: questionEmbedding,
-      topK: 5, // Increased from 3 to support smaller chunk sizes (200 words)
+      topK: 5, // Retrieve top 5 most relevant chunks
       includeMetadata: true,
     })
 
@@ -69,9 +69,13 @@ Use the following context from Hung's website and documents to answer questions:
 
 ${context}${contextInfo}
 
-When answering questions about Hung's experience, skills, or background, use information from both website pages and uploaded documents (like his CV).
-
-If the question cannot be answered using the context, politely say you don't have that information and suggest they contact Hung directly at hungreo2005@gmail.com.
+IMPORTANT INSTRUCTIONS:
+- When you see "Training & Development" section, the format is: "[Training Name] - [Company Name]"
+  Example: "Leader as a Coach - Samsung Vina" means training "Leader as a Coach" was done AT Samsung Vina
+- Always match the training course with the EXACT company listed after the dash (-)
+- Do NOT mix up trainings between different companies
+- When answering questions about Hung's experience, skills, or background, use information from both website pages and uploaded documents (like his CV)
+- If the question cannot be answered using the context, politely say you don't have that information and suggest they contact Hung directly at hungreo2005@gmail.com
 
 Answer in a friendly, professional tone. If the user asks in Vietnamese, respond in Vietnamese.`
 
