@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 ### Added - 2025-01-11
 
 #### Puppeteer Website Scraper
@@ -71,6 +72,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated system prompt to include document context
   - Handles fallback for missing metadata fields
   - Better context building for mixed vector types
+=======
+### Fixed - 2025-01-12
+
+#### Critical: SessionProvider Integration
+- **Problem**: Navigation component used `useSession()` hook but app layout didn't wrap with `SessionProvider`
+  - Error: "useSession() called outside SessionProvider context"
+  - Navigation crashed on load, admin link didn't display
+- **Solution**: Added `SessionProvider` wrapper to `app/layout.tsx`
+  - Imported `SessionProvider` from `@/components/providers/SessionProvider`
+  - Wrapped entire app structure within provider
+  - Maintains session context across all client components
+- **Files Modified**:
+  - `app/layout.tsx` - Added SessionProvider wrapper
+- **Impact**: Navigation now works correctly, admin link displays when authenticated
+
+#### Documentation: Chrome Path Configuration
+- **Problem**: Puppeteer websiteScraper.ts used `process.env.CHROME_PATH` but no documentation in `.env.example`
+  - Windows/Linux developers encountered "Chrome not found" errors
+  - Unclear how to configure for different operating systems
+- **Solution**: Added comprehensive Puppeteer configuration section to `.env.example`
+  - Platform-specific Chrome installation paths (MacOS, Windows, Linux)
+  - Clear distinction between local development and production (Vercel)
+  - Fallback behavior explanation
+- **Files Modified**:
+  - `.env.example` - Added CHROME_PATH configuration section (lines 57-85)
+- **Impact**: Better developer experience across all platforms, prevents setup errors
+
+### Enhanced - 2025-01-12
+
+#### Chatbot Rich Text Formatting
+- **Goal**: Make chatbot responses more engaging and readable with markdown formatting
+- **Implementation**: Enhanced system prompt with formatting guidelines (prompt engineering only)
+  - **Bold text** for key points, names, important terms
+  - Bullet points (•) for lists with 2+ items
+  - Strategic emoji usage (1-2 per response):
+    - 🎓 education, learning, degrees
+    - 💼 work, career, professional experience
+    - 🚀 projects, innovations, achievements
+    - 🏆 awards, accomplishments, success
+    - 💡 skills, expertise, insights
+    - 🌟 highlights, special mentions
+    - 🏠 family, personal life, values
+    - 💪 strengths, resilience, growth
+    - 🎯 goals, focus areas, objectives
+  - Clear section structure with bold headings
+  - Short paragraphs (2-3 sentences max) for readability
+- **Technical Details**:
+  - Uses GPT-4o-mini native markdown support
+  - No frontend changes required (existing markdown renderer)
+  - Streaming response preserves formatting
+- **Files Modified**:
+  - `app/api/chat/route.ts` - Enhanced system prompt (lines 80-96)
+- **Impact**:
+  - More engaging, scannable responses
+  - Better visual hierarchy
+  - Professional + friendly tone maintained
+  - Improved user experience across all chatbot features
+>>>>>>> origin/claude/sync-github-updates-011CUtQekiA2HXsUE7CyheRc
 
 ### Added - 2025-01-09
 
