@@ -13,7 +13,7 @@ async function getVideoStats() {
   try {
     const baseUrl = getBaseUrl()
     const response = await fetch(`${baseUrl}/api/videos?stats=true`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
     })
 
     if (!response.ok) {

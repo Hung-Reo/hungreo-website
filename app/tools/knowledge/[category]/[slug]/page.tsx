@@ -33,7 +33,7 @@ export const revalidate = 60
 async function getVideo(videoId: string) {
   try {
     const baseUrl = getBaseUrl()
-    const response = await fetch(`${baseUrl}/api/videos`, { cache: 'no-store' })
+    const response = await fetch(`${baseUrl}/api/videos`, { next: { revalidate: 60 } })
 
     if (!response.ok) {
       return null
@@ -53,7 +53,7 @@ async function getVideoWithTranscript(videoId: string) {
     // Fetch from admin API to get full video with transcript
     const baseUrl = getBaseUrl()
     const response = await fetch(`${baseUrl}/api/admin/videos`, {
-      cache: 'no-store',
+      next: { revalidate: 60 },
       headers: {
         // This is a workaround - in production you'd need proper auth
         // For now, we'll add a public endpoint or fetch transcript separately
