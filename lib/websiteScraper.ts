@@ -30,7 +30,7 @@ const PAGES_TO_SCRAPE = [
 /**
  * Get browser launch options based on environment
  */
-function getBrowserOptions() {
+async function getBrowserOptions() {
   // Check if running locally (has Chrome/Chromium installed)
   const isLocal = process.env.NODE_ENV === 'development' || !process.env.AWS_EXECUTION_ENV
 
@@ -45,8 +45,8 @@ function getBrowserOptions() {
     // Production (Vercel) - use serverless Chromium
     return {
       args: chromium.args,
-      executablePath: chromium.executablePath(),
-      headless: chromium.headless,
+      executablePath: await chromium.executablePath(),
+      headless: true, // Always headless in serverless environments
     }
   }
 }

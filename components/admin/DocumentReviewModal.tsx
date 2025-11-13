@@ -94,21 +94,21 @@ export function DocumentReviewModal({
                 {(document.fileSize / 1024 / 1024).toFixed(2)} MB
               </p>
             </div>
-            {document.pageCount && (
+            {document.metadata?.pageCount && (
               <div>
                 <label className="block text-sm font-medium text-slate-700">
                   Pages
                 </label>
-                <p className="mt-1 text-sm text-slate-900">{document.pageCount}</p>
+                <p className="mt-1 text-sm text-slate-900">{document.metadata.pageCount}</p>
               </div>
             )}
-            {document.wordCount && (
+            {document.metadata?.wordCount && (
               <div>
                 <label className="block text-sm font-medium text-slate-700">
                   Words
                 </label>
                 <p className="mt-1 text-sm text-slate-900">
-                  {document.wordCount.toLocaleString()}
+                  {document.metadata.wordCount.toLocaleString()}
                 </p>
               </div>
             )}

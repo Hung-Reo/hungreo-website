@@ -238,7 +238,7 @@ export function ChatBot() {
                   ) : (
                     <div className="text-sm">
                       <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
+                        remarkPlugins={[remarkGfm as any]}
                         components={{
                           // Custom styling for markdown elements
                           p: ({children}) => <p className="my-2 leading-relaxed">{children}</p>,
