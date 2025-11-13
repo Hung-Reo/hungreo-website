@@ -17,6 +17,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@sparticuz/chromium": "^141.0.0",
     "@tailwindcss/typography": "^0.5.10",
+    "@upstash/ratelimit": "^2.0.7",
     "@vercel/analytics": "^1.5.0",
     "@vercel/blob": "^2.0.0",
     "@vercel/kv": "^3.0.0",

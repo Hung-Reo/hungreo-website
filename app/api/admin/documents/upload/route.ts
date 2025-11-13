@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { processDocument, validateFile } from '@/lib/documentProcessor'
+import { processDocument } from '@/lib/documentProcessor'
 import { chunkText } from '@/lib/textUtils'
 import { saveDocument, uploadToBlob, type Document } from '@/lib/documentManager'
+import { validateFile } from '@/lib/inputValidator'
+import { fileUploadRateLimit, getClientIp } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'
 
@@ -23,6 +25,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // SECURITY: Rate limiting for file uploads (5 uploads per 10 minutes)
+    const ip = getClientIp(req)
+    const { success, reset } = await fileUploadRateLimit.limit(ip)
+
+    if (!success) {
+      const retryAfter = Math.ceil((reset - Date.now()) / 1000)
+      console.warn(`[Upload] Rate limit exceeded for IP: ${ip}`)
+      return new NextResponse(
+        JSON.stringify({
+          error: 'Too Many Uploads',
+          message:
+            'Quá nhiều file upload. Vui lòng thử lại sau. / Too many file uploads. Please try again later.',
+          retryAfter,
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': retryAfter.toString(),
+          },
+        }
+      )
+    }
+
     const formData = await req.formData()
     const file = formData.get('file') as File
 
@@ -30,9 +56,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file
-    const validation = validateFile(file)
-    if (!validation.valid) {
+    // SECURITY: Enhanced file validation (MIME type, size, sanitization)
+    const validation = validateFile(file, {
+      maxSizeBytes: 20 * 1024 * 1024, // 20MB
+      allowedTypes: ['pdf', 'txt', 'docx', 'doc'],
+    })
+
+    if (!validation.isValid) {
+      console.warn(`[Upload] Invalid file from IP: ${ip}`, {
+        error: validation.error,
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+      })
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
@@ -48,10 +84,11 @@ export async function POST(req: NextRequest) {
       blobUrl = await uploadToBlob(file)
     }
 
-    // Create document object
+    // Create document object with sanitized filename
+    const sanitizedFileName = validation.sanitized || file.name
     const document: Document = {
       id: `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      fileName: file.name,
+      fileName: sanitizedFileName,
       fileType: extracted.metadata.fileType,
       fileSize: file.size,
       status: 'draft',

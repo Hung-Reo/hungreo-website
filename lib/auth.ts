@@ -87,7 +87,18 @@ export const {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 30 * 24 * 60 * 60, // 30 days (extended for better UX)
+  },
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true, // Prevents JavaScript access (XSS protection)
+        sameSite: 'lax', // CSRF protection
+        path: '/',
+        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      },
+    },
   },
 })
 

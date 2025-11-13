@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createEmbedding, getOpenAIClient } from '@/lib/openai'
 import { getPineconeIndex } from '@/lib/pinecone'
 import { logChat, shouldNotifyHuman, type ChatLog } from '@/lib/chatLogger'
+import {
+  chatbotRateLimit,
+  chatbotHourlyRateLimit,
+  getClientIp,
+} from '@/lib/rateLimit'
+import { validateChatMessage } from '@/lib/inputValidator'
 
 // Use Node.js runtime for Pinecone compatibility
 export const runtime = 'nodejs'
@@ -11,14 +17,78 @@ export async function POST(req: NextRequest) {
   let assistantMessage = ''
 
   try {
-    const { message, history, pageContext } = await req.json()
+    // SECURITY: Rate limiting check
+    const ip = getClientIp(req)
+    console.log(`[Chat] Request from IP: ${ip}`)
 
-    if (!message) {
-      return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+    // Check per-minute rate limit (10 requests/min)
+    const { success: minuteSuccess, reset: minuteReset } =
+      await chatbotRateLimit.limit(ip)
+
+    if (!minuteSuccess) {
+      const retryAfter = Math.ceil((minuteReset - Date.now()) / 1000)
+      console.warn(`[Chat] Rate limit exceeded for IP: ${ip} (per-minute)`)
+      return new NextResponse(
+        JSON.stringify({
+          error: 'Too Many Requests',
+          message:
+            'Bạn đã gửi quá nhiều tin nhắn. Vui lòng thử lại sau ít phút. / You have sent too many messages. Please try again in a few minutes.',
+          retryAfter,
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': retryAfter.toString(),
+          },
+        }
+      )
     }
 
+    // Check hourly rate limit (50 requests/hour)
+    const { success: hourlySuccess, reset: hourlyReset } =
+      await chatbotHourlyRateLimit.limit(ip)
+
+    if (!hourlySuccess) {
+      const retryAfter = Math.ceil((hourlyReset - Date.now()) / 1000)
+      console.warn(`[Chat] Hourly rate limit exceeded for IP: ${ip}`)
+      return new NextResponse(
+        JSON.stringify({
+          error: 'Too Many Requests',
+          message:
+            'Bạn đã vượt quá giới hạn tin nhắn trong giờ. Vui lòng thử lại sau. / You have exceeded the hourly message limit. Please try again later.',
+          retryAfter,
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': retryAfter.toString(),
+          },
+        }
+      )
+    }
+
+    const { message, history, pageContext } = await req.json()
+
+    // SECURITY: Input validation
+    const validation = validateChatMessage(message)
+    if (!validation.isValid) {
+      console.warn(`[Chat] Invalid message from IP: ${ip}`, {
+        error: validation.error,
+        messageLength: message?.length || 0,
+      })
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      )
+    }
+
+    // Use sanitized message
+    const sanitizedMessage = validation.sanitized!
+
     // Step 1: Create embedding for user's question
-    const questionEmbedding = await createEmbedding(message)
+    const questionEmbedding = await createEmbedding(sanitizedMessage)
 
     // Step 2: Query Pinecone for relevant context
     const index = await getPineconeIndex()
@@ -29,7 +99,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Debug: Log retrieved vectors
-    console.log(`[Chat] Retrieved ${queryResponse.matches.length} vectors for query: "${message}"`)
+    console.log(`[Chat] Retrieved ${queryResponse.matches.length} vectors for query: "${sanitizedMessage}"`)
     queryResponse.matches.forEach((match, i) => {
       const meta = match.metadata as any
       console.log(`[Chat] Vector ${i+1}: ${match.id} (score: ${match.score?.toFixed(3)})`)
@@ -124,7 +194,7 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
     }
 
     // Add current user message
-    messages.push({ role: 'user', content: message })
+    messages.push({ role: 'user', content: sanitizedMessage })
 
     const stream = await openai.chat.completions.create({
       model: 'gpt-4.1-mini',
@@ -157,7 +227,7 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
         const chatLog: ChatLog = {
           id: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           sessionId,
-          userMessage: message,
+          userMessage: sanitizedMessage,
           assistantResponse: assistantMessage,
           timestamp: Date.now(),
           pageContext,

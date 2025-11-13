@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 import { getChatStats } from '@/lib/chatLogger'
 
 export const runtime = 'nodejs'
 
 export async function GET(req: NextRequest) {
   try {
-    // TODO: Add authentication check once NextAuth is implemented
-    // For now, this is a placeholder
+    // SECURITY: Authentication check
+    const session = await auth()
+    if (!session?.user || (session.user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const stats = await getChatStats()
 
