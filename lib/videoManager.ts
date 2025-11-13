@@ -298,8 +298,8 @@ export async function batchImportVideos(
       // Create video object
       const video: Video = {
         id: videoId,
-        videoId,
         ...metadata,
+        videoId, // Override metadata.videoId to ensure consistency
         category,
         transcript,
         addedAt: Date.now(),

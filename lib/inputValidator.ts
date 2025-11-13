@@ -299,8 +299,8 @@ export function sanitizeMarkdown(markdown: string): string {
 
   let sanitized = markdown
 
-  // Remove script tags
-  sanitized = sanitized.replace(/<script[^>]*>.*?<\/script>/gis, '')
+  // Remove script tags (use [\s\S] instead of 's' flag for ES5 compatibility)
+  sanitized = sanitized.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
 
   // Remove event handlers
   sanitized = sanitized.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
@@ -308,11 +308,11 @@ export function sanitizeMarkdown(markdown: string): string {
   // Remove javascript: protocol
   sanitized = sanitized.replace(/javascript:/gi, '')
 
-  // Remove iframes
-  sanitized = sanitized.replace(/<iframe[^>]*>.*?<\/iframe>/gis, '')
+  // Remove iframes (use [\s\S] instead of 's' flag)
+  sanitized = sanitized.replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
 
-  // Remove objects and embeds
-  sanitized = sanitized.replace(/<object[^>]*>.*?<\/object>/gis, '')
+  // Remove objects and embeds (use [\s\S] instead of 's' flag)
+  sanitized = sanitized.replace(/<object[^>]*>[\s\S]*?<\/object>/gi, '')
   sanitized = sanitized.replace(/<embed[^>]*>/gi, '')
 
   return sanitized
