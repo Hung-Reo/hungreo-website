@@ -8,14 +8,9 @@ import { fileUploadRateLimit, getClientIp } from '@/lib/rateLimit'
 
 export const runtime = 'nodejs'
 
-// Increase upload size limit
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '20mb',
-    },
-  },
-}
+// Body size limit is configured in next.config.js
+// Max upload size: 20MB
+export const maxDuration = 60 // 60 seconds
 
 export async function POST(req: NextRequest) {
   try {

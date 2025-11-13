@@ -149,7 +149,7 @@ export async function notifyHungAboutChat(log: ChatLog): Promise<boolean> {
             </div>
 
             <div style="text-align: center;">
-              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/admin/chats" class="button">
+              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/admin/chatlogs" class="button">
                 View in Admin Dashboard
               </a>
             </div>
