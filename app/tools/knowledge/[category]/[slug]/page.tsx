@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { VideoPlayer } from '@/components/features/VideoPlayer'
 import { TranscriptSection } from '@/components/features/TranscriptSection'
 import { RelatedVideos } from '@/components/features/RelatedVideos'
+import { getBaseUrl } from '@/lib/getBaseUrl'
 import type { VideoCategory } from '@/lib/videoManager'
 
 const CATEGORY_MAPPINGS: Record<string, { name: string; category: VideoCategory }> = {
@@ -26,9 +27,12 @@ function extractVideoId(slug: string): string {
   return parts[parts.length - 1]
 }
 
+// Revalidate every 60 seconds (ISR)
+export const revalidate = 60
+
 async function getVideo(videoId: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const response = await fetch(`${baseUrl}/api/videos`, { cache: 'no-store' })
 
     if (!response.ok) {
@@ -47,7 +51,7 @@ async function getVideo(videoId: string) {
 async function getVideoWithTranscript(videoId: string) {
   try {
     // Fetch from admin API to get full video with transcript
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const response = await fetch(`${baseUrl}/api/admin/videos`, {
       cache: 'no-store',
       headers: {

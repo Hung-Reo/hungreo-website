@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { getBaseUrl } from '@/lib/getBaseUrl'
 import type { VideoCategory } from '@/lib/videoManager'
 
 interface RelatedVideosProps {
@@ -10,7 +11,7 @@ interface RelatedVideosProps {
 
 async function getRelatedVideos(category: VideoCategory, currentVideoId: string, limit: number = 5) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const response = await fetch(
       `${baseUrl}/api/videos?category=${encodeURIComponent(category)}`,
       { cache: 'no-store' }

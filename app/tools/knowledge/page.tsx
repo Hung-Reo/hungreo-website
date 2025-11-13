@@ -6,6 +6,9 @@ export const metadata = {
   description: 'Browse curated YouTube videos organized by category: Leadership, AI Works, Health, Entertaining, and Human Philosophy.',
 }
 
+// Revalidate every 60 seconds (ISR)
+export const revalidate = 60
+
 async function getVideoStats() {
   try {
     const baseUrl = getBaseUrl()

@@ -28,6 +28,9 @@ export function generateMetadata({ params }: PageProps) {
   }
 }
 
+// Revalidate every 60 seconds (ISR)
+export const revalidate = 60
+
 async function getVideos(category: VideoCategory) {
   try {
     const baseUrl = getBaseUrl()
