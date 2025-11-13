@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getAllDocuments, getDocumentsByStatus, getDocumentStats, type DocumentStatus } from '@/lib/documentManager'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {

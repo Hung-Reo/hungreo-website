@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getAllVideos, getVideosByCategory, getVideoStats, type VideoCategory } from '@/lib/videoManager'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {

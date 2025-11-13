@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAllVideos, getVideosByCategory, getVideoStats, type VideoCategory } from '@/lib/videoManager'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 // Public endpoint to get videos (no authentication required)
 export async function GET(req: NextRequest) {

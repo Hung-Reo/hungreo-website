@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getChatLogs } from '@/lib/chatLogger'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/admin/chatlogs/export?format=csv|json

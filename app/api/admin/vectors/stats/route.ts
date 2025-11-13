@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getPineconeIndex } from '@/lib/pinecone'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/admin/vectors/stats
