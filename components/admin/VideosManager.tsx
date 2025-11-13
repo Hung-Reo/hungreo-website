@@ -351,6 +351,12 @@ function VideoRow({
             In Knowledge Base
           </span>
         )}
+        <button
+          onClick={() => onDelete(video.id)}
+          className="rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+        >
+          Delete
+        </button>
       </div>
     </div>
   )

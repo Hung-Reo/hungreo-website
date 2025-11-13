@@ -71,8 +71,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             values: embedding,
             metadata: {
               title: video.title,
-              description: chunk.substring(0, 500),
+              description: chunk, // Store FULL chunk content (no truncation)
               type: 'video',
+              vectorType: 'video', // For filtering in Vector Manager
               category: video.category,
               videoId: video.videoId,
               channelTitle: video.channelTitle,
@@ -109,12 +110,35 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Video not found' }, { status: 404 })
     }
 
-    // Remove from Pinecone if exists
+    const index = await getPineconeIndex()
+
+    // Strategy 1: Delete using saved pineconeIds (for newer videos)
     if (video.pineconeIds && video.pineconeIds.length > 0) {
-      const index = await getPineconeIndex()
       await index.deleteMany(video.pineconeIds)
+      console.log(`[Delete] Removed ${video.pineconeIds.length} vectors using pineconeIds`)
+    } else {
+      // Strategy 2: Query and delete by videoId (for older videos without pineconeIds)
+      // Query to find all vectors with this videoId
+      const queryResponse = await index.query({
+        vector: new Array(1536).fill(0), // Dummy vector
+        topK: 10000,
+        includeMetadata: true,
+        filter: {
+          videoId: { $eq: video.videoId },
+        },
+      })
+
+      const vectorIds = queryResponse.matches?.map((match) => match.id) || []
+
+      if (vectorIds.length > 0) {
+        await index.deleteMany(vectorIds)
+        console.log(`[Delete] Removed ${vectorIds.length} vectors by querying videoId: ${video.videoId}`)
+      } else {
+        console.log(`[Delete] No vectors found for videoId: ${video.videoId}`)
+      }
     }
 
+    // Delete from Redis
     await deleteVideo(params.id)
 
     return NextResponse.json({ success: true })

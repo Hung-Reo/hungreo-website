@@ -247,6 +247,16 @@ export function ChatBot() {
                           ol: ({children}) => <ol className="my-2 ml-5 space-y-1 list-decimal">{children}</ol>,
                           li: ({children}) => <li className="leading-relaxed">{children}</li>,
                           h3: ({children}) => <h3 className="font-semibold text-base mt-3 mb-2">{children}</h3>,
+                          a: ({href, children}) => (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary-600 hover:text-primary-700 underline font-medium"
+                            >
+                              {children}
+                            </a>
+                          ),
                         }}
                       >
                         {message.content}

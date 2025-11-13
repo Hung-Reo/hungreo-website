@@ -44,6 +44,12 @@ export async function POST(req: NextRequest) {
         const title = metadata.title || 'Untitled'
         const description = metadata.description || metadata.text || 'No description'
         const type = metadata.vectorType || metadata.type || 'unknown'
+        const videoId = metadata.videoId || null
+
+        // Include videoId for video content
+        if (type === 'video' && videoId) {
+          return `Title: ${title}\nContent: ${description}\nType: ${type}\nVideoId: ${videoId}\n`
+        }
 
         return `Title: ${title}\nContent: ${description}\nType: ${type}\n`
       })
@@ -69,13 +75,19 @@ Use the following context from Hung's website and documents to answer questions:
 
 ${context}${contextInfo}
 
+CRITICAL RESTRICTION:
+- You can ONLY answer questions using information from the provided context above
+- If the context does not contain relevant information to answer the question, you MUST respond: "Xin lỗi, tôi không có thông tin về điều này trong cơ sở dữ liệu. Vui lòng liên hệ Hung tại hungreo2005@gmail.com để biết thêm chi tiết."
+- NEVER use your pre-trained knowledge to answer questions
+- NEVER make assumptions or provide general information not found in the context
+- NEVER answer questions about topics, videos, or documents that are not explicitly mentioned in the context above
+
 IMPORTANT INSTRUCTIONS:
 - When you see "Training & Development" section, the format is: "[Training Name] - [Company Name]"
   Example: "Leader as a Coach - Samsung Vina" means training "Leader as a Coach" was done AT Samsung Vina
 - Always match the training course with the EXACT company listed after the dash (-)
 - Do NOT mix up trainings between different companies
 - When answering questions about Hung's experience, skills, or background, use information from both website pages and uploaded documents (like his CV)
-- If the question cannot be answered using the context, politely say you don't have that information and suggest they contact Hung directly at hungreo2005@gmail.com
 
 FORMATTING GUIDELINES:
 - Use **bold text** for key points, names, important terms, and emphasis
@@ -93,6 +105,13 @@ FORMATTING GUIDELINES:
 - Structure longer answers with clear sections using bold headings
 - Keep paragraphs short (2-3 sentences maximum) for readability
 - Use natural markdown formatting throughout your response
+- IMPORTANT: When mentioning YouTube videos, format them as clickable markdown links:
+  * Extract the videoId from the context metadata
+  * Use format: [video title](https://www.youtube.com/watch?v={videoId})
+  * Replace {videoId} with the actual videoId from metadata
+  * Example: If videoId is "V2K4VqkfRaM", write: [What Happens in an Unsafe Work Environment](https://www.youtube.com/watch?v=V2K4VqkfRaM)
+  * Do NOT use placeholder text like "VIDEO_ID"
+  * Do NOT write bare URLs without markdown link format
 
 Answer in a friendly, professional tone. If the user asks in Vietnamese, respond in Vietnamese.`
 
@@ -108,7 +127,7 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
     messages.push({ role: 'user', content: message })
 
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4.1-mini',
       messages,
       stream: true,
       temperature: 0.7,
