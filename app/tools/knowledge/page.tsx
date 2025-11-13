@@ -1,5 +1,5 @@
 import { CategoryGrid } from '@/components/features/CategoryGrid'
-import { getBaseUrl } from '@/lib/getBaseUrl'
+import { getVideoStats } from '@/lib/videoManager'
 
 export const metadata = {
   title: 'AI Tools - Video Library | Hung Dinh',
@@ -8,25 +8,6 @@ export const metadata = {
 
 // Revalidate every 60 seconds (ISR)
 export const revalidate = 60
-
-async function getVideoStats() {
-  try {
-    const baseUrl = getBaseUrl()
-    const response = await fetch(`${baseUrl}/api/videos?stats=true`, {
-      next: { revalidate: 60 },
-    })
-
-    if (!response.ok) {
-      console.error('Failed to fetch video stats')
-      return null
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error('Error fetching video stats:', error)
-    return null
-  }
-}
 
 export default async function KnowledgePage() {
   const stats = await getVideoStats()

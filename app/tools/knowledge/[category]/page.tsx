@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { VideoGrid } from '@/components/features/VideoGrid'
-import { getBaseUrl } from '@/lib/getBaseUrl'
-import type { VideoCategory } from '@/lib/videoManager'
+import { getVideosByCategory, type VideoCategory } from '@/lib/videoManager'
 
 const CATEGORY_MAPPINGS: Record<string, { name: string; category: VideoCategory }> = {
   'leadership': { name: 'Leadership', category: 'Leadership' },
@@ -31,27 +30,6 @@ export function generateMetadata({ params }: PageProps) {
 // Revalidate every 60 seconds (ISR)
 export const revalidate = 60
 
-async function getVideos(category: VideoCategory) {
-  try {
-    const baseUrl = getBaseUrl()
-    const response = await fetch(
-      `${baseUrl}/api/videos?category=${encodeURIComponent(category)}`,
-      { next: { revalidate: 60 } }
-    )
-
-    if (!response.ok) {
-      console.error('Failed to fetch videos')
-      return []
-    }
-
-    const data = await response.json()
-    return data.videos || []
-  } catch (error) {
-    console.error('Error fetching videos:', error)
-    return []
-  }
-}
-
 export default async function CategoryPage({ params }: PageProps) {
   const mapping = CATEGORY_MAPPINGS[params.category]
 
@@ -59,7 +37,7 @@ export default async function CategoryPage({ params }: PageProps) {
     notFound()
   }
 
-  const videos = await getVideos(mapping.category)
+  const videos = await getVideosByCategory(mapping.category)
 
   return (
     <div className="container mx-auto px-4 py-12">
