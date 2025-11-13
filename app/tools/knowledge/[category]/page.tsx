@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { VideoGrid } from '@/components/features/VideoGrid'
+import { getBaseUrl } from '@/lib/getBaseUrl'
 import type { VideoCategory } from '@/lib/videoManager'
 
 const CATEGORY_MAPPINGS: Record<string, { name: string; category: VideoCategory }> = {
@@ -29,7 +30,7 @@ export function generateMetadata({ params }: PageProps) {
 
 async function getVideos(category: VideoCategory) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const response = await fetch(
       `${baseUrl}/api/videos?category=${encodeURIComponent(category)}`,
       { cache: 'no-store' }

@@ -1,4 +1,5 @@
 import { CategoryGrid } from '@/components/features/CategoryGrid'
+import { getBaseUrl } from '@/lib/getBaseUrl'
 
 export const metadata = {
   title: 'AI Tools - Video Library | Hung Dinh',
@@ -7,7 +8,7 @@ export const metadata = {
 
 async function getVideoStats() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = getBaseUrl()
     const response = await fetch(`${baseUrl}/api/videos?stats=true`, {
       cache: 'no-store',
     })
