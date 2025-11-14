@@ -50,6 +50,8 @@ const translations = {
     'knowledge.categories.philosophy': 'Human Philosophy',
     'knowledge.videoCount': '{count} video(s)',
     'knowledge.browseVideos': 'Browse videos',
+    'knowledge.noVideos': 'No videos available',
+    'knowledge.noVideosSearch': 'No videos found matching your search',
 
     // Common
     'common.readMore': 'Read more',
@@ -107,6 +109,8 @@ const translations = {
     'knowledge.categories.philosophy': 'Triết học con người',
     'knowledge.videoCount': '{count} video',
     'knowledge.browseVideos': 'Duyệt video',
+    'knowledge.noVideos': 'Không có video nào',
+    'knowledge.noVideosSearch': 'Không tìm thấy video nào phù hợp',
 
     // Common
     'common.readMore': 'Đọc thêm',

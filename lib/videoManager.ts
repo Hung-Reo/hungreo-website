@@ -1,6 +1,7 @@
 /**
  * YouTube Video Management with Vercel KV
  * Handles categorized video library with transcripts
+ * Updated: Bilingual support (EN/VI)
  */
 
 import { kv } from '@vercel/kv'
@@ -9,21 +10,86 @@ import axios from 'axios'
 
 export type VideoCategory = 'Leadership' | 'AI Works' | 'Health' | 'Entertaining' | 'Human Philosophy'
 
+/**
+ * Language-specific video content
+ */
+export interface VideoContent {
+  title: string
+  description: string
+  transcript?: string
+  summary?: string
+}
+
+/**
+ * Translation metadata
+ */
+export interface TranslationStatus {
+  viTranslated: boolean
+  translatedAt?: number
+  translatedBy?: string
+  translationMethod?: 'manual' | 'auto' | 'hybrid'
+}
+
+/**
+ * Video interface with bilingual support
+ */
 export interface Video {
   id: string
   videoId: string
-  title: string
+
+  // Language-agnostic metadata
   channelTitle: string
-  description: string
   publishedAt: string
   thumbnailUrl: string
   duration: string
   category: VideoCategory
-  transcript?: string
-  summary?: string
+
+  // Bilingual content
+  en: VideoContent
+  vi: VideoContent
+
+  // Metadata
   addedAt: number
   addedBy: string
   pineconeIds?: string[]
+  translationStatus?: TranslationStatus
+
+  // Legacy fields (for backward compatibility during migration)
+  title?: string
+  description?: string
+  transcript?: string
+  summary?: string
+}
+
+/**
+ * Normalize video to bilingual format
+ * Handles backward compatibility for legacy videos
+ */
+export function normalizeVideo(video: any): Video {
+  // If already in new format, return as-is
+  if (video.en && video.vi) {
+    return video as Video
+  }
+
+  // Convert legacy format to new format
+  return {
+    ...video,
+    en: {
+      title: video.title || video.en?.title || '',
+      description: video.description || video.en?.description || '',
+      transcript: video.transcript || video.en?.transcript,
+      summary: video.summary || video.en?.summary,
+    },
+    vi: video.vi || {
+      title: '',
+      description: '',
+      transcript: undefined,
+      summary: undefined,
+    },
+    translationStatus: video.translationStatus || {
+      viTranslated: false,
+    },
+  }
 }
 
 /**
@@ -112,8 +178,11 @@ export async function saveVideo(video: Video): Promise<void> {
  */
 export async function getVideo(videoId: string): Promise<Video | null> {
   try {
-    const video = await kv.get<Video>(`video:${videoId}`)
-    return video
+    const video = await kv.get<any>(`video:${videoId}`)
+    if (!video) return null
+
+    // Normalize to ensure bilingual format
+    return normalizeVideo(video)
   } catch (error) {
     console.error('Failed to get video:', error)
     return null
@@ -295,15 +364,34 @@ export async function batchImportVideos(
         // Continue without transcript
       }
 
-      // Create video object
+      // Create video object with bilingual structure
       const video: Video = {
         id: videoId,
-        ...metadata,
-        videoId, // Override metadata.videoId to ensure consistency
+        videoId,
+        channelTitle: metadata.channelTitle,
+        publishedAt: metadata.publishedAt,
+        thumbnailUrl: metadata.thumbnailUrl,
+        duration: metadata.duration,
         category,
-        transcript,
+        // English content (from YouTube)
+        en: {
+          title: metadata.title,
+          description: metadata.description,
+          transcript: transcript || undefined,
+          summary: undefined, // Will be generated later
+        },
+        // Vietnamese content (empty, to be translated)
+        vi: {
+          title: '',
+          description: '',
+          transcript: undefined,
+          summary: undefined,
+        },
         addedAt: Date.now(),
         addedBy: userEmail,
+        translationStatus: {
+          viTranslated: false,
+        },
       }
 
       await saveVideo(video)

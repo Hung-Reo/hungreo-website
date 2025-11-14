@@ -4,18 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Grid, List, Search } from 'lucide-react'
-
-interface Video {
-  id: string
-  videoId: string
-  title: string
-  channelTitle: string
-  description: string
-  publishedAt: string
-  thumbnailUrl: string
-  duration: string
-  category: string
-}
+import { Video } from '@/lib/videoManager'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 interface VideoGridProps {
   videos: Video[]
@@ -23,16 +13,18 @@ interface VideoGridProps {
 }
 
 export function VideoGrid({ videos, categorySlug }: VideoGridProps) {
+  const { language, t } = useLanguage()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Filter videos based on search
+  // Filter videos based on search (search in current language)
   const filteredVideos = videos.filter((video) => {
     const query = searchQuery.toLowerCase()
+    const content = video[language] || video.en
     return (
-      video.title.toLowerCase().includes(query) ||
+      content.title.toLowerCase().includes(query) ||
       video.channelTitle.toLowerCase().includes(query) ||
-      video.description.toLowerCase().includes(query)
+      content.description.toLowerCase().includes(query)
     )
   })
 
@@ -70,7 +62,7 @@ export function VideoGrid({ videos, categorySlug }: VideoGridProps) {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search videos..."
+            placeholder={t('common.search')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-lg border border-slate-300 py-2 pl-10 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
@@ -115,77 +107,83 @@ export function VideoGrid({ videos, categorySlug }: VideoGridProps) {
       {filteredVideos.length === 0 ? (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-12 text-center">
           <p className="text-slate-600">
-            {searchQuery ? 'No videos found matching your search.' : 'No videos available.'}
+            {searchQuery ? t('knowledge.noVideosSearch') : t('knowledge.noVideos')}
           </p>
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredVideos.map((video) => (
-            <Link
-              key={video.id}
-              href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, video.title)}`}
-              className="group block overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md"
-            >
-              {/* Thumbnail */}
-              <div className="relative aspect-video overflow-hidden bg-slate-100">
-                <Image
-                  src={video.thumbnailUrl}
-                  alt={video.title}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-                {/* Duration badge */}
-                {video.duration && (
-                  <div className="absolute bottom-2 right-2 rounded bg-black/80 px-2 py-1 text-xs font-medium text-white">
-                    {formatDuration(video.duration)}
-                  </div>
-                )}
-              </div>
+          {filteredVideos.map((video) => {
+            const content = video[language] || video.en
+            return (
+              <Link
+                key={video.id}
+                href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, content.title)}`}
+                className="group block overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md"
+              >
+                {/* Thumbnail */}
+                <div className="relative aspect-video overflow-hidden bg-slate-100">
+                  <Image
+                    src={video.thumbnailUrl}
+                    alt={content.title}
+                    fill
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                  {/* Duration badge */}
+                  {video.duration && (
+                    <div className="absolute bottom-2 right-2 rounded bg-black/80 px-2 py-1 text-xs font-medium text-white">
+                      {formatDuration(video.duration)}
+                    </div>
+                  )}
+                </div>
 
-              {/* Content */}
-              <div className="p-4">
-                <h3 className="mb-1 line-clamp-2 font-semibold text-slate-900 group-hover:text-primary-600">
-                  {video.title}
-                </h3>
-                <p className="mb-2 text-sm text-slate-600">{video.channelTitle}</p>
-                <p className="line-clamp-2 text-sm text-slate-500">{video.description}</p>
-              </div>
-            </Link>
-          ))}
+                {/* Content */}
+                <div className="p-4">
+                  <h3 className="mb-1 line-clamp-2 font-semibold text-slate-900 group-hover:text-primary-600">
+                    {content.title}
+                  </h3>
+                  <p className="mb-2 text-sm text-slate-600">{video.channelTitle}</p>
+                  <p className="line-clamp-2 text-sm text-slate-500">{content.description}</p>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredVideos.map((video) => (
-            <Link
-              key={video.id}
-              href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, video.title)}`}
-              className="group flex gap-4 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md"
-            >
-              {/* Thumbnail */}
-              <div className="relative h-24 w-40 flex-shrink-0 overflow-hidden rounded bg-slate-100">
-                <Image
-                  src={video.thumbnailUrl}
-                  alt={video.title}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-                {video.duration && (
-                  <div className="absolute bottom-1 right-1 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
-                    {formatDuration(video.duration)}
-                  </div>
-                )}
-              </div>
+          {filteredVideos.map((video) => {
+            const content = video[language] || video.en
+            return (
+              <Link
+                key={video.id}
+                href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, content.title)}`}
+                className="group flex gap-4 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md"
+              >
+                {/* Thumbnail */}
+                <div className="relative h-24 w-40 flex-shrink-0 overflow-hidden rounded bg-slate-100">
+                  <Image
+                    src={video.thumbnailUrl}
+                    alt={content.title}
+                    fill
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                  {video.duration && (
+                    <div className="absolute bottom-1 right-1 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
+                      {formatDuration(video.duration)}
+                    </div>
+                  )}
+                </div>
 
-              {/* Content */}
-              <div className="flex-1">
-                <h3 className="mb-1 line-clamp-2 font-semibold text-slate-900 group-hover:text-primary-600">
-                  {video.title}
-                </h3>
-                <p className="mb-2 text-sm text-slate-600">{video.channelTitle}</p>
-                <p className="line-clamp-2 text-sm text-slate-500">{video.description}</p>
-              </div>
-            </Link>
-          ))}
+                {/* Content */}
+                <div className="flex-1">
+                  <h3 className="mb-1 line-clamp-2 font-semibold text-slate-900 group-hover:text-primary-600">
+                    {content.title}
+                  </h3>
+                  <p className="mb-2 text-sm text-slate-600">{video.channelTitle}</p>
+                  <p className="line-clamp-2 text-sm text-slate-500">{content.description}</p>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>
