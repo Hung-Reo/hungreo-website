@@ -1,32 +1,68 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { getContentBySlug, getContentByType, ProjectMeta } from '@/lib/mdx'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { Loader2 } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 
-export function generateStaticParams() {
-  const projects = getContentByType<ProjectMeta>('projects')
-  return projects.map((project) => ({
-    slug: project.slug,
-  }))
+interface Project {
+  id: string
+  slug: string
+  en: { title: string; description: string; content: string }
+  vi: { title: string; description: string; content: string }
+  tech: string[]
+  image?: string
+  github?: string
+  demo?: string
 }
 
 export default function ProjectPage({ params }: { params: { slug: string } }) {
-  const { t } = useLanguage()
-  let content, meta
+  const { t, language } = useLanguage()
+  const [project, setProject] = useState<Project | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [notFoundError, setNotFoundError] = useState(false)
 
-  try {
-    const result = getContentBySlug('projects', params.slug)
-    content = result.content
-    meta = result.meta
-  } catch {
+  useEffect(() => {
+    async function fetchProject() {
+      try {
+        const res = await fetch(`/api/content/projects/${params.slug}`)
+        if (!res.ok) {
+          setNotFoundError(true)
+          return
+        }
+        const data = await res.json()
+        setProject(data)
+      } catch (error) {
+        console.error('Failed to fetch project:', error)
+        setNotFoundError(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProject()
+  }, [params.slug])
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+        </div>
+      </div>
+    )
+  }
+
+  if (notFoundError || !project) {
     notFound()
   }
+
+  const content = language === 'vi' && project.vi.title ? project.vi : project.en
 
   return (
     <article className="container mx-auto px-4 py-12">
@@ -41,12 +77,12 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
 
         {/* Header */}
         <header className="mt-8">
-          <h1 className="text-4xl font-bold text-slate-900">{meta.title}</h1>
-          <p className="mt-4 text-xl text-slate-600">{meta.description}</p>
+          <h1 className="text-4xl font-bold text-slate-900">{content.title}</h1>
+          <p className="mt-4 text-xl text-slate-600">{content.description}</p>
 
           {/* Tech stack */}
           <div className="mt-6 flex flex-wrap gap-2">
-            {meta.tech.map((tech: string) => (
+            {project.tech.map((tech: string) => (
               <span
                 key={tech}
                 className="rounded-full bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-600"
@@ -57,18 +93,18 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           </div>
 
           {/* Links */}
-          {(meta.github || meta.demo) && (
+          {(project.github || project.demo) && (
             <div className="mt-6 flex gap-4">
-              {meta.github && (
+              {project.github && (
                 <Button asChild>
-                  <a href={meta.github} target="_blank" rel="noopener">
+                  <a href={project.github} target="_blank" rel="noopener">
                     {t('projects.viewGithub')}
                   </a>
                 </Button>
               )}
-              {meta.demo && (
+              {project.demo && (
                 <Button variant="outline" asChild>
-                  <a href={meta.demo} target="_blank" rel="noopener">
+                  <a href={project.demo} target="_blank" rel="noopener">
                     {t('projects.liveDemo')}
                   </a>
                 </Button>
@@ -78,11 +114,11 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         </header>
 
         {/* Featured image */}
-        {meta.image && (
+        {project.image && (
           <div className="relative mt-12 h-96 w-full overflow-hidden rounded-lg bg-slate-100">
             <img
-              src={meta.image}
-              alt={meta.title}
+              src={project.image}
+              alt={content.title}
               className="h-full w-full object-cover"
             />
           </div>
@@ -91,7 +127,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         {/* Content */}
         <div className="prose prose-slate mt-12 max-w-none">
           <MDXRemote
-            source={content}
+            source={content.content}
             options={{
               mdxOptions: {
                 remarkPlugins: [remarkGfm],
