@@ -201,7 +201,7 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
       messages,
       stream: true,
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 2000, // Increased from 500 to allow longer, detailed responses
     })
 
     // Step 7: Stream the response and collect full message
