@@ -5,7 +5,7 @@
  */
 
 import { kv } from '@vercel/kv'
-import { YoutubeTranscript } from 'youtube-transcript'
+import { Innertube } from 'youtubei.js'
 import axios from 'axios'
 
 export type VideoCategory = 'Leadership' | 'AI Works' | 'Health' | 'Entertaining' | 'Human Philosophy'
@@ -141,15 +141,27 @@ export async function getVideoMetadata(videoId: string) {
 }
 
 /**
- * Get video transcript
+ * Get video transcript using youtubei.js
  */
 export async function getVideoTranscript(videoId: string): Promise<string> {
   try {
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId)
-    return transcript.map((t) => t.text).join(' ')
-  } catch (error) {
-    console.error('Failed to get transcript:', error)
-    // Fallback to description if transcript not available
+    const youtube = await Innertube.create()
+    const info = await youtube.getInfo(videoId)
+
+    // Try to get transcript
+    const transcriptData = await info.getTranscript()
+
+    if (transcriptData?.transcript?.content?.body?.initial_segments) {
+      const segments = transcriptData.transcript.content.body.initial_segments
+      const fullText = segments.map((seg: any) => seg.snippet.text).join(' ')
+      console.log(`[VideoManager] Fetched transcript for ${videoId}: ${segments.length} segments, ${fullText.split(/\s+/).length} words`)
+      return fullText
+    }
+
+    console.log(`[VideoManager] No transcript available for ${videoId}`)
+    return ''
+  } catch (error: any) {
+    console.error(`[VideoManager] Failed to get transcript for ${videoId}:`, error.message)
     return ''
   }
 }
