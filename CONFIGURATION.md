@@ -1,4 +1,5 @@
 # Configuration Guide
+**Last Updated**: November 14, 2025
 
 This guide provides comprehensive instructions for configuring the portfolio website for both localhost development and production deployment.
 
@@ -9,7 +10,9 @@ This guide provides comprehensive instructions for configuring the portfolio web
 3. [Local Development Setup](#local-development-setup)
 4. [Production Deployment](#production-deployment)
 5. [Vercel KV & Blob Setup](#vercel-kv--blob-setup)
-6. [Troubleshooting](#troubleshooting)
+6. [Video Library Setup](#video-library-setup)
+7. [Troubleshooting](#troubleshooting)
+8. [Recent Updates](#recent-updates)
 
 ---
 
@@ -567,6 +570,105 @@ For additional help:
 
 ---
 
-**Last Updated**: November 2025
+## Video Library Setup
 
-**Version**: 2.0 (Phase 2 Extended)
+### Overview
+
+The Video Library feature (`/tools/knowledge`) allows uploading YouTube videos with AI-powered transcripts and chatbot Q&A.
+
+### Architecture
+
+```
+Video Storage: Vercel KV (Redis)
+├── video:{videoId}              → Individual video metadata
+├── videos:{category}            → Set of videos by category
+└── videos:all                   → Sorted set of all videos
+
+Categories:
+- Leadership
+- AI Works
+- Health
+- Entertaining
+- Human Philosophy
+```
+
+### Adding Videos
+
+**Via Admin Panel** (Recommended):
+1. Login: `/admin/dashboard`
+2. Navigate to: **AI Tools** → **Videos**
+3. Click **Import Videos**
+4. Enter YouTube URLs (one per line)
+5. Select category
+6. Click **Import**
+
+**Automatic Processing**:
+- Fetches video metadata from YouTube API
+- Downloads transcript (if available)
+- Stores in Vercel KV
+- Optionally embeds in Pinecone for AI search
+
+### Displaying Videos
+
+**Public Pages**:
+- `/tools/knowledge` - All categories with video counts
+- `/tools/knowledge/leadership` - Videos in Leadership category
+- `/tools/knowledge/leadership/video-slug-videoId` - Individual video page
+
+**ISR (Incremental Static Regeneration)**:
+- Pages revalidate every 60 seconds
+- New videos appear within 1 minute of upload
+- No manual deployment needed
+
+### Important Notes
+
+**Server Components Best Practice**:
+- Pages call `getVideoStats()` and `getVideosByCategory()` **directly**
+- **DO NOT** fetch from `/api/videos` in server components
+- API routes are for client components and external access only
+
+**Example**:
+```typescript
+// ✅ CORRECT (Server Component)
+import { getVideoStats } from '@/lib/videoManager'
+const stats = await getVideoStats()
+
+// ❌ WRONG (Anti-pattern)
+const res = await fetch('/api/videos?stats=true')
+const stats = await res.json()
+```
+
+---
+
+## Recent Updates
+
+### November 14, 2025 - Production Deployment
+
+**Major Changes**:
+1. ✅ Fixed videos not appearing on production
+2. ✅ Replaced HTTP fetching with direct function calls
+3. ✅ Added ISR (60s revalidation) to knowledge pages
+4. ✅ Fixed Dynamic Server Usage warnings
+5. ✅ Eliminated cache strategy conflicts
+
+**Commits**:
+- `9c81c39` - ISR revalidation + localhost URL fixes
+- `3d5767c` - Force-dynamic for API routes
+- `d83eee9` - Replace no-store cache with ISR
+- `be0c82c` - Direct videoManager calls (critical fix)
+
+**Documentation**:
+- [PRODUCTION_DEPLOYMENT_NOV14_2025.md](./docs/PRODUCTION_DEPLOYMENT_NOV14_2025.md) - Detailed deployment summary
+- [CMS_AND_I18N_PLAN.md](./docs/CMS_AND_I18N_PLAN.md) - Upcoming features plan
+
+**Status**:
+- ✅ Production: https://hungreo.vercel.app
+- ✅ Videos working correctly
+- ✅ ISR active (60s revalidation)
+- ✅ No build warnings
+
+---
+
+**Last Updated**: November 14, 2025
+
+**Version**: 2.1 (Production-Ready with Video Library)
