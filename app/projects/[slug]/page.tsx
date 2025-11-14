@@ -1,37 +1,23 @@
+'use client'
+
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { getContentBySlug, getContentByType, ProjectMeta } from '@/lib/mdx'
+import { useLanguage } from '@/contexts/LanguageContext'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   const projects = getContentByType<ProjectMeta>('projects')
   return projects.map((project) => ({
     slug: project.slug,
   }))
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}) {
-  try {
-    const { meta } = getContentBySlug('projects', params.slug)
-    return {
-      title: `${meta.title} - Projects`,
-      description: meta.description,
-    }
-  } catch {
-    return {
-      title: 'Project Not Found',
-    }
-  }
-}
-
 export default function ProjectPage({ params }: { params: { slug: string } }) {
+  const { t } = useLanguage()
   let content, meta
 
   try {
@@ -50,7 +36,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           href="/projects"
           className="inline-flex items-center text-sm text-slate-600 hover:text-primary-600"
         >
-          ← Back to Projects
+          {t('projects.backToProjects')}
         </Link>
 
         {/* Header */}
@@ -76,14 +62,14 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
               {meta.github && (
                 <Button asChild>
                   <a href={meta.github} target="_blank" rel="noopener">
-                    View on GitHub
+                    {t('projects.viewGithub')}
                   </a>
                 </Button>
               )}
               {meta.demo && (
                 <Button variant="outline" asChild>
                   <a href={meta.demo} target="_blank" rel="noopener">
-                    Live Demo
+                    {t('projects.liveDemo')}
                   </a>
                 </Button>
               )}

@@ -1,21 +1,19 @@
-import { Metadata } from 'next'
+'use client'
+
 import { ProjectCard } from '@/components/features/ProjectCard'
 import { getContentByType, ProjectMeta } from '@/lib/mdx'
-
-export const metadata: Metadata = {
-  title: 'Projects - Hung Dinh',
-  description: 'AI-powered projects showcasing problem-solving and technical skills',
-}
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function ProjectsPage() {
+  const { t } = useLanguage()
   const projects = getContentByType<ProjectMeta>('projects')
 
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-6xl">
-        <h1 className="text-4xl font-bold text-slate-900">Projects</h1>
+        <h1 className="text-4xl font-bold text-slate-900">{t('projects.title')}</h1>
         <p className="mt-4 text-xl text-slate-600">
-          AI-powered solutions built to solve real problems
+          {t('projects.subtitle')}
         </p>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -27,10 +25,10 @@ export default function ProjectsPage() {
         {projects.length === 0 && (
           <div className="mt-12 rounded-lg border bg-white p-12 text-center">
             <p className="text-slate-600">
-              Projects coming soon... Building in progress! 🚀
+              {t('projects.empty')}
             </p>
             <p className="mt-2 text-sm text-slate-500">
-              Check back later for AI-powered project showcases
+              {t('projects.emptySubtitle')}
             </p>
           </div>
         )}

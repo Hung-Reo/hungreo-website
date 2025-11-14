@@ -1,19 +1,18 @@
-import { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'About Me - Dinh Quang Hung',
-  description: '20 years of IT leadership experience transitioning to Product Management with AI focus',
-}
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function AboutPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-slate-900">About Me</h1>
+          <h1 className="text-4xl font-bold text-slate-900">{t('about.title')}</h1>
           <p className="mt-4 text-xl text-slate-600">
-            20 years of IT leadership experience, now embracing Product Management with AI
+            {t('about.subtitle')}
           </p>
         </div>
 
@@ -22,19 +21,16 @@ export default function AboutPage() {
           <div className="h-48 w-48 overflow-hidden rounded-full bg-slate-200">
             {/* Placeholder for profile image */}
             <div className="flex h-full items-center justify-center text-slate-400">
-              Photo
+              {t('about.photo')}
             </div>
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-slate-900">Dinh Quang Hung</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t('about.name')}</h2>
             <p className="mt-2 text-lg text-slate-600">
-              IT Leader | AI Consultant | Product Management Enthusiast
+              {t('about.role')}
             </p>
             <p className="mt-4 text-slate-600">
-              Available for new opportunities to add value, challenge my leadership,
-              and continue my learning journey. With 8 years as Head of IT and 20 years
-              in multinational companies (FMCG, Manufacturing, K12 Education), I'm now
-              focusing on AI-powered products and Product Management.
+              {t('about.intro')}
             </p>
           </div>
         </div>
@@ -42,7 +38,7 @@ export default function AboutPage() {
         {/* Professional Journey */}
         <section className="mt-16">
           <h2 className="text-3xl font-bold text-slate-900">
-            Professional Journey
+            {t('about.journey.title')}
           </h2>
           <div className="mt-8 space-y-8">
             <TimelineItem
@@ -76,25 +72,25 @@ export default function AboutPage() {
         {/* Education & Skills */}
         <section className="mt-16">
           <h2 className="text-3xl font-bold text-slate-900">
-            Education & Expertise
+            {t('about.education.title')}
           </h2>
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             <div className="rounded-lg border bg-white p-6">
-              <h3 className="text-xl font-semibold">Education</h3>
+              <h3 className="text-xl font-semibold">{t('about.education.subtitle')}</h3>
               <ul className="mt-4 space-y-2 text-slate-600">
-                <li>• <strong>MBA</strong> - Business in IT, University of Technology Sydney (UTS), Australia (2001-2003)</li>
-                <li>• <strong>Bachelor of Commerce</strong> - Economics & Finance, Macquarie University, Australia (1997-2001)</li>
-                <li>• <strong>Diploma of Commerce</strong> - Business Economics, Insearch Institute, Australia (1996-1997)</li>
+                <li>• <strong>MBA</strong> - {t('about.education.mba')}</li>
+                <li>• <strong>Bachelor of Commerce</strong> - {t('about.education.bachelor')}</li>
+                <li>• <strong>Diploma of Commerce</strong> - {t('about.education.diploma')}</li>
               </ul>
             </div>
             <div className="rounded-lg border bg-white p-6">
-              <h3 className="text-xl font-semibold">Current Focus</h3>
+              <h3 className="text-xl font-semibold">{t('about.currentFocus.title')}</h3>
               <ul className="mt-4 space-y-2 text-slate-600">
-                <li>• AI learner and practitioner (AI chatbots, AI apps, AI Agents with n8n)</li>
-                <li>• Product Management transition</li>
-                <li>• Team management & leadership</li>
-                <li>• SAP ERP systems</li>
-                <li>• IT Service Management</li>
+                <li>• {t('about.currentFocus.ai')}</li>
+                <li>• {t('about.currentFocus.pm')}</li>
+                <li>• {t('about.currentFocus.team')}</li>
+                <li>• {t('about.currentFocus.sap')}</li>
+                <li>• {t('about.currentFocus.itsm')}</li>
               </ul>
             </div>
           </div>
@@ -102,7 +98,7 @@ export default function AboutPage() {
 
         {/* Training & Certifications */}
         <section className="mt-16">
-          <h2 className="text-3xl font-bold text-slate-900">Training & Development</h2>
+          <h2 className="text-3xl font-bold text-slate-900">{t('about.training.title')}</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border bg-white p-4">
               <p className="font-semibold text-slate-900">Leader as a Coach</p>
@@ -125,29 +121,25 @@ export default function AboutPage() {
 
         {/* Core Competencies */}
         <section className="mt-16">
-          <h2 className="text-3xl font-bold text-slate-900">Core Competencies</h2>
+          <h2 className="text-3xl font-bold text-slate-900">{t('about.competencies.title')}</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <CompetencyCard icon="✓" title="Integrity" />
-            <CompetencyCard icon="✓" title="Respect Others" />
-            <CompetencyCard icon="✓" title="Accountability" />
-            <CompetencyCard icon="✓" title="Learning Attitude" />
-            <CompetencyCard icon="✓" title="Excellent English Communication" />
-            <CompetencyCard icon="✓" title="Team Leadership" />
+            <CompetencyCard icon="✓" title={t('about.competency.integrity')} />
+            <CompetencyCard icon="✓" title={t('about.competency.respect')} />
+            <CompetencyCard icon="✓" title={t('about.competency.accountability')} />
+            <CompetencyCard icon="✓" title={t('about.competency.learning')} />
+            <CompetencyCard icon="✓" title={t('about.competency.english')} />
+            <CompetencyCard icon="✓" title={t('about.competency.leadership')} />
           </div>
         </section>
 
         {/* Personal Touch */}
         <section className="mt-16">
-          <h2 className="text-3xl font-bold text-slate-900">Beyond Work</h2>
+          <h2 className="text-3xl font-bold text-slate-900">{t('about.beyond.title')}</h2>
           <p className="mt-4 text-slate-600">
-            Born March 9, 1975. Married, Vietnamese national living in District 3, HCMC.
+            {t('about.beyond.bio')}
           </p>
           <p className="mt-4 text-slate-600">
-            When I'm not working on IT solutions or learning about AI, you'll find me
-            running or traveling. I believe in continuous learning and challenging myself
-            with new opportunities. My 20 years of experience across diverse industries
-            has taught me that the best solutions come from understanding people first,
-            then applying technology.
+            {t('about.beyond.interests')}
           </p>
         </section>
       </div>

@@ -1,17 +1,16 @@
-import { Metadata } from 'next'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Contact - Hung Dinh',
-  description: 'Get in touch with me',
-}
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function ContactPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-4xl font-bold text-slate-900">Get in Touch</h1>
+        <h1 className="text-4xl font-bold text-slate-900">{t('contact.title')}</h1>
         <p className="mt-4 text-xl text-slate-600">
-          Have a question or want to work together? Feel free to reach out!
+          {t('contact.subtitle')}
         </p>
 
         {/* Contact Links */}
@@ -36,7 +35,7 @@ export default function ContactPage() {
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-slate-900">Email</p>
+              <p className="font-semibold text-slate-900">{t('contact.email.label')}</p>
               <p className="text-slate-600">your.email@example.com</p>
             </div>
           </a>
@@ -53,8 +52,8 @@ export default function ContactPage() {
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-slate-900">LinkedIn</p>
-              <p className="text-slate-600">Connect with me</p>
+              <p className="font-semibold text-slate-900">{t('contact.linkedin.label')}</p>
+              <p className="text-slate-600">{t('contact.linkedin.description')}</p>
             </div>
           </a>
 
@@ -70,8 +69,8 @@ export default function ContactPage() {
               </svg>
             </div>
             <div>
-              <p className="font-semibold text-slate-900">GitHub</p>
-              <p className="text-slate-600">View my code</p>
+              <p className="font-semibold text-slate-900">{t('contact.github.label')}</p>
+              <p className="text-slate-600">{t('contact.github.description')}</p>
             </div>
           </a>
         </div>
@@ -79,7 +78,7 @@ export default function ContactPage() {
         {/* Note about contact form */}
         <div className="mt-12 rounded-lg bg-blue-50 p-6">
           <p className="text-sm text-slate-600">
-            <strong>Note:</strong> A contact form will be added in Phase 2. For now, please reach out via email or social links above.
+            <strong>Note:</strong> {t('contact.note')}
           </p>
         </div>
       </div>

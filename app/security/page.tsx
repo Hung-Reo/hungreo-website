@@ -1,25 +1,24 @@
-import { Metadata } from 'next'
-import { Shield, Lock, Eye, Server, FileCheck, CheckCircle, XCircle } from 'lucide-react'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Security & Privacy | Hung Dinh',
-  description: 'Learn about our security practices and how we protect your data',
-}
+import { Shield, Lock, Eye, Server, FileCheck, CheckCircle, XCircle } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function SecurityPage() {
+  const { t } = useLanguage()
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
       {/* Header */}
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-4">
           <Shield className="h-10 w-10 text-primary-600" />
-          <h1 className="text-4xl font-bold">Security & Privacy</h1>
+          <h1 className="text-4xl font-bold">{t('security.title')}</h1>
         </div>
         <p className="text-lg text-slate-600">
-          At Hungreo, we take the security and privacy of your data seriously. This page outlines the measures we've implemented to protect your information.
+          {t('security.subtitle')}
         </p>
         <p className="text-sm text-slate-500 mt-2">
-          Last Updated: January 13, 2025
+          {t('security.lastUpdated')}
         </p>
       </div>
 
@@ -27,12 +26,11 @@ export default function SecurityPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
           <Lock className="h-6 w-6 text-primary-600" />
-          Our Commitment to Security
+          {t('security.commitment.title')}
         </h2>
         <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
           <p className="text-slate-700">
-            We implement industry-standard security practices to ensure your data is protected at all times.
-            Our website is secured with HTTPS encryption, rate limiting, and comprehensive input validation.
+            {t('security.commitment.description')}
           </p>
         </div>
       </section>
@@ -41,7 +39,7 @@ export default function SecurityPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary-600" />
-          Security Features
+          {t('security.features.title')}
         </h2>
 
         <div className="space-y-6">
@@ -49,20 +47,20 @@ export default function SecurityPage() {
           <div className="border rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
               <Server className="h-5 w-5 text-primary-600" />
-              1. Data Protection
+              {t('security.dataProtection.title')}
             </h3>
             <ul className="space-y-2 text-slate-700">
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>Encrypted Connections:</strong> All data transmitted between your browser and our servers is encrypted using HTTPS/TLS.</span>
+                <span><strong>{t('security.dataProtection.https').split(':')[0]}:</strong> {t('security.dataProtection.https').split(':').slice(1).join(':')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>No Personal Data Collection:</strong> Our chatbot does not collect or store personal information (names, emails, phone numbers).</span>
+                <span><strong>{t('security.dataProtection.noPersonal').split(':')[0]}:</strong> {t('security.dataProtection.noPersonal').split(':').slice(1).join(':')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>Secure Storage:</strong> Chat logs are stored in encrypted databases with automatic 90-day expiration.</span>
+                <span><strong>{t('security.dataProtection.storage').split(':')[0]}:</strong> {t('security.dataProtection.storage').split(':').slice(1).join(':')}</span>
               </li>
             </ul>
           </div>
@@ -71,20 +69,20 @@ export default function SecurityPage() {
           <div className="border rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
               <FileCheck className="h-5 w-5 text-primary-600" />
-              2. Rate Limiting & Abuse Prevention
+              {t('security.rateLimiting.title')}
             </h3>
             <ul className="space-y-2 text-slate-700">
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>Chatbot Rate Limiting:</strong> Limited to 10 messages per minute to prevent spam and abuse.</span>
+                <span><strong>{t('security.rateLimiting.chatbot').split(':')[0]}:</strong> {t('security.rateLimiting.chatbot').split(':').slice(1).join(':')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>Admin Protection:</strong> Login attempts limited to 5 per 15 minutes with automatic lockout.</span>
+                <span><strong>{t('security.rateLimiting.admin').split(':')[0]}:</strong> {t('security.rateLimiting.admin').split(':').slice(1).join(':')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>File Upload Limits:</strong> Maximum 5 uploads per 10 minutes to prevent storage abuse.</span>
+                <span><strong>{t('security.rateLimiting.upload').split(':')[0]}:</strong> {t('security.rateLimiting.upload').split(':').slice(1).join(':')}</span>
               </li>
             </ul>
           </div>
@@ -93,20 +91,20 @@ export default function SecurityPage() {
           <div className="border rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
               <Lock className="h-5 w-5 text-primary-600" />
-              3. Input Validation
+              {t('security.inputValidation.title')}
             </h3>
             <ul className="space-y-2 text-slate-700">
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>XSS Prevention:</strong> All user input is sanitized to prevent cross-site scripting attacks.</span>
+                <span><strong>{t('security.inputValidation.xss').split(':')[0]}:</strong> {t('security.inputValidation.xss').split(':').slice(1).join(':')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>File Type Validation:</strong> Only safe file types (PDF, DOCX, TXT) are allowed for uploads.</span>
+                <span><strong>{t('security.inputValidation.fileType').split(':')[0]}:</strong> {t('security.inputValidation.fileType').split(':').slice(1).join(':')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <span><strong>Message Length Limits:</strong> Chat messages limited to 1-1000 characters.</span>
+                <span><strong>{t('security.inputValidation.messageLength').split(':')[0]}:</strong> {t('security.inputValidation.messageLength').split(':').slice(1).join(':')}</span>
               </li>
             </ul>
           </div>

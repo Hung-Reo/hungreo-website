@@ -1,34 +1,19 @@
+'use client'
+
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import Link from 'next/link'
 import { formatDate, readingTime } from '@/lib/utils'
 import { getContentBySlug, getContentByType, PostMeta } from '@/lib/mdx'
+import { useLanguage } from '@/contexts/LanguageContext'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   const posts = getContentByType<PostMeta>('blog')
   return posts.map((post) => ({
     slug: post.slug,
   }))
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}) {
-  try {
-    const { meta } = getContentBySlug('blog', params.slug)
-    return {
-      title: `${meta.title} - Blog`,
-      description: meta.description,
-    }
-  } catch {
-    return {
-      title: 'Post Not Found',
-    }
-  }
 }
 
 export default function BlogPostPage({
@@ -36,6 +21,7 @@ export default function BlogPostPage({
 }: {
   params: { slug: string }
 }) {
+  const { t } = useLanguage()
   let content, meta
 
   try {
@@ -56,7 +42,7 @@ export default function BlogPostPage({
           href="/blog"
           className="inline-flex items-center text-sm text-slate-600 hover:text-primary-600"
         >
-          ← Back to Blog
+          {t('blog.backToBlog')}
         </Link>
 
         {/* Header */}
@@ -65,7 +51,7 @@ export default function BlogPostPage({
           <div className="mt-4 flex items-center gap-4 text-slate-600">
             <time dateTime={meta.date}>{formatDate(meta.date)}</time>
             <span>•</span>
-            <span>{readTime} min read</span>
+            <span>{readTime} {t('blog.minRead')}</span>
           </div>
           {meta.tags && (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -97,13 +83,12 @@ export default function BlogPostPage({
         {/* Footer */}
         <footer className="mt-12 border-t pt-8">
           <p className="text-slate-600">
-            Thanks for reading! If you found this helpful, feel free to share
-            it or reach out on{' '}
+            {t('blog.thanks')}{' '}
             <a
               href="https://linkedin.com/in/yourprofile"
               className="text-primary-600 hover:underline"
             >
-              LinkedIn
+              {t('blog.linkedin')}
             </a>
             .
           </p>

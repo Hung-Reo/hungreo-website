@@ -1,13 +1,11 @@
-import { Metadata } from 'next'
+'use client'
+
 import { BlogPostCard } from '@/components/features/BlogPostCard'
 import { getContentByType, PostMeta } from '@/lib/mdx'
-
-export const metadata: Metadata = {
-  title: 'Blog - Hung Dinh',
-  description: 'Thoughts on product management, AI, and lessons learned',
-}
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function BlogPage() {
+  const { t } = useLanguage()
   const posts = getContentByType<PostMeta>('blog')
 
   // Sort by date, newest first
@@ -18,9 +16,9 @@ export default function BlogPage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-4xl">
-        <h1 className="text-4xl font-bold text-slate-900">Blog</h1>
+        <h1 className="text-4xl font-bold text-slate-900">{t('blog.title')}</h1>
         <p className="mt-4 text-xl text-slate-600">
-          Thoughts on product management, AI, and lessons learned along the way
+          {t('blog.subtitle')}
         </p>
 
         <div className="mt-12 space-y-6">
@@ -32,10 +30,10 @@ export default function BlogPage() {
         {sortedPosts.length === 0 && (
           <div className="mt-12 rounded-lg border bg-white p-12 text-center">
             <p className="text-slate-600">
-              Blog posts coming soon... Stay tuned! ✍️
+              {t('blog.empty')}
             </p>
             <p className="mt-2 text-sm text-slate-500">
-              First posts will cover BA to PM transition and AI learnings
+              {t('blog.emptySubtitle')}
             </p>
           </div>
         )}
