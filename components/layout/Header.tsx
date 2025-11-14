@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Navigation } from './Navigation'
 import { MobileNav } from './MobileNav'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export function Header() {
   return (
@@ -10,11 +11,15 @@ export function Header() {
           Hung Dinh
         </Link>
         {/* Desktop Navigation */}
-        <div className="hidden md:block">
+        <div className="hidden md:flex items-center gap-4">
           <Navigation />
+          <LanguageSwitcher />
         </div>
         {/* Mobile Navigation */}
-        <MobileNav />
+        <div className="flex md:hidden items-center gap-2">
+          <LanguageSwitcher />
+          <MobileNav />
+        </div>
       </div>
     </header>
   )

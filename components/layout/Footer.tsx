@@ -1,7 +1,11 @@
+'use client'
+
 import Link from 'next/link'
 import { Shield } from 'lucide-react'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function Footer() {
+  const { t } = useLanguage()
   const currentYear = new Date().getFullYear()
 
   return (
@@ -10,13 +14,13 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex flex-col items-center gap-2 md:items-start">
             <p className="text-sm text-slate-600">
-              © {currentYear} Hung Dinh. All rights reserved.
+              {t('footer.copyright').replace('{year}', currentYear.toString())}
             </p>
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <Shield className="h-3 w-3" />
-              <span>Secured with HTTPS | GDPR Compliant | No Tracking</span>
+              <span>{t('footer.security')}</span>
               <Link href="/security" className="ml-1 underline hover:text-primary-600">
-                Learn More
+                {t('footer.learnMore')}
               </Link>
             </div>
           </div>
@@ -25,27 +29,27 @@ export function Footer() {
               href="mailto:hungreo2005@gmail.com"
               className="text-slate-600 hover:text-primary-600"
             >
-              Email
+              {t('footer.email')}
             </Link>
             <Link
               href="https://www.linkedin.com/in/hưng-đinh-03742217b/"
               target="_blank"
               className="text-slate-600 hover:text-primary-600"
             >
-              LinkedIn
+              {t('footer.linkedin')}
             </Link>
             <Link
               href="https://github.com/Hung-Reo"
               target="_blank"
               className="text-slate-600 hover:text-primary-600"
             >
-              GitHub
+              {t('footer.github')}
             </Link>
             <Link
               href="/security"
               className="text-slate-600 hover:text-primary-600"
             >
-              Security
+              {t('footer.securityPage')}
             </Link>
           </div>
         </div>
