@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllVideos, getVideosByCategory, getVideoStats, type VideoCategory } from '@/lib/videoManager'
+import { getAllVideos, getVideosByCategory, getVideoStats, normalizeVideo, type VideoCategory } from '@/lib/videoManager'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -30,11 +30,14 @@ export async function GET(req: NextRequest) {
       videos = await getAllVideos(limit, offset)
     }
 
+    // Normalize videos to bilingual format (handles legacy videos)
+    const normalizedVideos = videos.map((v) => normalizeVideo(v))
+
     // Remove sensitive fields (keep bilingual structure + legacy fallbacks)
-    const publicVideos = videos.map((v) => ({
+    const publicVideos = normalizedVideos.map((v) => ({
       id: v.id,
       videoId: v.videoId,
-      // Bilingual content
+      // Bilingual content (now guaranteed to exist after normalization)
       en: v.en,
       vi: v.vi,
       // Legacy fields for backward compatibility
