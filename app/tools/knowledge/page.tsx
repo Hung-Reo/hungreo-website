@@ -1,27 +1,50 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import { CategoryGrid } from '@/components/features/CategoryGrid'
-import { getVideoStats } from '@/lib/videoManager'
+import { useLanguage } from '@/contexts/LanguageContext'
 
-export const metadata = {
-  title: 'AI Tools - Video Library | Hung Dinh',
-  description: 'Browse curated YouTube videos organized by category: Leadership, AI Works, Health, Entertaining, and Human Philosophy.',
-}
+export default function KnowledgePage() {
+  const { t } = useLanguage()
+  const [stats, setStats] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-// Revalidate every 60 seconds (ISR)
-export const revalidate = 60
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch('/api/videos?stats=true')
+        const data = await response.json()
+        if (data.success) {
+          setStats(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch video stats:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchStats()
+  }, [])
 
-export default async function KnowledgePage() {
-  const stats = await getVideoStats()
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex items-center justify-center">
+          <span className="text-slate-600">{t('common.loading')}</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-12">
       {/* Header */}
       <div className="mb-12 text-center">
         <h1 className="mb-4 text-4xl font-bold text-slate-900">
-          AI Tools - Video Library
+          {t('knowledge.title')}
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-slate-600">
-          Explore curated videos organized by category. Each video includes AI-powered summaries
-          and an intelligent chatbot to help you understand the content better.
+          {t('knowledge.subtitle')}
         </p>
       </div>
 

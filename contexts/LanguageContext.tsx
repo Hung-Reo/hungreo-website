@@ -442,11 +442,9 @@ const translations = {
  */
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>('en')
-  const [mounted, setMounted] = useState(false)
 
   // Load from localStorage on mount (client-side only)
   useEffect(() => {
-    setMounted(true)
     const saved = localStorage.getItem('language') as Language
     if (saved && (saved === 'en' || saved === 'vi')) {
       setLanguageState(saved)
@@ -465,11 +463,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = (key: string): string => {
     const translation = translations[language][key as keyof typeof translations['en']]
     return translation || key
-  }
-
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
-    return <>{children}</>
   }
 
   return (

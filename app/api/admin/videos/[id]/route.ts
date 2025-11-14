@@ -86,11 +86,20 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         pineconeIds.push(vectorId)
       }
 
-      // Update video with Pinecone IDs
+      // Update video with Pinecone IDs and save to KV
       video.pineconeIds = pineconeIds
+      await saveVideo(video)
     }
 
-    return NextResponse.json({ success: true })
+    // If only category was updated, also save
+    if (category && !generateEmbeddings) {
+      const updatedVideo = await getVideo(params.id)
+      if (updatedVideo) {
+        return NextResponse.json({ success: true, video: updatedVideo })
+      }
+    }
+
+    return NextResponse.json({ success: true, video })
   } catch (error: any) {
     console.error('Update video error:', error)
     return NextResponse.json({ error: error.message || 'Failed to update video' }, { status: 500 })

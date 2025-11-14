@@ -58,35 +58,40 @@ export async function RelatedVideos({ category, categorySlug, currentVideoId }: 
       </h3>
 
       <div className="space-y-4">
-        {videos.map((video: any) => (
-          <Link
-            key={video.id}
-            href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, video.title)}`}
-            className="group block"
-          >
-            <div className="flex gap-3">
-              {/* Thumbnail */}
-              <div className="relative h-16 w-28 flex-shrink-0 overflow-hidden rounded bg-slate-100">
-                <Image
-                  src={video.thumbnailUrl}
-                  alt={video.title}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
-              </div>
+        {videos.map((video: any) => {
+          // Use bilingual title with fallback
+          const displayTitle = video.en?.title || video.title || 'Untitled Video'
 
-              {/* Info */}
-              <div className="flex-1">
-                <h4 className="mb-1 line-clamp-2 text-sm font-medium text-slate-900 group-hover:text-primary-600">
-                  {video.title}
-                </h4>
-                <p className="text-xs text-slate-600">
-                  {video.channelTitle}
-                </p>
+          return (
+            <Link
+              key={video.id}
+              href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, displayTitle)}`}
+              className="group block"
+            >
+              <div className="flex gap-3">
+                {/* Thumbnail */}
+                <div className="relative h-16 w-28 flex-shrink-0 overflow-hidden rounded bg-slate-100">
+                  <Image
+                    src={video.thumbnailUrl}
+                    alt={displayTitle}
+                    fill
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                </div>
+
+                {/* Info */}
+                <div className="flex-1">
+                  <h4 className="mb-1 line-clamp-2 text-sm font-medium text-slate-900 group-hover:text-primary-600">
+                    {displayTitle}
+                  </h4>
+                  <p className="text-xs text-slate-600">
+                    {video.channelTitle}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          )
+        })}
       </div>
 
       {/* View all link */}

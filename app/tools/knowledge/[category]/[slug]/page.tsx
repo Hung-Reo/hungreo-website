@@ -81,9 +81,13 @@ export async function generateMetadata({ params }: PageProps) {
     return {}
   }
 
+  // Use bilingual content with fallback
+  const title = video.en?.title || video.title || 'Video'
+  const description = video.en?.description || video.description || ''
+
   return {
-    title: `${video.title} | ${CATEGORY_MAPPINGS[params.category]?.name || ''} - AI Tools`,
-    description: video.description.substring(0, 160),
+    title: `${title} | ${CATEGORY_MAPPINGS[params.category]?.name || ''} - AI Tools`,
+    description: description.substring(0, 160),
   }
 }
 
@@ -102,6 +106,11 @@ export default async function VideoDetailPage({ params }: PageProps) {
     notFound()
   }
 
+  // Use bilingual content with fallback to legacy fields
+  const displayTitle = video.en?.title || video.title || 'Untitled Video'
+  const displayDescription = video.en?.description || video.description || ''
+  const displayTranscript = fullVideo?.en?.transcript || fullVideo?.transcript
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumb */}
@@ -118,7 +127,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
           {mapping.name}
         </Link>
         <span>›</span>
-        <span className="text-slate-900 line-clamp-1">{video.title}</span>
+        <span className="text-slate-900 line-clamp-1">{displayTitle}</span>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-3">
@@ -127,13 +136,13 @@ export default async function VideoDetailPage({ params }: PageProps) {
           {/* Video Player */}
           <VideoPlayer
             videoId={video.videoId}
-            title={video.title}
+            title={displayTitle}
           />
 
           {/* Video Info */}
           <div className="mt-6">
             <h1 className="mb-2 text-3xl font-bold text-slate-900">
-              {video.title}
+              {displayTitle}
             </h1>
             <div className="mb-4 flex items-center gap-4 text-sm text-slate-600">
               <span>{video.channelTitle}</span>
@@ -144,14 +153,14 @@ export default async function VideoDetailPage({ params }: PageProps) {
             {/* Description */}
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
               <p className="whitespace-pre-wrap text-sm text-slate-700">
-                {video.description}
+                {displayDescription}
               </p>
             </div>
           </div>
 
           {/* Transcript Section */}
-          {fullVideo?.transcript && (
-            <TranscriptSection transcript={fullVideo.transcript} />
+          {displayTranscript && (
+            <TranscriptSection transcript={displayTranscript} />
           )}
         </div>
 

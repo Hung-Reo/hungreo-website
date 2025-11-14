@@ -30,13 +30,18 @@ export async function GET(req: NextRequest) {
       videos = await getAllVideos(limit, offset)
     }
 
-    // Remove sensitive fields
+    // Remove sensitive fields (keep bilingual structure + legacy fallbacks)
     const publicVideos = videos.map((v) => ({
       id: v.id,
       videoId: v.videoId,
+      // Bilingual content
+      en: v.en,
+      vi: v.vi,
+      // Legacy fields for backward compatibility
       title: v.title,
-      channelTitle: v.channelTitle,
       description: v.description,
+      // Metadata
+      channelTitle: v.channelTitle,
       publishedAt: v.publishedAt,
       thumbnailUrl: v.thumbnailUrl,
       duration: v.duration,

@@ -98,6 +98,16 @@ export function VideosManager() {
   const handleGenerateEmbeddings = async (videoId: string) => {
     if (!window.confirm('Generate embeddings for this video? This will add it to the chatbot knowledge base.')) return
 
+    // Show loading state
+    const video = videos.find(v => v.id === videoId)
+    if (video) {
+      setVideos(videos.map(v =>
+        v.id === videoId
+          ? { ...v, pineconeIds: ['__GENERATING__'] } // Temporary flag to show loading
+          : v
+      ))
+    }
+
     try {
       const response = await fetch(`/api/admin/videos/${videoId}`, {
         method: 'PATCH',
@@ -108,13 +118,15 @@ export function VideosManager() {
       const data = await response.json()
 
       if (data.success) {
-        alert('Embeddings generated successfully!')
-        fetchVideos()
+        alert('✅ Embeddings generated successfully! Video added to knowledge base.')
+        fetchVideos() // Refresh to get actual pineconeIds
       } else {
-        alert(`Failed: ${data.error}`)
+        alert(`❌ Failed: ${data.error}`)
+        fetchVideos() // Revert loading state
       }
     } catch (error) {
-      alert('Failed to generate embeddings.')
+      alert('❌ Failed to generate embeddings. Please try again.')
+      fetchVideos() // Revert loading state
     }
   }
 
@@ -329,26 +341,41 @@ function VideoRow({
   onGenerateEmbeddings: (id: string) => void
   onDelete: (id: string) => void
 }) {
+  // Use bilingual title (fallback to legacy title for backward compatibility)
+  const displayTitle = video.en?.title || video.title || 'Untitled Video'
+  const isGenerating = video.pineconeIds && video.pineconeIds.includes('__GENERATING__')
+  const hasRealEmbeddings = video.pineconeIds && video.pineconeIds.length > 0 && !isGenerating
+
   return (
     <div className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50">
-      <img src={video.thumbnailUrl} alt={video.title} className="h-20 w-32 rounded object-cover" />
+      <img src={video.thumbnailUrl} alt={displayTitle} className="h-20 w-32 rounded object-cover" />
       <div className="flex-1">
         <button onClick={onSelect} className="text-left">
-          <div className="font-medium text-slate-900">{video.title}</div>
+          <div className="font-medium text-slate-900">{displayTitle}</div>
           <div className="mt-1 text-sm text-slate-500">
             {video.channelTitle} • {video.category}
           </div>
         </button>
       </div>
       <div className="flex items-center gap-2">
-        {!video.pineconeIds && (
+        {/* Show button only if no embeddings and not generating */}
+        {!hasRealEmbeddings && !isGenerating && (
           <Button size="sm" onClick={() => onGenerateEmbeddings(video.id)}>
             Generate Embeddings
           </Button>
         )}
-        {video.pineconeIds && (
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-            In Knowledge Base
+
+        {/* Show loading state with animation */}
+        {isGenerating && (
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 animate-pulse">
+            ⏳ Generating...
+          </span>
+        )}
+
+        {/* Show permanent success badge (disabled state, not clickable) */}
+        {hasRealEmbeddings && (
+          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 opacity-75 cursor-not-allowed">
+            ✓ Embedded
           </span>
         )}
         <button
