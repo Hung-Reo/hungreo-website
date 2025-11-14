@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { getVideo, updateVideoCategory, deleteVideo, type VideoCategory } from '@/lib/videoManager'
+import { getVideo, saveVideo, updateVideoCategory, deleteVideo, type VideoCategory } from '@/lib/videoManager'
 import { getPineconeIndex } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
 import { chunkText } from '@/lib/documentProcessor'
@@ -53,8 +53,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       const index = await getPineconeIndex()
       const pineconeIds: string[] = []
 
-      // Combine title, description, and transcript
-      const content = `${video.title}\n${video.description}\n${video.transcript || ''}`
+      // Combine title, description, and transcript (use English content)
+      const content = `${video.en.title}\n${video.en.description}\n${video.en.transcript || ''}`
 
       // Chunk the content (uses default 200 words for better RAG accuracy)
       const chunks = chunkText(content)
@@ -70,7 +70,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             id: vectorId,
             values: embedding,
             metadata: {
-              title: video.title,
+              title: video.en.title,
               description: chunk, // Store FULL chunk content (no truncation)
               type: 'video',
               vectorType: 'video', // For filtering in Vector Manager
@@ -94,6 +94,55 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   } catch (error: any) {
     console.error('Update video error:', error)
     return NextResponse.json({ error: error.message || 'Failed to update video' }, { status: 500 })
+  }
+}
+
+// PUT update video content (bilingual)
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const session = await auth()
+    if (!session?.user || (session.user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await req.json()
+
+    // Validate English content (required)
+    if (!body.en?.title || !body.en?.description) {
+      return NextResponse.json(
+        { error: 'English title and description are required' },
+        { status: 400 }
+      )
+    }
+
+    // Get existing video to preserve metadata
+    const existingVideo = await getVideo(params.id)
+    if (!existingVideo) {
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+    }
+
+    // Update video with new content
+    const updatedVideo = {
+      ...existingVideo,
+      ...body,
+      // Preserve system metadata
+      id: existingVideo.id,
+      videoId: existingVideo.videoId,
+      addedAt: existingVideo.addedAt,
+      addedBy: existingVideo.addedBy,
+      // Update translation status if Vietnamese content provided
+      translationStatus: body.translationStatus || existingVideo.translationStatus,
+    }
+
+    await saveVideo(updatedVideo)
+
+    return NextResponse.json({ success: true, video: updatedVideo })
+  } catch (error: any) {
+    console.error('Update video content error:', error)
+    return NextResponse.json(
+      { error: error.message || 'Failed to update video' },
+      { status: 500 }
+    )
   }
 }
 
