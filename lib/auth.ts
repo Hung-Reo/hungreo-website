@@ -21,6 +21,7 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  trustHost: true, // IMPORTANT: Required for Vercel deployment
   providers: [
     Credentials({
       name: 'Credentials',
