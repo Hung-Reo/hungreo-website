@@ -7,13 +7,15 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
-// Admin credentials (in production, use environment variables)
+// Admin credentials
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
-const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH || ''
 
-// If no hash is set, create one for default password 'admin123'
-// In production, you MUST set ADMIN_PASSWORD_HASH in environment variables
-const DEFAULT_PASSWORD_HASH = '$2b$10$05KUDdTtAhvYELphZhxeUOQZ0tNy08ACVz64jOJbLuSwJXW0gMSAK' // admin123
+// Strip quotes and trim whitespace from environment variables (Vercel adds quotes)
+const rawPasswordHash = process.env.ADMIN_PASSWORD_HASH || ''
+const ADMIN_PASSWORD_HASH = rawPasswordHash.replace(/^["']|["']$/g, '').trim()
+
+// Hardcoded hash for Admin@123 (fallback)
+const DEFAULT_PASSWORD_HASH = '$2b$10$AtE9SRSkrQ0ClwQi7OLY3OlWYvcgTR7k2bABJBUyW9PU.pb1Ss612'
 
 export const {
   handlers: { GET, POST },
