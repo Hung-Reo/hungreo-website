@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, FormEvent, useEffect } from 'react'
+import { signIn, getCsrfToken } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 
@@ -11,6 +11,16 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined)
+
+  // Fetch CSRF token on mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      const token = await getCsrfToken()
+      setCsrfToken(token)
+    }
+    fetchCsrfToken()
+  }, [])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -21,6 +31,7 @@ export default function AdminLoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
+        csrfToken,
         redirect: false,
       })
 
