@@ -28,12 +28,19 @@ export default function AdminLoginPage() {
     setIsLoading(true)
 
     try {
+      // Get fresh CSRF token right before signing in
+      const freshCsrfToken = await getCsrfToken()
+      console.log('[Login] CSRF token:', freshCsrfToken ? 'present' : 'missing')
+      console.log('[Login] Attempting login with email:', email)
+
       const result = await signIn('credentials', {
         email,
         password,
-        csrfToken,
+        csrfToken: freshCsrfToken,
         redirect: false,
       })
+
+      console.log('[Login] SignIn result:', result)
 
       if (result?.error) {
         setError('Invalid email or password')
