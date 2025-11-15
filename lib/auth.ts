@@ -55,9 +55,10 @@ export const {
           return null
         }
 
-        // Verify password
-        const passwordHash = ADMIN_PASSWORD_HASH || DEFAULT_PASSWORD_HASH
+        // Verify password - use hardcoded hash as env var is problematic on Vercel
+        const passwordHash = DEFAULT_PASSWORD_HASH
         console.log('[Auth] Using hash:', passwordHash.substring(0, 10) + '...')
+        console.log('[Auth] Full hash length:', passwordHash.length)
         const isValid = await bcrypt.compare(credentials.password as string, passwordHash)
 
         console.log('[Auth] Password valid:', isValid)
