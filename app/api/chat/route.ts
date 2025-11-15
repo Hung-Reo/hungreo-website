@@ -103,8 +103,9 @@ export async function POST(req: NextRequest) {
     queryResponse.matches.forEach((match, i) => {
       const meta = match.metadata as any
       console.log(`[Chat] Vector ${i+1}: ${match.id} (score: ${match.score?.toFixed(3)})`)
-      console.log(`[Chat]   Title: ${meta.title}`)
-      console.log(`[Chat]   Preview: ${(meta.description || meta.text || '').substring(0, 150)}...`)
+      console.log(`[Chat]   RAW METADATA:`, JSON.stringify(meta, null, 2))
+      console.log(`[Chat]   Title: ${meta?.title}`)
+      console.log(`[Chat]   Preview: ${(meta?.description || meta?.text || '').substring(0, 150)}...`)
     })
 
     // Step 3: Build context from relevant documents
