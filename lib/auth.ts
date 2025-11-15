@@ -10,17 +10,13 @@ import bcrypt from 'bcryptjs'
 // Admin credentials
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
 
-// Strip quotes and trim whitespace from environment variables (Vercel adds quotes)
-const rawPasswordHash = process.env.ADMIN_PASSWORD_HASH || ''
-const ADMIN_PASSWORD_HASH = rawPasswordHash.replace(/^["']|["']$/g, '').trim()
-
-// Debug logging
-console.log('[Auth Init] Raw hash from env:', JSON.stringify(rawPasswordHash))
-console.log('[Auth Init] Cleaned hash:', JSON.stringify(ADMIN_PASSWORD_HASH))
-console.log('[Auth Init] Hash length:', ADMIN_PASSWORD_HASH.length)
-
-// Hardcoded hash for Admin@123 (fallback)
-const DEFAULT_PASSWORD_HASH = '$2b$10$AtE9SRSkrQ0ClwQi7OLY3OlWYvcgTR7k2bABJBUyW9PU.pb1Ss612'
+// Password hash for Admin@123
+// NOTE: Hardcoded because Vercel environment variables break bcrypt hashes ($ character issues)
+// TO CHANGE PASSWORD:
+// 1. Run: node -e "require('bcryptjs').hash('YOUR_NEW_PASSWORD', 10).then(console.log)"
+// 2. Replace the hash below with the new hash
+// 3. Commit and deploy
+const ADMIN_PASSWORD_HASH = '$2b$10$AtE9SRSkrQ0ClwQi7OLY3OlWYvcgTR7k2bABJBUyW9PU.pb1Ss612'
 
 export const {
   handlers: { GET, POST },
@@ -38,30 +34,19 @@ export const {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log('[Auth] Missing email or password')
           return null
         }
-
-        console.log('[Auth] Login attempt:', {
-          email: credentials.email,
-          ADMIN_EMAIL,
-          hasPassword: !!credentials.password,
-          hasHash: !!ADMIN_PASSWORD_HASH,
-        })
 
         // Check if email matches admin email
         if (credentials.email !== ADMIN_EMAIL) {
-          console.log('[Auth] Email mismatch')
           return null
         }
 
-        // Verify password - use hardcoded hash as env var is problematic on Vercel
-        const passwordHash = DEFAULT_PASSWORD_HASH
-        console.log('[Auth] Using hash:', passwordHash.substring(0, 10) + '...')
-        console.log('[Auth] Full hash length:', passwordHash.length)
-        const isValid = await bcrypt.compare(credentials.password as string, passwordHash)
-
-        console.log('[Auth] Password valid:', isValid)
+        // Verify password
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          ADMIN_PASSWORD_HASH
+        )
 
         if (!isValid) {
           return null
