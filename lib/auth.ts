@@ -14,6 +14,11 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
 const rawPasswordHash = process.env.ADMIN_PASSWORD_HASH || ''
 const ADMIN_PASSWORD_HASH = rawPasswordHash.replace(/^["']|["']$/g, '').trim()
 
+// Debug logging
+console.log('[Auth Init] Raw hash from env:', JSON.stringify(rawPasswordHash))
+console.log('[Auth Init] Cleaned hash:', JSON.stringify(ADMIN_PASSWORD_HASH))
+console.log('[Auth Init] Hash length:', ADMIN_PASSWORD_HASH.length)
+
 // Hardcoded hash for Admin@123 (fallback)
 const DEFAULT_PASSWORD_HASH = '$2b$10$AtE9SRSkrQ0ClwQi7OLY3OlWYvcgTR7k2bABJBUyW9PU.pb1Ss612'
 
