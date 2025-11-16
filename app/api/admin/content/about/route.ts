@@ -34,8 +34,8 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
 
-    // Validate required fields
-    if (!body.en?.name || !body.en?.role || !body.en?.intro) {
+    // Validate required fields (new structure)
+    if (!body.hero?.en?.name || !body.hero?.en?.role || !body.hero?.en?.intro) {
       return NextResponse.json(
         { error: 'Missing required English fields (name, role, intro)' },
         { status: 400 }
@@ -45,6 +45,7 @@ export async function PUT(req: NextRequest) {
     const content: AboutContent = {
       ...body,
       id: 'about',
+      version: body.version || '1.0.0',
       updatedAt: Date.now(),
       updatedBy: session.user.email || 'admin',
     }

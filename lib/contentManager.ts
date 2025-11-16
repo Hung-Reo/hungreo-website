@@ -12,33 +12,126 @@ import { v4 as uuidv4 } from 'uuid'
 
 export interface AboutContent {
   id: 'about' // Single document
+  version: string // "1.0.0"
   updatedAt: number
   updatedBy: string
 
-  // Profile section (bilingual)
-  en: {
-    name: string
-    role: string
-    intro: string
-    photo?: string // URL to uploaded image
-  }
-  vi: {
-    name: string
-    role: string
-    intro: string
-    photo?: string
+  // CV Metadata
+  cv?: {
+    fileName: string
+    fileUrl: string // Vercel Blob URL
+    uploadedAt: number
+    detectedLanguage: 'en' | 'vi'
   }
 
-  // Beyond Work section (bilingual)
-  beyondWork: {
+  // Hero Section (Basic Information)
+  hero: {
     en: {
-      bio: string
-      interests: string
+      name: string
+      role: string
+      intro: string // 2-3 sentences
+      photo?: string // Vercel Blob URL
+    }
+    vi: {
+      name: string
+      role: string
+      intro: string
+      photo?: string // Same photo URL
+    }
+  }
+
+  // Section 1: Professional Journey
+  professionalJourney: {
+    en: Array<{
+      id: string // UUID
+      year: string // "Mar 2025 - Oct 2025"
+      title: string // "AI Consultant"
+      company: string // "Pétrus Ký Primary & High School"
+      description: string
+    }>
+    vi: Array<{
+      id: string
+      year: string
+      title: string
+      company: string
+      description: string
+    }>
+  }
+
+  // Section 2: Education & Expertise
+  educationExpertise: {
+    // Left column: Education
+    education: {
+      en: Array<{
+        id: string
+        degree: string // "MBA"
+        detail: string // "Business in IT, University of Technology Sydney..."
+      }>
+      vi: Array<{
+        id: string
+        degree: string
+        detail: string
+      }>
+    }
+
+    // Right column: Current Focus
+    currentFocus: {
+      en: Array<{
+        id: string
+        focus: string // "AI learner and practitioner..."
+      }>
+      vi: Array<{
+        id: string
+        focus: string
+      }>
+    }
+  }
+
+  // Section 3: Training & Development
+  training: {
+    en: Array<{
+      id: string
+      name: string // "Leader as a Coach"
+      issuer: string // "Samsung Vina"
+      year?: string
+    }>
+    vi: Array<{
+      id: string
+      name: string
+      issuer: string
+      year?: string
+    }>
+  }
+
+  // Section 4: Core Competencies
+  competencies: {
+    en: Array<{
+      id: string
+      competency: string // "Integrity", "Respect Others", etc.
+    }>
+    vi: Array<{
+      id: string
+      competency: string
+    }>
+  }
+
+  // Section 5: Interests (renamed from Beyond Work)
+  interests: {
+    en: {
+      bio: string // "Born March 9, 1975. Married, Vietnamese national..."
+      hobbies: string // "Running, traveling, continuous learning..."
     }
     vi: {
       bio: string
-      interests: string
+      hobbies: string
     }
+  }
+
+  // Embeddings status (for chatbot)
+  embeddings: {
+    generated: boolean
+    generatedAt?: number
+    vectorCount?: number
   }
 }
 
