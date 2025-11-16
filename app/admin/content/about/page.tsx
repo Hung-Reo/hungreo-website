@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Save, Upload, Loader2, Eye, FileText, Trash2, Plus } from 'lucide-react'
 import type { AboutContent } from '@/lib/contentManager'
 import { generateId } from '@/lib/contentManager'
+import { toast, Toaster } from 'sonner'
 
 export default function AboutEditorPage() {
   const [activeTab, setActiveTab] = useState<'en' | 'vi'>('en')
@@ -13,6 +14,7 @@ export default function AboutEditorPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   const [formData, setFormData] = useState<AboutContent | null>(null)
   const [cvInfo, setCvInfo] = useState<any>(null)
@@ -20,6 +22,26 @@ export default function AboutEditorPage() {
   useEffect(() => {
     fetchAboutData()
   }, [])
+
+  // Unsaved changes warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  // Track changes to formData
+  useEffect(() => {
+    if (formData) {
+      setHasUnsavedChanges(true)
+    }
+  }, [formData])
 
   async function fetchAboutData() {
     try {
@@ -73,11 +95,11 @@ export default function AboutEditorPage() {
         },
       })
 
-      alert('✅ CV uploaded and parsed successfully!')
+      toast.success('CV uploaded and parsed successfully!')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Upload failed'
       setError(errorMessage)
-      alert(`❌ ${errorMessage}`)
+      toast.error(errorMessage)
     } finally {
       setUploading(false)
     }
@@ -111,7 +133,7 @@ export default function AboutEditorPage() {
     const validTypes = ['.pdf', '.docx']
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase()
     if (!validTypes.includes(fileExt)) {
-      alert('Invalid file type. Please upload PDF or DOCX files.')
+      toast.error('Invalid file type. Please upload PDF or DOCX files.')
       return
     }
 
@@ -120,7 +142,18 @@ export default function AboutEditorPage() {
 
   async function handleSave() {
     if (!formData) {
-      alert('No data to save')
+      toast.error('No data to save')
+      return
+    }
+
+    // Validation
+    if (!formData.hero.en.name || !formData.hero.en.role || !formData.hero.en.intro) {
+      toast.error('Please fill in all required English fields (Name, Role, Intro)')
+      return
+    }
+
+    if (!formData.hero.vi.name || !formData.hero.vi.role || !formData.hero.vi.intro) {
+      toast.error('Please fill in all required Vietnamese fields (Name, Role, Intro)')
       return
     }
 
@@ -137,10 +170,11 @@ export default function AboutEditorPage() {
         throw new Error(errorData.error || 'Save failed')
       }
 
-      alert('✅ About page saved successfully!')
+      toast.success('About page saved successfully!')
+      setHasUnsavedChanges(false)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Save failed'
-      alert(`❌ ${errorMessage}`)
+      toast.error(errorMessage)
     } finally {
       setSaving(false)
     }
@@ -156,6 +190,8 @@ export default function AboutEditorPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <Toaster position="top-right" richColors />
+
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -241,6 +277,19 @@ export default function AboutEditorPage() {
                 {' '}{new Date(cvInfo.uploadedAt).toLocaleDateString()}
               </p>
             </div>
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to clear all data and start over? This action cannot be undone.')) {
+                  setFormData(null)
+                  setCvInfo(null)
+                  setError(null)
+                }
+              }}
+              className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              title="Clear all data and start over"
+            >
+              Clear & Start Over
+            </button>
           </div>
         )}
 
@@ -372,6 +421,71 @@ export default function AboutEditorPage() {
                     rows={3}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
                   />
+                </div>
+
+                {/* Profile Photo Upload */}
+                <div>
+                  <label className="text-xs font-medium text-slate-500 uppercase block mb-2">
+                    Profile Photo
+                  </label>
+
+                  {/* Current Photo Preview */}
+                  {formData.hero[activeTab].photo && (
+                    <div className="mb-3">
+                      <img
+                        src={formData.hero[activeTab].photo}
+                        alt="Profile"
+                        className="w-32 h-32 rounded-full object-cover border-4 border-primary-100"
+                      />
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+
+                      try {
+                        const uploadFormData = new FormData()
+                        uploadFormData.append('photo', file)
+
+                        const response = await fetch('/api/admin/content/about/upload-photo', {
+                          method: 'POST',
+                          body: uploadFormData
+                        })
+
+                        if (!response.ok) {
+                          const errorData = await response.json()
+                          throw new Error(errorData.error || 'Upload failed')
+                        }
+
+                        const result = await response.json()
+
+                        // Update both EN and VI with same photo URL
+                        setFormData({
+                          ...formData,
+                          hero: {
+                            en: { ...formData.hero.en, photo: result.photoUrl },
+                            vi: { ...formData.hero.vi, photo: result.photoUrl }
+                          }
+                        })
+
+                        toast.success('Photo uploaded successfully!')
+                      } catch (err) {
+                        toast.error('Photo upload failed: ' + (err instanceof Error ? err.message : 'Unknown error'))
+                      }
+
+                      // Reset input
+                      e.target.value = ''
+                    }}
+                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    Recommended: Square image, at least 400x400px. Max 5MB.
+                  </p>
                 </div>
               </div>
             </div>
