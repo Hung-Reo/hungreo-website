@@ -11,26 +11,27 @@ import {
 import type { BlogPost } from '@/lib/contentManager'
 
 /**
- * GET - Fetch all blog posts (with optional status filter)
- * Query params:
- *   - status: 'all' | 'published' | 'draft' (default: 'all')
+ * GET - Fetch all blog posts with stats
  */
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const status = searchParams.get('status') || 'all'
+  const allPosts = await getAllBlogPosts()
 
-  let posts: BlogPost[] = []
+  // Sort by updatedAt descending
+  const posts = allPosts.sort((a, b) => b.updatedAt - a.updatedAt)
 
-  if (status === 'published') {
-    posts = await getPublishedBlogPosts()
-  } else {
-    posts = await getAllBlogPosts()
-    if (status === 'draft') {
-      posts = posts.filter((p) => p.status === 'draft')
-    }
+  // Calculate stats
+  const stats = {
+    total: allPosts.length,
+    draft: allPosts.filter(p => p.status === 'draft').length,
+    published: allPosts.filter(p => p.status === 'published').length,
+    featured: allPosts.filter(p => p.featured).length,
   }
 
-  return NextResponse.json(posts)
+  return NextResponse.json({
+    success: true,
+    posts,
+    stats,
+  })
 }
 
 /**
