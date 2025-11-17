@@ -149,38 +149,16 @@ export function ChatBot() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg transition-transform hover:scale-110"
+          className="fixed bottom-24 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-110 overflow-hidden"
           aria-label="Open chat"
           title="Chat with Robot Rùa"
         >
-          {/* Robot Rùa (Turtle) Icon */}
-          <svg
-            className="h-9 w-9"
-            viewBox="0 0 48 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Shell - Main body */}
-            <ellipse cx="24" cy="28" rx="14" ry="11" fill="currentColor" opacity="0.9"/>
-            <ellipse cx="24" cy="28" rx="11" ry="8.5" fill="currentColor" opacity="0.7"/>
-
-            {/* Head - Protruding forward */}
-            <ellipse cx="24" cy="16" rx="5" ry="4.5" fill="currentColor" opacity="0.9"/>
-            <circle cx="22" cy="15" r="1.2" fill="white"/>
-            <circle cx="26" cy="15" r="1.2" fill="white"/>
-            <path d="M 22 17.5 Q 24 18.5 26 17.5" stroke="white" strokeWidth="0.8" fill="none" strokeLinecap="round"/>
-
-            {/* Front legs - visible and clear */}
-            <ellipse cx="16" cy="32" rx="2.5" ry="4.5" fill="currentColor" opacity="0.85"/>
-            <ellipse cx="32" cy="32" rx="2.5" ry="4.5" fill="currentColor" opacity="0.85"/>
-
-            {/* Back legs - smaller */}
-            <ellipse cx="18" cy="36" rx="2" ry="3.5" fill="currentColor" opacity="0.75"/>
-            <ellipse cx="30" cy="36" rx="2" ry="3.5" fill="currentColor" opacity="0.75"/>
-
-            {/* Tail - small triangle */}
-            <path d="M 24 38 L 23 42 L 25 42 Z" fill="currentColor" opacity="0.7"/>
-          </svg>
+          {/* Robot Rùa Icon */}
+          <img
+            src="/robot-rua.png"
+            alt="Robot Rùa"
+            className="h-full w-full object-cover"
+          />
         </button>
       )}
 
