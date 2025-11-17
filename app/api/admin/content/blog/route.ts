@@ -50,35 +50,38 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
 
     // Validate required fields
-    if (!body.en?.title || !body.en?.description) {
+    if (!body.en?.title || !body.en?.excerpt) {
       return NextResponse.json(
-        { error: 'Missing required English fields (title, description)' },
+        { error: 'Missing required English fields (title, excerpt)' },
         { status: 400 }
       )
     }
 
     const slug = body.slug || generateSlug(body.en.title)
     const content = body.en.content || ''
-    const readingTime = calculateReadingTime(content)
+    const readTime = calculateReadingTime(content)
+    const now = Date.now()
 
     const post: BlogPost = {
       id: generateId(),
       slug,
       status: body.status || 'draft',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      publishedAt: body.status === 'published' ? Date.now() : undefined,
+      featured: body.featured || false,
+      createdAt: now,
+      updatedAt: now,
+      publishedAt: body.status === 'published' ? now : undefined,
       createdBy: session.user.email || 'admin',
       en: {
         title: body.en.title,
-        description: body.en.description,
+        excerpt: body.en.excerpt || body.en.description || '',
         content,
       },
-      vi: body.vi || { title: '', description: '', content: '' },
+      vi: body.vi || { title: '', excerpt: '', content: '' },
+      category: body.category || 'Uncategorized',
       tags: body.tags || [],
-      image: body.image,
-      featured: body.featured || false,
-      readingTime,
+      featuredImage: body.featuredImage || body.image,
+      readTime,
+      source: body.source,
     }
 
     await saveBlogPost(post)

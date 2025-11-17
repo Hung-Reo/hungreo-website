@@ -139,15 +139,17 @@ export interface Project {
   id: string // UUID
   slug: string // URL-friendly slug
   status: 'draft' | 'published'
+  featured: boolean // Show on homepage?
   createdAt: number
   updatedAt: number
+  publishedAt?: number // When status changed to published
   createdBy: string
 
   // Bilingual content
   en: {
-    title: string
-    description: string
-    content: string // Markdown
+    title: string // 3-100 chars
+    description: string // 10-500 chars, short summary
+    content: string // Markdown, detailed description
   }
   vi: {
     title: string
@@ -156,39 +158,54 @@ export interface Project {
   }
 
   // Project metadata
-  tech: string[] // ['React', 'TypeScript', 'Tailwind']
-  image?: string // Featured image URL
-  github?: string // GitHub repo URL
-  demo?: string // Live demo URL
-  featured: boolean // Show on homepage?
+  techStack: string[] // ["Next.js", "TypeScript", "Tailwind CSS"]
+  learnings: string[] // Key takeaways (2-5 items)
+  githubUrl?: string // GitHub repo URL
+  demoUrl?: string // Live demo URL
+  featuredImage?: string // Main project image (Vercel Blob URL)
+  screenshots: string[] // Max 5 additional images (Vercel Blob URLs)
+
+  // Source (for regeneration)
+  source?: {
+    type: 'upload' | 'manual'
+    rawContent?: string // Original extracted text
+    fileName?: string // Original file name
+  }
 }
 
 export interface BlogPost {
   id: string // UUID
   slug: string // URL-friendly slug
   status: 'draft' | 'published'
+  featured: boolean // Show on homepage?
   createdAt: number
   updatedAt: number
-  publishedAt?: number
+  publishedAt?: number // When status changed to published
   createdBy: string
 
   // Bilingual content
   en: {
-    title: string
-    description: string
+    title: string // 3-150 chars
+    excerpt: string // 10-300 chars, short summary for cards
     content: string // Markdown
   }
   vi: {
     title: string
-    description: string
+    excerpt: string
     content: string // Markdown
   }
 
   // Blog metadata
-  tags: string[] // ['product-management', 'ai', 'lessons']
-  image?: string // Featured image URL
-  featured: boolean // Show on homepage?
-  readingTime?: number // Auto-calculated in minutes
+  category: string // Single category (user-created)
+  tags: string[] // 1-10 tags
+  featuredImage?: string // Vercel Blob URL
+  readTime: number // Minutes (auto-calculated)
+
+  // Source (for regeneration)
+  source?: {
+    rawDraft: string // Original pasted text
+    detectedLanguage: 'en' | 'vi'
+  }
 }
 
 // ============================================
@@ -329,11 +346,16 @@ export async function saveBlogPost(post: BlogPost): Promise<void> {
   try {
     // Auto-calculate reading time if content exists
     if (post.en.content) {
-      post.readingTime = calculateReadingTime(post.en.content)
+      post.readTime = calculateReadingTime(post.en.content)
     }
 
     await kv.set(`blog:${post.id}`, post)
     await kv.set(`blog:slug:${post.slug}`, post.id)
+
+    // Auto-add category to categories list if new
+    if (post.category) {
+      await addBlogCategory(post.category)
+    }
   } catch (error) {
     console.error('Error saving blog post:', error)
     throw error
@@ -361,6 +383,37 @@ export async function deleteBlogPost(id: string): Promise<void> {
   } catch (error) {
     console.error('Error deleting blog post:', error)
     throw error
+  }
+}
+
+// ============================================
+// Blog Categories
+// ============================================
+
+export async function getBlogCategories(): Promise<string[]> {
+  try {
+    const categories = await kv.get<string[]>('blog:categories')
+    return categories || []
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    return []
+  }
+}
+
+export async function saveBlogCategories(categories: string[]): Promise<void> {
+  try {
+    await kv.set('blog:categories', categories)
+  } catch (error) {
+    console.error('Error saving categories:', error)
+    throw error
+  }
+}
+
+export async function addBlogCategory(category: string): Promise<void> {
+  const categories = await getBlogCategories()
+  if (!categories.includes(category)) {
+    categories.push(category)
+    await saveBlogCategories(categories)
   }
 }
 

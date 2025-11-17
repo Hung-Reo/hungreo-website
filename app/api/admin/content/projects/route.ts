@@ -59,12 +59,15 @@ export async function POST(req: NextRequest) {
     // Generate slug from title if not provided
     const slug = body.slug || generateSlug(body.en.title)
 
+    const now = Date.now()
     const project: Project = {
       id: generateId(),
       slug,
       status: body.status || 'draft',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      featured: body.featured || false,
+      createdAt: now,
+      updatedAt: now,
+      publishedAt: body.status === 'published' ? now : undefined,
       createdBy: session.user.email || 'admin',
       en: {
         title: body.en.title,
@@ -76,11 +79,13 @@ export async function POST(req: NextRequest) {
         description: '',
         content: '',
       },
-      tech: body.tech || [],
-      image: body.image,
-      github: body.github,
-      demo: body.demo,
-      featured: body.featured || false,
+      techStack: body.techStack || body.tech || [],
+      learnings: body.learnings || [],
+      githubUrl: body.githubUrl || body.github,
+      demoUrl: body.demoUrl || body.demo,
+      featuredImage: body.featuredImage || body.image,
+      screenshots: body.screenshots || [],
+      source: body.source,
     }
 
     await saveProject(project)

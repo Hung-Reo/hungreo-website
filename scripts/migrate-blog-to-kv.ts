@@ -48,30 +48,32 @@ async function migrateBlogPosts() {
       const slug = frontmatter.slug || generateSlug(file.replace('.mdx', ''))
 
       const publishedAt = frontmatter.date ? new Date(frontmatter.date).getTime() : undefined
-      const readingTime = calculateReadingTime(content || '')
+      const readTime = calculateReadingTime(content || '')
+      const now = Date.now()
 
       const post: BlogPost = {
         id: generateId(),
         slug,
         status: frontmatter.published === false ? 'draft' : 'published',
-        createdAt: publishedAt || Date.now(),
-        updatedAt: Date.now(),
+        featured: frontmatter.featured === true,
+        createdAt: publishedAt || now,
+        updatedAt: now,
         publishedAt: frontmatter.published !== false ? publishedAt : undefined,
         createdBy: 'migration-script',
         en: {
           title: frontmatter.title || '',
-          description: frontmatter.description || '',
+          excerpt: frontmatter.excerpt || frontmatter.description || '',
           content: content || '',
         },
         vi: {
           title: frontmatter.titleVi || '',
-          description: frontmatter.descriptionVi || '',
+          excerpt: frontmatter.excerptVi || frontmatter.descriptionVi || '',
           content: frontmatter.contentVi || '',
         },
+        category: frontmatter.category || 'Uncategorized',
         tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
-        image: frontmatter.image,
-        featured: frontmatter.featured === true,
-        readingTime,
+        featuredImage: frontmatter.image || frontmatter.featuredImage,
+        readTime,
       }
 
       await saveBlogPost(post)
