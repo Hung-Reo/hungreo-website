@@ -47,12 +47,16 @@ async function migrateProjects() {
       // Extract project slug from filename
       const slug = frontmatter.slug || generateSlug(file.replace('.mdx', ''))
 
+      const now = Date.now()
+      const createdAt = frontmatter.date ? new Date(frontmatter.date).getTime() : now
       const project: Project = {
         id: generateId(),
         slug,
         status: frontmatter.published === false ? 'draft' : 'published',
-        createdAt: frontmatter.date ? new Date(frontmatter.date).getTime() : Date.now(),
-        updatedAt: Date.now(),
+        featured: frontmatter.featured === true,
+        createdAt,
+        updatedAt: now,
+        publishedAt: frontmatter.published !== false ? createdAt : undefined,
         createdBy: 'migration-script',
         en: {
           title: frontmatter.title || '',
@@ -64,11 +68,12 @@ async function migrateProjects() {
           description: frontmatter.descriptionVi || '',
           content: frontmatter.contentVi || '',
         },
-        tech: Array.isArray(frontmatter.tech) ? frontmatter.tech : [],
-        image: frontmatter.image,
-        github: frontmatter.github,
-        demo: frontmatter.demo,
-        featured: frontmatter.featured === true,
+        techStack: Array.isArray(frontmatter.tech) ? frontmatter.tech : [],
+        learnings: Array.isArray(frontmatter.learnings) ? frontmatter.learnings : [],
+        githubUrl: frontmatter.github || frontmatter.githubUrl,
+        demoUrl: frontmatter.demo || frontmatter.demoUrl,
+        featuredImage: frontmatter.image || frontmatter.featuredImage,
+        screenshots: Array.isArray(frontmatter.screenshots) ? frontmatter.screenshots : [],
       }
 
       await saveProject(project)

@@ -11,26 +11,27 @@ import {
 import type { BlogPost } from '@/lib/contentManager'
 
 /**
- * GET - Fetch all blog posts (with optional status filter)
- * Query params:
- *   - status: 'all' | 'published' | 'draft' (default: 'all')
+ * GET - Fetch all blog posts with stats
  */
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const status = searchParams.get('status') || 'all'
+  const allPosts = await getAllBlogPosts()
 
-  let posts: BlogPost[] = []
+  // Sort by updatedAt descending
+  const posts = allPosts.sort((a, b) => b.updatedAt - a.updatedAt)
 
-  if (status === 'published') {
-    posts = await getPublishedBlogPosts()
-  } else {
-    posts = await getAllBlogPosts()
-    if (status === 'draft') {
-      posts = posts.filter((p) => p.status === 'draft')
-    }
+  // Calculate stats
+  const stats = {
+    total: allPosts.length,
+    draft: allPosts.filter(p => p.status === 'draft').length,
+    published: allPosts.filter(p => p.status === 'published').length,
+    featured: allPosts.filter(p => p.featured).length,
   }
 
-  return NextResponse.json(posts)
+  return NextResponse.json({
+    success: true,
+    posts,
+    stats,
+  })
 }
 
 /**
@@ -50,35 +51,38 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
 
     // Validate required fields
-    if (!body.en?.title || !body.en?.description) {
+    if (!body.en?.title || !body.en?.excerpt) {
       return NextResponse.json(
-        { error: 'Missing required English fields (title, description)' },
+        { error: 'Missing required English fields (title, excerpt)' },
         { status: 400 }
       )
     }
 
     const slug = body.slug || generateSlug(body.en.title)
     const content = body.en.content || ''
-    const readingTime = calculateReadingTime(content)
+    const readTime = calculateReadingTime(content)
+    const now = Date.now()
 
     const post: BlogPost = {
       id: generateId(),
       slug,
       status: body.status || 'draft',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      publishedAt: body.status === 'published' ? Date.now() : undefined,
+      featured: body.featured || false,
+      createdAt: now,
+      updatedAt: now,
+      publishedAt: body.status === 'published' ? now : undefined,
       createdBy: session.user.email || 'admin',
       en: {
         title: body.en.title,
-        description: body.en.description,
+        excerpt: body.en.excerpt || body.en.description || '',
         content,
       },
-      vi: body.vi || { title: '', description: '', content: '' },
+      vi: body.vi || { title: '', excerpt: '', content: '' },
+      category: body.category || 'Uncategorized',
       tags: body.tags || [],
-      image: body.image,
-      featured: body.featured || false,
-      readingTime,
+      featuredImage: body.featuredImage || body.image,
+      readTime,
+      source: body.source,
     }
 
     await saveBlogPost(post)

@@ -29,7 +29,23 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json(projects)
+  // Sort by updatedAt (newest first)
+  projects.sort((a, b) => b.updatedAt - a.updatedAt)
+
+  // Calculate stats
+  const allProjects = status !== 'all' ? await getAllProjects() : projects
+  const stats = {
+    total: allProjects.length,
+    draft: allProjects.filter(p => p.status === 'draft').length,
+    published: allProjects.filter(p => p.status === 'published').length,
+    featured: allProjects.filter(p => p.featured).length
+  }
+
+  return NextResponse.json({
+    success: true,
+    projects,
+    stats
+  })
 }
 
 /**
@@ -59,12 +75,15 @@ export async function POST(req: NextRequest) {
     // Generate slug from title if not provided
     const slug = body.slug || generateSlug(body.en.title)
 
+    const now = Date.now()
     const project: Project = {
       id: generateId(),
       slug,
       status: body.status || 'draft',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      featured: body.featured || false,
+      createdAt: now,
+      updatedAt: now,
+      publishedAt: body.status === 'published' ? now : undefined,
       createdBy: session.user.email || 'admin',
       en: {
         title: body.en.title,
@@ -76,11 +95,13 @@ export async function POST(req: NextRequest) {
         description: '',
         content: '',
       },
-      tech: body.tech || [],
-      image: body.image,
-      github: body.github,
-      demo: body.demo,
-      featured: body.featured || false,
+      techStack: body.techStack || body.tech || [],
+      learnings: body.learnings || [],
+      githubUrl: body.githubUrl || body.github,
+      demoUrl: body.demoUrl || body.demo,
+      featuredImage: body.featuredImage || body.image,
+      screenshots: body.screenshots || [],
+      source: body.source,
     }
 
     await saveProject(project)
