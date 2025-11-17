@@ -29,7 +29,23 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json(projects)
+  // Sort by updatedAt (newest first)
+  projects.sort((a, b) => b.updatedAt - a.updatedAt)
+
+  // Calculate stats
+  const allProjects = status !== 'all' ? await getAllProjects() : projects
+  const stats = {
+    total: allProjects.length,
+    draft: allProjects.filter(p => p.status === 'draft').length,
+    published: allProjects.filter(p => p.status === 'published').length,
+    featured: allProjects.filter(p => p.featured).length
+  }
+
+  return NextResponse.json({
+    success: true,
+    projects,
+    stats
+  })
 }
 
 /**
