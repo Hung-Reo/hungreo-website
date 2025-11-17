@@ -17,7 +17,7 @@ export default function AboutPage() {
 
   async function fetchAboutData() {
     try {
-      const res = await fetch('/api/admin/content/about')
+      const res = await fetch('/api/content/about')
       if (!res.ok) throw new Error('Failed to load content')
 
       const data = await res.json()
