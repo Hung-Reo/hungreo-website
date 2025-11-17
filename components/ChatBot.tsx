@@ -164,7 +164,7 @@ export function ChatBot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex h-[600px] w-[420px] flex-col rounded-lg border bg-white shadow-xl">
+        <div className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-50 flex h-full sm:h-[600px] w-full sm:w-[420px] sm:max-w-[95vw] flex-col sm:rounded-lg border bg-white shadow-xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b bg-primary-600 p-4 text-white">
             <h3 className="font-semibold">Chat with AI</h3>
