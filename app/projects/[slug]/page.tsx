@@ -1,42 +1,50 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { notFound } from 'next/navigation'
-import { MDXRemote } from 'next-mdx-remote/rsc'
+import { notFound, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { Loader2 } from 'lucide-react'
+import type { Project } from '@/lib/contentManager'
+import { Loader2, ArrowLeft, Github, ExternalLink, Lightbulb, Code } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
-
-interface Project {
-  id: string
-  slug: string
-  en: { title: string; description: string; content: string }
-  vi: { title: string; description: string; content: string }
-  tech: string[]
-  image?: string
-  github?: string
-  demo?: string
-}
 
 export default function ProjectPage({ params }: { params: { slug: string } }) {
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
+  const router = useRouter()
   const [project, setProject] = useState<Project | null>(null)
+  const [relatedProjects, setRelatedProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [notFoundError, setNotFoundError] = useState(false)
 
   useEffect(() => {
-    async function fetchProject() {
+    async function fetchData() {
       try {
-        const res = await fetch(`/api/content/projects/${params.slug}`)
-        if (!res.ok) {
+        // Fetch current project
+        const projectRes = await fetch(`/api/content/projects/${params.slug}`)
+        if (!projectRes.ok) {
           setNotFoundError(true)
           return
         }
-        const data = await res.json()
-        setProject(data)
+        const projectData = await projectRes.json()
+        setProject(projectData)
+
+        // Fetch all projects for related section
+        const allProjectsRes = await fetch('/api/content/projects')
+        if (allProjectsRes.ok) {
+          const allProjectsData = await allProjectsRes.json()
+
+          // Find related projects (same tech stack, excluding current)
+          const related = (allProjectsData.projects || [])
+            .filter((p: Project) =>
+              p.slug !== params.slug &&
+              p.techStack?.some(tech => projectData.techStack?.includes(tech))
+            )
+            .slice(0, 3)
+
+          setRelatedProjects(related)
+        }
       } catch (error) {
         console.error('Failed to fetch project:', error)
         setNotFoundError(true)
@@ -45,15 +53,13 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
       }
     }
 
-    fetchProject()
+    fetchData()
   }, [params.slug])
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
       </div>
     )
   }
@@ -62,50 +68,67 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
     notFound()
   }
 
-  const content = language === 'vi' && project.vi.title ? project.vi : project.en
+  const lang = language === 'en' ? 'en' : 'vi'
 
   return (
     <article className="container mx-auto px-4 py-12">
-      <div className="mx-auto max-w-4xl">
+      <div className="max-w-5xl mx-auto">
         {/* Back button */}
         <Link
           href="/projects"
-          className="inline-flex items-center text-sm text-slate-600 hover:text-primary-600"
+          className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-primary-600 transition-colors mb-8"
         >
-          {t('projects.backToProjects')}
+          <ArrowLeft className="h-4 w-4" />
+          {lang === 'en' ? 'Back to Projects' : 'Quay lại Dự án'}
         </Link>
 
         {/* Header */}
-        <header className="mt-8">
-          <h1 className="text-4xl font-bold text-slate-900">{content.title}</h1>
-          <p className="mt-4 text-xl text-slate-600">{content.description}</p>
+        <header className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            {project[lang].title}
+          </h1>
+          <p className="text-xl text-slate-600">
+            {project[lang].description}
+          </p>
 
           {/* Tech stack */}
           <div className="mt-6 flex flex-wrap gap-2">
-            {project.tech.map((tech: string) => (
+            {project.techStack?.map((tech) => (
               <span
                 key={tech}
-                className="rounded-full bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-600"
+                className="px-4 py-2 rounded-full bg-primary-50 text-primary-700 text-sm font-medium"
               >
                 {tech}
               </span>
             ))}
           </div>
 
-          {/* Links */}
-          {(project.github || project.demo) && (
-            <div className="mt-6 flex gap-4">
-              {project.github && (
+          {/* Action buttons */}
+          {(project.githubUrl || project.demoUrl) && (
+            <div className="mt-8 flex flex-wrap gap-4">
+              {project.githubUrl && (
                 <Button asChild>
-                  <a href={project.github} target="_blank" rel="noopener">
-                    {t('projects.viewGithub')}
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    <Github className="h-5 w-5" />
+                    {lang === 'en' ? 'View Code' : 'Xem mã nguồn'}
                   </a>
                 </Button>
               )}
-              {project.demo && (
+              {project.demoUrl && (
                 <Button variant="outline" asChild>
-                  <a href={project.demo} target="_blank" rel="noopener">
-                    {t('projects.liveDemo')}
+                  <a
+                    href={project.demoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-5 w-5" />
+                    {lang === 'en' ? 'Live Demo' : 'Xem Demo'}
                   </a>
                 </Button>
               )}
@@ -114,28 +137,117 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         </header>
 
         {/* Featured image */}
-        {project.image && (
-          <div className="relative mt-12 h-96 w-full overflow-hidden rounded-lg bg-slate-100">
+        {project.featuredImage && (
+          <div className="mb-12 rounded-xl overflow-hidden shadow-lg">
             <img
-              src={project.image}
-              alt={content.title}
-              className="h-full w-full object-cover"
+              src={project.featuredImage}
+              alt={project[lang].title}
+              className="w-full h-auto"
             />
           </div>
         )}
 
         {/* Content */}
-        <div className="prose prose-slate mt-12 max-w-none">
-          <MDXRemote
-            source={content.content}
-            options={{
-              mdxOptions: {
-                remarkPlugins: [remarkGfm],
-                rehypePlugins: [rehypeHighlight],
-              },
-            }}
-          />
+        <div className="prose prose-slate prose-lg max-w-none mb-12">
+          <ReactMarkdown remarkPlugins={[remarkGfm as any]}>
+            {project[lang].content}
+          </ReactMarkdown>
         </div>
+
+        {/* Screenshots Gallery */}
+        {project.screenshots && project.screenshots.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <Code className="h-6 w-6 text-primary-600" />
+              {lang === 'en' ? 'Screenshots' : 'Hình ảnh'}
+            </h2>
+            <div className="grid gap-6 md:grid-cols-2">
+              {project.screenshots.map((screenshot, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg overflow-hidden border shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <img
+                    src={screenshot}
+                    alt={`${project[lang].title} screenshot ${index + 1}`}
+                    className="w-full h-auto"
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Key Learnings */}
+        {project.learnings && project.learnings.length > 0 && (
+          <section className="mb-12 bg-amber-50 border border-amber-200 rounded-xl p-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <Lightbulb className="h-6 w-6 text-amber-600" />
+              {lang === 'en' ? 'Key Learnings' : 'Bài học quan trọng'}
+            </h2>
+            <ul className="space-y-3">
+              {project.learnings.map((learning, index) => (
+                <li key={index} className="flex items-start gap-3 text-slate-700">
+                  <span className="text-amber-600 font-bold mt-1">•</span>
+                  <span>{learning}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Related Projects */}
+        {relatedProjects.length > 0 && (
+          <section className="mt-16 pt-12 border-t">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+              {lang === 'en' ? 'Related Projects' : 'Dự án liên quan'}
+            </h2>
+            <div className="grid gap-6 md:grid-cols-3">
+              {relatedProjects.map((relatedProject) => (
+                <div
+                  key={relatedProject.id}
+                  onClick={() => router.push(`/projects/${relatedProject.slug}`)}
+                  className="group bg-white rounded-lg border shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden"
+                >
+                  {relatedProject.featuredImage && (
+                    <div className="aspect-video overflow-hidden bg-slate-100">
+                      <img
+                        src={relatedProject.featuredImage}
+                        alt={relatedProject[lang].title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-slate-900 group-hover:text-primary-600 transition-colors mb-2">
+                      {relatedProject[lang].title}
+                    </h3>
+                    <p className="text-sm text-slate-600 line-clamp-2">
+                      {relatedProject[lang].description}
+                    </p>
+                    {relatedProject.techStack && relatedProject.techStack.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {relatedProject.techStack.slice(0, 2).map((tech) => (
+                          <span
+                            key={tech}
+                            className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                        {relatedProject.techStack.length > 2 && (
+                          <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">
+                            +{relatedProject.techStack.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </article>
   )
