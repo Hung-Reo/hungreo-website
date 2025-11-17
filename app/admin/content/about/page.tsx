@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { Save, Upload, Loader2, Eye, FileText } from 'lucide-react'
+import { Save, Upload, Loader2, Eye, FileText, Trash2, Plus } from 'lucide-react'
 import type { AboutContent } from '@/lib/contentManager'
+import { generateId } from '@/lib/contentManager'
+import { toast, Toaster } from 'sonner'
 
 export default function AboutEditorPage() {
   const [activeTab, setActiveTab] = useState<'en' | 'vi'>('en')
@@ -12,6 +14,7 @@ export default function AboutEditorPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   const [formData, setFormData] = useState<AboutContent | null>(null)
   const [cvInfo, setCvInfo] = useState<any>(null)
@@ -19,6 +22,26 @@ export default function AboutEditorPage() {
   useEffect(() => {
     fetchAboutData()
   }, [])
+
+  // Unsaved changes warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  // Track changes to formData
+  useEffect(() => {
+    if (formData) {
+      setHasUnsavedChanges(true)
+    }
+  }, [formData])
 
   async function fetchAboutData() {
     try {
@@ -72,11 +95,11 @@ export default function AboutEditorPage() {
         },
       })
 
-      alert('✅ CV uploaded and parsed successfully!')
+      toast.success('CV uploaded and parsed successfully!')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Upload failed'
       setError(errorMessage)
-      alert(`❌ ${errorMessage}`)
+      toast.error(errorMessage)
     } finally {
       setUploading(false)
     }
@@ -110,7 +133,7 @@ export default function AboutEditorPage() {
     const validTypes = ['.pdf', '.docx']
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase()
     if (!validTypes.includes(fileExt)) {
-      alert('Invalid file type. Please upload PDF or DOCX files.')
+      toast.error('Invalid file type. Please upload PDF or DOCX files.')
       return
     }
 
@@ -119,7 +142,18 @@ export default function AboutEditorPage() {
 
   async function handleSave() {
     if (!formData) {
-      alert('No data to save')
+      toast.error('No data to save')
+      return
+    }
+
+    // Validation
+    if (!formData.hero.en.name || !formData.hero.en.role || !formData.hero.en.intro) {
+      toast.error('Please fill in all required English fields (Name, Role, Intro)')
+      return
+    }
+
+    if (!formData.hero.vi.name || !formData.hero.vi.role || !formData.hero.vi.intro) {
+      toast.error('Please fill in all required Vietnamese fields (Name, Role, Intro)')
       return
     }
 
@@ -136,10 +170,11 @@ export default function AboutEditorPage() {
         throw new Error(errorData.error || 'Save failed')
       }
 
-      alert('✅ About page saved successfully!')
+      toast.success('About page saved successfully!')
+      setHasUnsavedChanges(false)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Save failed'
-      alert(`❌ ${errorMessage}`)
+      toast.error(errorMessage)
     } finally {
       setSaving(false)
     }
@@ -155,6 +190,8 @@ export default function AboutEditorPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
+      <Toaster position="top-right" richColors />
+
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -240,6 +277,19 @@ export default function AboutEditorPage() {
                 {' '}{new Date(cvInfo.uploadedAt).toLocaleDateString()}
               </p>
             </div>
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to clear all data and start over? This action cannot be undone.')) {
+                  setFormData(null)
+                  setCvInfo(null)
+                  setError(null)
+                }
+              }}
+              className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+              title="Clear all data and start over"
+            >
+              Clear & Start Over
+            </button>
           </div>
         )}
 
@@ -266,10 +316,10 @@ export default function AboutEditorPage() {
           <div className="border-b p-6">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <Eye className="h-5 w-5" />
-              Step 2: Preview & Edit Parsed Data
+              Step 2: Edit Content
             </h2>
             <p className="text-sm text-slate-600 mt-1">
-              Review the AI-parsed content. You can edit it in the next phase.
+              Edit the AI-parsed content below. Add, edit, or delete items as needed. Don't forget to save when done!
             </p>
           </div>
 
@@ -305,24 +355,137 @@ export default function AboutEditorPage() {
               <h3 className="text-lg font-semibold mb-3 text-slate-900">
                 Hero Section
               </h3>
-              <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+              <div className="bg-slate-50 rounded-lg p-4 space-y-4">
                 <div>
-                  <span className="text-xs font-medium text-slate-500 uppercase">
+                  <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
                     Name
-                  </span>
-                  <p className="text-slate-900">{formData.hero[activeTab].name}</p>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.hero[activeTab].name}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        hero: {
+                          ...formData.hero,
+                          [activeTab]: {
+                            ...formData.hero[activeTab],
+                            name: e.target.value
+                          }
+                        }
+                      })
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-slate-500 uppercase">
+                  <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
                     Role
-                  </span>
-                  <p className="text-slate-900">{formData.hero[activeTab].role}</p>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.hero[activeTab].role}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        hero: {
+                          ...formData.hero,
+                          [activeTab]: {
+                            ...formData.hero[activeTab],
+                            role: e.target.value
+                          }
+                        }
+                      })
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-slate-500 uppercase">
+                  <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
                     Introduction
-                  </span>
-                  <p className="text-slate-900">{formData.hero[activeTab].intro}</p>
+                  </label>
+                  <textarea
+                    value={formData.hero[activeTab].intro}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        hero: {
+                          ...formData.hero,
+                          [activeTab]: {
+                            ...formData.hero[activeTab],
+                            intro: e.target.value
+                          }
+                        }
+                      })
+                    }}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
+                </div>
+
+                {/* Profile Photo Upload */}
+                <div>
+                  <label className="text-xs font-medium text-slate-500 uppercase block mb-2">
+                    Profile Photo
+                  </label>
+
+                  {/* Current Photo Preview */}
+                  {formData.hero[activeTab].photo && (
+                    <div className="mb-3">
+                      <img
+                        src={formData.hero[activeTab].photo}
+                        alt="Profile"
+                        className="w-32 h-32 rounded-full object-cover border-4 border-primary-100"
+                      />
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+
+                      try {
+                        const uploadFormData = new FormData()
+                        uploadFormData.append('photo', file)
+
+                        const response = await fetch('/api/admin/content/about/upload-photo', {
+                          method: 'POST',
+                          body: uploadFormData
+                        })
+
+                        if (!response.ok) {
+                          const errorData = await response.json()
+                          throw new Error(errorData.error || 'Upload failed')
+                        }
+
+                        const result = await response.json()
+
+                        // Update both EN and VI with same photo URL
+                        setFormData({
+                          ...formData,
+                          hero: {
+                            en: { ...formData.hero.en, photo: result.photoUrl },
+                            vi: { ...formData.hero.vi, photo: result.photoUrl }
+                          }
+                        })
+
+                        toast.success('Photo uploaded successfully!')
+                      } catch (err) {
+                        toast.error('Photo upload failed: ' + (err instanceof Error ? err.message : 'Unknown error'))
+                      }
+
+                      // Reset input
+                      e.target.value = ''
+                    }}
+                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    Recommended: Square image, at least 400x400px. Max 5MB.
+                  </p>
                 </div>
               </div>
             </div>
@@ -335,21 +498,141 @@ export default function AboutEditorPage() {
               </h3>
               <div className="space-y-3">
                 {formData.professionalJourney[activeTab].map((job, idx) => (
-                  <div key={job.id} className="bg-slate-50 rounded-lg p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-primary-600">
-                          {job.year}
-                        </p>
-                        <p className="text-base font-semibold text-slate-900 mt-1">
-                          {job.title}
-                        </p>
-                        <p className="text-sm text-slate-600">{job.company}</p>
-                        <p className="text-sm text-slate-700 mt-2">{job.description}</p>
+                  <div key={job.id} className="bg-slate-50 rounded-lg p-4 relative">
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => {
+                        const newJobs = formData.professionalJourney[activeTab].filter((_, i) => i !== idx)
+                        setFormData({
+                          ...formData,
+                          professionalJourney: {
+                            ...formData.professionalJourney,
+                            [activeTab]: newJobs
+                          }
+                        })
+                      }}
+                      className="absolute top-3 right-3 text-red-600 hover:text-red-700 transition-colors"
+                      title="Delete position"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+
+                    <div className="space-y-3 pr-8">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
+                          Year/Period
+                        </label>
+                        <input
+                          type="text"
+                          value={job.year}
+                          onChange={(e) => {
+                            const newJobs = [...formData.professionalJourney[activeTab]]
+                            newJobs[idx] = { ...newJobs[idx], year: e.target.value }
+                            setFormData({
+                              ...formData,
+                              professionalJourney: {
+                                ...formData.professionalJourney,
+                                [activeTab]: newJobs
+                              }
+                            })
+                          }}
+                          placeholder="e.g., Mar 2025 - Oct 2025"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
+                          Job Title
+                        </label>
+                        <input
+                          type="text"
+                          value={job.title}
+                          onChange={(e) => {
+                            const newJobs = [...formData.professionalJourney[activeTab]]
+                            newJobs[idx] = { ...newJobs[idx], title: e.target.value }
+                            setFormData({
+                              ...formData,
+                              professionalJourney: {
+                                ...formData.professionalJourney,
+                                [activeTab]: newJobs
+                              }
+                            })
+                          }}
+                          placeholder="e.g., AI Consultant"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
+                          Company
+                        </label>
+                        <input
+                          type="text"
+                          value={job.company}
+                          onChange={(e) => {
+                            const newJobs = [...formData.professionalJourney[activeTab]]
+                            newJobs[idx] = { ...newJobs[idx], company: e.target.value }
+                            setFormData({
+                              ...formData,
+                              professionalJourney: {
+                                ...formData.professionalJourney,
+                                [activeTab]: newJobs
+                              }
+                            })
+                          }}
+                          placeholder="e.g., Samsung Vina Electronics"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          value={job.description}
+                          onChange={(e) => {
+                            const newJobs = [...formData.professionalJourney[activeTab]]
+                            newJobs[idx] = { ...newJobs[idx], description: e.target.value }
+                            setFormData({
+                              ...formData,
+                              professionalJourney: {
+                                ...formData.professionalJourney,
+                                [activeTab]: newJobs
+                              }
+                            })
+                          }}
+                          rows={3}
+                          placeholder="Brief description of responsibilities and achievements"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
                       </div>
                     </div>
                   </div>
                 ))}
+
+                {/* Add New Position Button */}
+                <button
+                  onClick={() => {
+                    const newJob = {
+                      id: generateId(),
+                      year: '',
+                      title: '',
+                      company: '',
+                      description: ''
+                    }
+                    setFormData({
+                      ...formData,
+                      professionalJourney: {
+                        ...formData.professionalJourney,
+                        [activeTab]: [...formData.professionalJourney[activeTab], newJob]
+                      }
+                    })
+                  }}
+                  className="w-full py-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <Plus className="h-5 w-5" />
+                  Add New Position
+                </button>
               </div>
             </div>
 
@@ -359,27 +642,197 @@ export default function AboutEditorPage() {
                 Education & Expertise
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-slate-500 mb-2">Education</p>
-                  <div className="space-y-2">
-                    {formData.educationExpertise.education[activeTab].map((edu) => (
-                      <div key={edu.id} className="bg-slate-50 rounded-lg p-3">
-                        <p className="font-semibold text-slate-900">{edu.degree}</p>
-                        <p className="text-sm text-slate-600">{edu.detail}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* Education Column */}
                 <div>
                   <p className="text-sm font-medium text-slate-500 mb-2">
-                    Current Focus
+                    Education ({formData.educationExpertise.education[activeTab].length})
                   </p>
                   <div className="space-y-2">
-                    {formData.educationExpertise.currentFocus[activeTab].map((focus) => (
-                      <div key={focus.id} className="bg-slate-50 rounded-lg p-3">
-                        <p className="text-sm text-slate-700">{focus.focus}</p>
+                    {formData.educationExpertise.education[activeTab].map((edu, idx) => (
+                      <div key={edu.id} className="bg-slate-50 rounded-lg p-3 relative">
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => {
+                            const newEducation = formData.educationExpertise.education[activeTab].filter((_, i) => i !== idx)
+                            setFormData({
+                              ...formData,
+                              educationExpertise: {
+                                ...formData.educationExpertise,
+                                education: {
+                                  ...formData.educationExpertise.education,
+                                  [activeTab]: newEducation
+                                }
+                              }
+                            })
+                          }}
+                          className="absolute top-2 right-2 text-red-600 hover:text-red-700 transition-colors"
+                          title="Delete education"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+
+                        <div className="space-y-2 pr-6">
+                          <div>
+                            <label className="text-xs font-medium text-slate-500 block mb-1">
+                              Degree
+                            </label>
+                            <input
+                              type="text"
+                              value={edu.degree}
+                              onChange={(e) => {
+                                const newEducation = [...formData.educationExpertise.education[activeTab]]
+                                newEducation[idx] = { ...newEducation[idx], degree: e.target.value }
+                                setFormData({
+                                  ...formData,
+                                  educationExpertise: {
+                                    ...formData.educationExpertise,
+                                    education: {
+                                      ...formData.educationExpertise.education,
+                                      [activeTab]: newEducation
+                                    }
+                                  }
+                                })
+                              }}
+                              placeholder="e.g., MBA"
+                              className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-slate-500 block mb-1">
+                              Detail
+                            </label>
+                            <input
+                              type="text"
+                              value={edu.detail}
+                              onChange={(e) => {
+                                const newEducation = [...formData.educationExpertise.education[activeTab]]
+                                newEducation[idx] = { ...newEducation[idx], detail: e.target.value }
+                                setFormData({
+                                  ...formData,
+                                  educationExpertise: {
+                                    ...formData.educationExpertise,
+                                    education: {
+                                      ...formData.educationExpertise.education,
+                                      [activeTab]: newEducation
+                                    }
+                                  }
+                                })
+                              }}
+                              placeholder="e.g., University of Economics"
+                              className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                            />
+                          </div>
+                        </div>
                       </div>
                     ))}
+
+                    {/* Add New Education Button */}
+                    <button
+                      onClick={() => {
+                        const newEdu = {
+                          id: generateId(),
+                          degree: '',
+                          detail: ''
+                        }
+                        setFormData({
+                          ...formData,
+                          educationExpertise: {
+                            ...formData.educationExpertise,
+                            education: {
+                              ...formData.educationExpertise.education,
+                              [activeTab]: [...formData.educationExpertise.education[activeTab], newEdu]
+                            }
+                          }
+                        })
+                      }}
+                      className="w-full py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Education
+                    </button>
+                  </div>
+                </div>
+
+                {/* Current Focus Column */}
+                <div>
+                  <p className="text-sm font-medium text-slate-500 mb-2">
+                    Current Focus ({formData.educationExpertise.currentFocus[activeTab].length})
+                  </p>
+                  <div className="space-y-2">
+                    {formData.educationExpertise.currentFocus[activeTab].map((focus, idx) => (
+                      <div key={focus.id} className="bg-slate-50 rounded-lg p-3 relative">
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => {
+                            const newFocus = formData.educationExpertise.currentFocus[activeTab].filter((_, i) => i !== idx)
+                            setFormData({
+                              ...formData,
+                              educationExpertise: {
+                                ...formData.educationExpertise,
+                                currentFocus: {
+                                  ...formData.educationExpertise.currentFocus,
+                                  [activeTab]: newFocus
+                                }
+                              }
+                            })
+                          }}
+                          className="absolute top-2 right-2 text-red-600 hover:text-red-700 transition-colors"
+                          title="Delete focus"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+
+                        <div className="pr-6">
+                          <label className="text-xs font-medium text-slate-500 block mb-1">
+                            Focus Area
+                          </label>
+                          <input
+                            type="text"
+                            value={focus.focus}
+                            onChange={(e) => {
+                              const newFocus = [...formData.educationExpertise.currentFocus[activeTab]]
+                              newFocus[idx] = { ...newFocus[idx], focus: e.target.value }
+                              setFormData({
+                                ...formData,
+                                educationExpertise: {
+                                  ...formData.educationExpertise,
+                                  currentFocus: {
+                                    ...formData.educationExpertise.currentFocus,
+                                    [activeTab]: newFocus
+                                  }
+                                }
+                              })
+                            }}
+                            placeholder="e.g., AI & Machine Learning"
+                            className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add New Focus Button */}
+                    <button
+                      onClick={() => {
+                        const newFocus = {
+                          id: generateId(),
+                          focus: ''
+                        }
+                        setFormData({
+                          ...formData,
+                          educationExpertise: {
+                            ...formData.educationExpertise,
+                            currentFocus: {
+                              ...formData.educationExpertise.currentFocus,
+                              [activeTab]: [...formData.educationExpertise.currentFocus[activeTab], newFocus]
+                            }
+                          }
+                        })
+                      }}
+                      className="w-full py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Focus
+                    </button>
                   </div>
                 </div>
               </div>
@@ -391,15 +844,119 @@ export default function AboutEditorPage() {
                 Training & Development ({formData.training[activeTab].length} items)
               </h3>
               <div className="grid grid-cols-2 gap-3">
-                {formData.training[activeTab].map((training) => (
-                  <div key={training.id} className="bg-slate-50 rounded-lg p-3">
-                    <p className="font-semibold text-slate-900">{training.name}</p>
-                    <p className="text-sm text-slate-600">{training.issuer}</p>
-                    {training.year && (
-                      <p className="text-xs text-slate-500 mt-1">{training.year}</p>
-                    )}
+                {formData.training[activeTab].map((training, idx) => (
+                  <div key={training.id} className="bg-slate-50 rounded-lg p-3 relative">
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => {
+                        const newTraining = formData.training[activeTab].filter((_, i) => i !== idx)
+                        setFormData({
+                          ...formData,
+                          training: {
+                            ...formData.training,
+                            [activeTab]: newTraining
+                          }
+                        })
+                      }}
+                      className="absolute top-2 right-2 text-red-600 hover:text-red-700 transition-colors"
+                      title="Delete training"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+
+                    <div className="space-y-2 pr-6">
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 block mb-1">
+                          Training Name
+                        </label>
+                        <input
+                          type="text"
+                          value={training.name}
+                          onChange={(e) => {
+                            const newTraining = [...formData.training[activeTab]]
+                            newTraining[idx] = { ...newTraining[idx], name: e.target.value }
+                            setFormData({
+                              ...formData,
+                              training: {
+                                ...formData.training,
+                                [activeTab]: newTraining
+                              }
+                            })
+                          }}
+                          placeholder="e.g., SAP SD Module"
+                          className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 block mb-1">
+                          Issuer
+                        </label>
+                        <input
+                          type="text"
+                          value={training.issuer}
+                          onChange={(e) => {
+                            const newTraining = [...formData.training[activeTab]]
+                            newTraining[idx] = { ...newTraining[idx], issuer: e.target.value }
+                            setFormData({
+                              ...formData,
+                              training: {
+                                ...formData.training,
+                                [activeTab]: newTraining
+                              }
+                            })
+                          }}
+                          placeholder="e.g., SAP Education"
+                          className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-slate-500 block mb-1">
+                          Year (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={training.year || ''}
+                          onChange={(e) => {
+                            const newTraining = [...formData.training[activeTab]]
+                            newTraining[idx] = { ...newTraining[idx], year: e.target.value }
+                            setFormData({
+                              ...formData,
+                              training: {
+                                ...formData.training,
+                                [activeTab]: newTraining
+                              }
+                            })
+                          }}
+                          placeholder="e.g., 2023"
+                          className="w-full px-2 py-1.5 text-sm border border-slate-300 rounded focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
+
+                {/* Add New Training Button */}
+                <button
+                  onClick={() => {
+                    const newTraining = {
+                      id: generateId(),
+                      name: '',
+                      issuer: '',
+                      year: ''
+                    }
+                    setFormData({
+                      ...formData,
+                      training: {
+                        ...formData.training,
+                        [activeTab]: [...formData.training[activeTab], newTraining]
+                      }
+                    })
+                  }}
+                  className="col-span-2 py-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <Plus className="h-5 w-5" />
+                  Add New Training
+                </button>
               </div>
             </div>
 
@@ -409,37 +966,124 @@ export default function AboutEditorPage() {
                 Core Competencies ({formData.competencies[activeTab].length})
               </h3>
               <div className="grid grid-cols-3 gap-2">
-                {formData.competencies[activeTab].map((comp) => (
+                {formData.competencies[activeTab].map((comp, idx) => (
                   <div
                     key={comp.id}
-                    className="bg-slate-50 rounded-lg p-3 flex items-center gap-2"
+                    className="bg-slate-50 rounded-lg p-2 relative"
                   >
-                    <span className="text-green-600">✓</span>
-                    <span className="text-sm font-medium text-slate-900">
-                      {comp.competency}
-                    </span>
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => {
+                        const newCompetencies = formData.competencies[activeTab].filter((_, i) => i !== idx)
+                        setFormData({
+                          ...formData,
+                          competencies: {
+                            ...formData.competencies,
+                            [activeTab]: newCompetencies
+                          }
+                        })
+                      }}
+                      className="absolute top-1 right-1 text-red-600 hover:text-red-700 transition-colors"
+                      title="Delete competency"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+
+                    <div className="flex items-center gap-2 pr-6">
+                      <span className="text-green-600 text-sm">✓</span>
+                      <input
+                        type="text"
+                        value={comp.competency}
+                        onChange={(e) => {
+                          const newCompetencies = [...formData.competencies[activeTab]]
+                          newCompetencies[idx] = { ...newCompetencies[idx], competency: e.target.value }
+                          setFormData({
+                            ...formData,
+                            competencies: {
+                              ...formData.competencies,
+                              [activeTab]: newCompetencies
+                            }
+                          })
+                        }}
+                        placeholder="e.g., Leadership"
+                        className="flex-1 px-2 py-1 text-sm border border-slate-300 rounded focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                      />
+                    </div>
                   </div>
                 ))}
+
+                {/* Add New Competency Button */}
+                <button
+                  onClick={() => {
+                    const newComp = {
+                      id: generateId(),
+                      competency: ''
+                    }
+                    setFormData({
+                      ...formData,
+                      competencies: {
+                        ...formData.competencies,
+                        [activeTab]: [...formData.competencies[activeTab], newComp]
+                      }
+                    })
+                  }}
+                  className="col-span-3 py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <Plus className="h-5 w-5" />
+                  Add New Competency
+                </button>
               </div>
             </div>
 
             {/* Interests */}
             <div>
               <h3 className="text-lg font-semibold mb-3 text-slate-900">Interests</h3>
-              <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+              <div className="bg-slate-50 rounded-lg p-4 space-y-4">
                 <div>
-                  <span className="text-xs font-medium text-slate-500 uppercase">
+                  <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
                     Bio
-                  </span>
-                  <p className="text-slate-900">{formData.interests[activeTab].bio}</p>
+                  </label>
+                  <textarea
+                    value={formData.interests[activeTab].bio}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        interests: {
+                          ...formData.interests,
+                          [activeTab]: {
+                            ...formData.interests[activeTab],
+                            bio: e.target.value
+                          }
+                        }
+                      })
+                    }}
+                    rows={3}
+                    placeholder="Brief personal bio"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
                 </div>
                 <div>
-                  <span className="text-xs font-medium text-slate-500 uppercase">
+                  <label className="text-xs font-medium text-slate-500 uppercase block mb-1">
                     Hobbies
-                  </span>
-                  <p className="text-slate-900">
-                    {formData.interests[activeTab].hobbies}
-                  </p>
+                  </label>
+                  <textarea
+                    value={formData.interests[activeTab].hobbies}
+                    onChange={(e) => {
+                      setFormData({
+                        ...formData,
+                        interests: {
+                          ...formData.interests,
+                          [activeTab]: {
+                            ...formData.interests[activeTab],
+                            hobbies: e.target.value
+                          }
+                        }
+                      })
+                    }}
+                    rows={2}
+                    placeholder="List of hobbies"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                  />
                 </div>
               </div>
             </div>
