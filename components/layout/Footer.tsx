@@ -5,8 +5,9 @@ import { Shield } from 'lucide-react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export function Footer() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const currentYear = new Date().getFullYear()
+  const lang = language === 'en' ? 'en' : 'vi'
 
   return (
     <footer className="border-t bg-slate-50">
@@ -52,6 +53,39 @@ export function Footer() {
               {t('footer.securityPage')}
             </Link>
           </div>
+        </div>
+
+        {/* Claude Code Credit */}
+        <div className="mt-6 text-center border-t pt-4">
+          <p className="text-xs text-slate-400">
+            {lang === 'en' ? (
+              <>
+                Built with <span className="text-red-500">❤️</span> using{' '}
+                <a
+                  href="https://claude.ai/code"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-600 hover:underline font-medium"
+                >
+                  Claude Code
+                </a>{' '}
+                by Anthropic
+              </>
+            ) : (
+              <>
+                Được xây dựng với <span className="text-red-500">❤️</span> sử dụng{' '}
+                <a
+                  href="https://claude.ai/code"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-600 hover:underline font-medium"
+                >
+                  Claude Code
+                </a>{' '}
+                của Anthropic
+              </>
+            )}
+          </p>
         </div>
       </div>
     </footer>
