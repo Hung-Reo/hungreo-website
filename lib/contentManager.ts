@@ -208,6 +208,24 @@ export interface BlogPost {
   }
 }
 
+export interface ContactMethod {
+  id: string // UUID
+  type: 'email' | 'phone' | 'linkedin' | 'github' | 'twitter' | 'website' | 'address' | 'custom'
+  label: {
+    en: string // "Work Email", "Mobile Phone"
+    vi: string // "Email công việc", "Điện thoại di động"
+  }
+  value: string // actual email/phone/URL
+  icon: string // lucide icon name: 'Mail', 'Phone', 'Linkedin', etc.
+  order: number // for sorting (0, 1, 2, ...)
+  visible: boolean // show/hide on public page
+}
+
+export interface ContactContent {
+  methods: ContactMethod[] // array of contact methods
+  updatedAt: number // timestamp
+}
+
 // ============================================
 // About Content
 // ============================================
@@ -414,6 +432,41 @@ export async function addBlogCategory(category: string): Promise<void> {
   if (!categories.includes(category)) {
     categories.push(category)
     await saveBlogCategories(categories)
+  }
+}
+
+// ============================================
+// Contact Content
+// ============================================
+
+export async function getContactContent(): Promise<ContactContent> {
+  try {
+    const data = await kv.get<ContactContent>('content:contact')
+    if (!data) {
+      return {
+        methods: [],
+        updatedAt: Date.now(),
+      }
+    }
+    return data
+  } catch (error) {
+    console.error('Error fetching contact content:', error)
+    return {
+      methods: [],
+      updatedAt: Date.now(),
+    }
+  }
+}
+
+export async function saveContactContent(content: ContactContent): Promise<void> {
+  try {
+    await kv.set('content:contact', {
+      ...content,
+      updatedAt: Date.now(),
+    })
+  } catch (error) {
+    console.error('Error saving contact content:', error)
+    throw error
   }
 }
 
