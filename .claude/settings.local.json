@@ -9,7 +9,20 @@
       "Bash(npm run build:*)",
       "Bash(git commit:*)",
       "Bash(curl:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(vercel logs:*)",
+      "Bash(docker exec:*)",
+      "Bash(printenv:*)",
+      "Bash(rm:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(tree:*)",
+      "Bash(git merge:*)",
+      "Bash(git push:*)",
+      "Bash(npx tsc:*)",
+      "Bash(vercel:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,6 +12,9 @@ import { validateChatMessage } from '@/lib/inputValidator'
 // Use Node.js runtime for Pinecone compatibility
 export const runtime = 'nodejs'
 
+// Debug mode control (only enable in development or when explicitly needed)
+const DEBUG_MODE = process.env.ENABLE_DEBUG_LOGS === 'true'
+
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
   let assistantMessage = ''
@@ -19,7 +22,9 @@ export async function POST(req: NextRequest) {
   try {
     // SECURITY: Rate limiting check
     const ip = getClientIp(req)
-    console.log(`[Chat] Request from IP: ${ip}`)
+    if (DEBUG_MODE) {
+      console.log(`[Chat] Request from IP: ${ip}`)
+    }
 
     // Check per-minute rate limit (10 requests/min)
     const { success: minuteSuccess, reset: minuteReset } =
@@ -98,15 +103,17 @@ export async function POST(req: NextRequest) {
       includeMetadata: true,
     })
 
-    // Debug: Log retrieved vectors
-    console.log(`[Chat] Retrieved ${queryResponse.matches.length} vectors for query: "${sanitizedMessage}"`)
-    queryResponse.matches.forEach((match, i) => {
-      const meta = match.metadata as any
-      console.log(`[Chat] Vector ${i+1}: ${match.id} (score: ${match.score?.toFixed(3)})`)
-      console.log(`[Chat]   RAW METADATA:`, JSON.stringify(meta, null, 2))
-      console.log(`[Chat]   Title: ${meta?.title}`)
-      console.log(`[Chat]   Preview: ${(meta?.description || meta?.text || '').substring(0, 150)}...`)
-    })
+    // Debug: Log retrieved vectors (only in debug mode to prevent data leakage)
+    if (DEBUG_MODE) {
+      console.log(`[Chat] Retrieved ${queryResponse.matches.length} vectors for query: "${sanitizedMessage}"`)
+      queryResponse.matches.forEach((match, i) => {
+        const meta = match.metadata as any
+        console.log(`[Chat] Vector ${i+1}: ${match.id} (score: ${match.score?.toFixed(3)})`)
+        console.log(`[Chat]   RAW METADATA:`, JSON.stringify(meta, null, 2))
+        console.log(`[Chat]   Title: ${meta?.title}`)
+        console.log(`[Chat]   Preview: ${(meta?.description || meta?.text || '').substring(0, 150)}...`)
+      })
+    }
 
     // Step 3: Build context from relevant documents
     const context = queryResponse.matches

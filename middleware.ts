@@ -16,8 +16,28 @@ export default auth((req) => {
 
     // In production, verify the request comes from the same origin
     if (process.env.NODE_ENV === 'production') {
-      const isValidOrigin = origin && origin.includes(host || '')
-      const isValidReferer = referer && referer.includes(host || '')
+      let isValidOrigin = false
+      let isValidReferer = false
+
+      // Strict origin validation: exact hostname match
+      if (origin) {
+        try {
+          const originUrl = new URL(origin)
+          isValidOrigin = originUrl.hostname === host
+        } catch (error) {
+          console.warn('[Security] Invalid origin URL:', origin)
+        }
+      }
+
+      // Strict referer validation: exact hostname match
+      if (referer) {
+        try {
+          const refererUrl = new URL(referer)
+          isValidReferer = refererUrl.hostname === host
+        } catch (error) {
+          console.warn('[Security] Invalid referer URL:', referer)
+        }
+      }
 
       if (!isValidOrigin && !isValidReferer) {
         console.warn('[Security] Invalid origin for admin API:', {
@@ -25,6 +45,7 @@ export default auth((req) => {
           origin,
           referer,
           host,
+          attemptedOriginHostname: origin ? new URL(origin).hostname : 'N/A',
         })
 
         return NextResponse.json(

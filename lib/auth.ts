@@ -6,17 +6,24 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
+import { kv } from '@vercel/kv'
 
-// Admin credentials
+// Admin credentials from environment variables
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
 
-// Password hash for Admin@123
-// NOTE: Hardcoded because Vercel environment variables break bcrypt hashes ($ character issues)
-// TO CHANGE PASSWORD:
-// 1. Run: node -e "require('bcryptjs').hash('YOUR_NEW_PASSWORD', 10).then(console.log)"
-// 2. Replace the hash below with the new hash
-// 3. Commit and deploy
-const ADMIN_PASSWORD_HASH = '$2b$10$AtE9SRSkrQ0ClwQi7OLY3OlWYvcgTR7k2bABJBUyW9PU.pb1Ss612'
+// SECURITY: Password hash must be stored in environment variable
+// The hash is stored in ADMIN_PASSWORD_HASH environment variable
+// To generate a new password hash, run:
+// node -e "require('bcryptjs').hash('YOUR_NEW_PASSWORD', 10).then(console.log)"
+const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH
+
+// Validate that password hash is configured
+if (!ADMIN_PASSWORD_HASH) {
+  throw new Error(
+    'ADMIN_PASSWORD_HASH environment variable is required. ' +
+    'Generate a hash with: node -e "require(\'bcryptjs\').hash(\'YOUR_PASSWORD\', 10).then(console.log)"'
+  )
+}
 
 export const {
   handlers: { GET, POST },
@@ -42,10 +49,23 @@ export const {
           return null
         }
 
+        // Check for password hash in KV first (allows password reset without redeploy)
+        let passwordHash = await kv.get<string>('admin:password-hash')
+
+        // Fall back to environment variable if not in KV
+        if (!passwordHash) {
+          passwordHash = ADMIN_PASSWORD_HASH
+        }
+
+        if (!passwordHash) {
+          console.error('[Auth] No password hash configured')
+          return null
+        }
+
         // Verify password
         const isValid = await bcrypt.compare(
           credentials.password as string,
-          ADMIN_PASSWORD_HASH
+          passwordHash
         )
 
         if (!isValid) {
