@@ -86,14 +86,22 @@ const translations = {
     'home.hero.aboutMe': 'About Me',
     'home.values.title1': 'Problem-First Mindset',
     'home.values.desc1': 'Understanding the problem deeply before jumping to solutions',
-    'home.values.title2': 'AI as a Tool',
-    'home.values.desc2': "Leveraging AI to solve real problems, not technology for technology's sake",
+    'home.values.title2': 'Human + AI',
+    'home.values.desc2': 'Amplifying human potential through AI partnership, not replacing it',
     'home.values.title3': 'Build in Public',
     'home.values.desc3': 'Sharing failures and learnings to help others grow',
     'home.featured.projects': 'Featured Projects',
     'home.featured.projectsPlaceholder': 'Projects coming soon... Building in progress! 🚀',
     'home.featured.latestPosts': 'Latest Posts',
     'home.featured.postsPlaceholder': 'Blog posts coming soon... Stay tuned! ✍️',
+
+    // Origin Story Section
+    'home.origin.title': 'Where It All Began',
+    'home.origin.act1': 'After one month deep-diving into AI, I realized something profound: AI wasn\'t just another system. Not like SAP, not like any tool I\'d worked with before. This was "Trí Tuệ Máy" - Machine Intelligence - something that exceeded my imagination of what technology could do.',
+    'home.origin.act2.intro': 'As AI\'s capabilities became clearer, a question emerged:',
+    'home.origin.act2.question': 'What makes us MORE HUMAN in the age of AI?',
+    'home.origin.act3.intro': 'My answer came through the "Văn Hóa Gia Đình" (Family Values) project - a framework of family values not just for families, but for any organization, team, or community.',
+    'home.origin.act3.closing': 'This isn\'t about building AI to replace humans, but using AI to help us remember what makes us human.',
 
     // About Page
     'about.title': 'About Me',
@@ -294,14 +302,22 @@ const translations = {
     'home.hero.aboutMe': 'Giới thiệu',
     'home.values.title1': 'Tư duy vấn đề trước',
     'home.values.desc1': 'Hiểu sâu vấn đề trước khi đưa ra giải pháp',
-    'home.values.title2': 'AI là công cụ',
-    'home.values.desc2': 'Tận dụng AI để giải quyết vấn đề thực tế, không phải công nghệ vì công nghệ',
+    'home.values.title2': 'Con Người + AI',
+    'home.values.desc2': 'Khuếch đại tiềm năng con người thông qua đối tác AI, không thay thế nó',
     'home.values.title3': 'Xây dựng công khai',
     'home.values.desc3': 'Chia sẻ thất bại và bài học để giúp người khác phát triển',
     'home.featured.projects': 'Dự án nổi bật',
     'home.featured.projectsPlaceholder': 'Dự án sắp ra mắt... Đang xây dựng! 🚀',
     'home.featured.latestPosts': 'Bài viết mới nhất',
     'home.featured.postsPlaceholder': 'Blog sắp ra mắt... Hãy đón chờ! ✍️',
+
+    // Origin Story Section
+    'home.origin.title': 'Nơi Mọi Thứ Bắt Đầu',
+    'home.origin.act1': 'Sau một tháng đào sâu vào AI, tôi nhận ra điều gì đó sâu sắc: AI không chỉ là một hệ thống khác. Không giống SAP, không giống bất kỳ công cụ nào tôi từng làm việc cùng. Đây là "Trí Tuệ Máy" - Machine Intelligence - thứ vượt xa trí tưởng tượng của tôi về những gì công nghệ có thể làm.',
+    'home.origin.act2.intro': 'Khi khả năng của AI ngày càng rõ ràng, một câu hỏi xuất hiện:',
+    'home.origin.act2.question': 'Điều gì khiến chúng ta TRỞ NÊN HUMAN HƠN trong thời đại AI?',
+    'home.origin.act3.intro': 'Câu trả lời của tôi đến thông qua dự án "Văn Hóa Gia Đình" - một framework về giá trị gia đình không chỉ dành cho gia đình, mà cho bất kỳ tổ chức, nhóm, hay cộng đồng nào.',
+    'home.origin.act3.closing': 'Đây không phải về việc xây dựng AI để thay thế con người, mà về việc sử dụng AI để giúp chúng ta nhớ lại điều gì khiến chúng ta trở nên con người.',
 
     // About Page
     'about.title': 'Giới thiệu',

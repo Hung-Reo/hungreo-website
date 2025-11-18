@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { Project, BlogPost } from '@/lib/contentManager'
 import { Loader2, ArrowRight, Calendar, Clock } from 'lucide-react'
+import { FamilyValuesDisplay } from '@/components/FamilyValuesDisplay'
 
 export default function HomePage() {
   const { t, language } = useLanguage()
@@ -107,6 +108,51 @@ export default function HomePage() {
             <p className="mt-2 text-slate-600">
               {t('home.values.desc3')}
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Where It All Began - Origin Story */}
+      <section className="bg-gradient-to-b from-slate-50 to-slate-100 py-16">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-3xl">
+            {/* Section Header */}
+            <h2 className="mb-12 text-center text-3xl font-bold text-slate-900">
+              {t('home.origin.title')}
+            </h2>
+
+            {/* ACT 1: The Discovery */}
+            <div className="mb-8 rounded-lg border-l-4 border-blue-500 bg-white p-6 shadow-sm">
+              <p className="text-lg leading-relaxed text-slate-800">
+                {t('home.origin.act1')}
+              </p>
+            </div>
+
+            {/* ACT 2: The Question - HIGHLIGHTED */}
+            <div className="mb-8 rounded-lg border-l-4 border-amber-500 bg-amber-50 p-6 shadow-sm">
+              <p className="text-lg leading-relaxed text-slate-800">
+                {t('home.origin.act2.intro')}
+              </p>
+              <p className="mt-4 text-xl font-semibold text-amber-900">
+                "{t('home.origin.act2.question')}"
+              </p>
+            </div>
+
+            {/* ACT 3: The Answer with Embedded Component */}
+            <div className="rounded-lg border-l-4 border-blue-500 bg-white p-6 shadow-sm">
+              <p className="mb-8 text-lg leading-relaxed text-slate-800">
+                {t('home.origin.act3.intro')}
+              </p>
+
+              {/* EMBEDDED: Family Values Visual */}
+              <div className="my-8">
+                <FamilyValuesDisplay size="medium" showDescription={false} embedded={true} />
+              </div>
+
+              <p className="text-lg leading-relaxed text-slate-800">
+                {t('home.origin.act3.closing')}
+              </p>
+            </div>
           </div>
         </div>
       </section>
