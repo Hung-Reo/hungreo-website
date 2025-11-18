@@ -21,7 +21,6 @@ import {
   ArrowDown,
   Eye,
   EyeOff,
-  Save,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -40,7 +39,6 @@ export default function AdminContactPage() {
   const router = useRouter()
   const [methods, setMethods] = useState<ContactMethod[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
@@ -72,27 +70,24 @@ export default function AdminContactPage() {
     }
   }
 
-  async function handleSave() {
-    setSaving(true)
+  async function saveToDatabase(updatedMethods: ContactMethod[]) {
     try {
       const res = await fetch('/api/admin/content/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ methods }),
+        body: JSON.stringify({ methods: updatedMethods }),
       })
 
       if (!res.ok) throw new Error('Failed to save')
-
-      toast.success('Contact methods saved successfully')
+      return true
     } catch (error) {
       console.error('Failed to save:', error)
-      toast.error('Failed to save contact methods')
-    } finally {
-      setSaving(false)
+      toast.error('Failed to save changes')
+      return false
     }
   }
 
-  function handleAddNew() {
+  async function handleAddNew() {
     if (!formData.labelEn || !formData.labelVi || !formData.value) {
       toast.error('Please fill all fields')
       return
@@ -112,10 +107,15 @@ export default function AdminContactPage() {
       visible: formData.visible,
     }
 
-    setMethods([...methods, newMethod])
-    setShowAddForm(false)
-    resetForm()
-    toast.success('Contact method added')
+    const updatedMethods = [...methods, newMethod]
+    const saved = await saveToDatabase(updatedMethods)
+
+    if (saved) {
+      setMethods(updatedMethods)
+      setShowAddForm(false)
+      resetForm()
+      toast.success('Contact method added')
+    }
   }
 
   function handleEdit(method: ContactMethod) {
@@ -129,53 +129,77 @@ export default function AdminContactPage() {
     })
   }
 
-  function handleSaveEdit() {
+  async function handleSaveEdit() {
     if (!editingId) return
 
-    setMethods(
-      methods.map((m) =>
-        m.id === editingId
-          ? {
-              ...m,
-              type: formData.type,
-              label: { en: formData.labelEn, vi: formData.labelVi },
-              value: formData.value,
-              visible: formData.visible,
-              icon: CONTACT_TYPES.find((t) => t.value === formData.type)!.icon.name,
-            }
-          : m
-      )
+    const updatedMethods = methods.map((m) =>
+      m.id === editingId
+        ? {
+            ...m,
+            type: formData.type,
+            label: { en: formData.labelEn, vi: formData.labelVi },
+            value: formData.value,
+            visible: formData.visible,
+            icon: CONTACT_TYPES.find((t) => t.value === formData.type)!.icon.name,
+          }
+        : m
     )
-    setEditingId(null)
-    resetForm()
-    toast.success('Contact method updated')
+
+    const saved = await saveToDatabase(updatedMethods)
+
+    if (saved) {
+      setMethods(updatedMethods)
+      setEditingId(null)
+      resetForm()
+      toast.success('Contact method updated')
+    }
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (!confirm('Are you sure you want to delete this contact method?')) return
 
-    setMethods(methods.filter((m) => m.id !== id).map((m, i) => ({ ...m, order: i })))
-    toast.success('Contact method deleted')
+    const updatedMethods = methods.filter((m) => m.id !== id).map((m, i) => ({ ...m, order: i }))
+    const saved = await saveToDatabase(updatedMethods)
+
+    if (saved) {
+      setMethods(updatedMethods)
+      toast.success('Contact method deleted')
+    }
   }
 
-  function handleMoveUp(index: number) {
+  async function handleMoveUp(index: number) {
     if (index === 0) return
 
     const newMethods = [...methods]
     ;[newMethods[index - 1], newMethods[index]] = [newMethods[index], newMethods[index - 1]]
-    setMethods(newMethods.map((m, i) => ({ ...m, order: i })))
+    const updatedMethods = newMethods.map((m, i) => ({ ...m, order: i }))
+
+    const saved = await saveToDatabase(updatedMethods)
+    if (saved) {
+      setMethods(updatedMethods)
+    }
   }
 
-  function handleMoveDown(index: number) {
+  async function handleMoveDown(index: number) {
     if (index === methods.length - 1) return
 
     const newMethods = [...methods]
     ;[newMethods[index], newMethods[index + 1]] = [newMethods[index + 1], newMethods[index]]
-    setMethods(newMethods.map((m, i) => ({ ...m, order: i })))
+    const updatedMethods = newMethods.map((m, i) => ({ ...m, order: i }))
+
+    const saved = await saveToDatabase(updatedMethods)
+    if (saved) {
+      setMethods(updatedMethods)
+    }
   }
 
-  function toggleVisibility(id: string) {
-    setMethods(methods.map((m) => (m.id === id ? { ...m, visible: !m.visible } : m)))
+  async function toggleVisibility(id: string) {
+    const updatedMethods = methods.map((m) => (m.id === id ? { ...m, visible: !m.visible } : m))
+    const saved = await saveToDatabase(updatedMethods)
+
+    if (saved) {
+      setMethods(updatedMethods)
+    }
   }
 
   function resetForm() {
@@ -206,26 +230,11 @@ export default function AdminContactPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Contact Information</h1>
-            <p className="text-slate-600 mt-2">
-              Manage your contact methods shown on the public contact page
-            </p>
-          </div>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </>
-            )}
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900">Contact Information</h1>
+          <p className="text-slate-600 mt-2">
+            Manage your contact methods shown on the public contact page. Changes are saved automatically.
+          </p>
         </div>
 
         {/* Add Button */}

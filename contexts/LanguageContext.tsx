@@ -80,14 +80,14 @@ const translations = {
 
     // Home Page
     'home.hero.name': 'Hung Dinh',
-    'home.hero.tagline': 'Product Manager | AI Enthusiast | Problem Solver',
+    'home.hero.tagline': 'Product Manager | AI Collaborator | Problem Solver',
     'home.hero.description': 'Transitioning from Business Analyst to Product Manager, building AI-powered solutions and sharing lessons learned along the way.',
     'home.hero.viewProjects': 'View Projects',
     'home.hero.aboutMe': 'About Me',
     'home.values.title1': 'Problem-First Mindset',
     'home.values.desc1': 'Understanding the problem deeply before jumping to solutions',
     'home.values.title2': 'Human + AI',
-    'home.values.desc2': 'Amplifying human potential through AI partnership, not replacing it',
+    'home.values.desc2': 'AI is a thought partner, not just a tool - we collaborate to solve real problems, not chase technology',
     'home.values.title3': 'Build in Public',
     'home.values.desc3': 'Sharing failures and learnings to help others grow',
     'home.featured.projects': 'Featured Projects',
@@ -296,14 +296,14 @@ const translations = {
 
     // Home Page
     'home.hero.name': 'Đinh Quang Hưng',
-    'home.hero.tagline': 'Product Manager | Đam mê AI | Giải quyết vấn đề',
+    'home.hero.tagline': 'Product Manager | Cộng tác viên AI | Giải quyết vấn đề',
     'home.hero.description': 'Chuyển đổi từ Business Analyst sang Product Manager, xây dựng các giải pháp AI và chia sẻ kinh nghiệm học hỏi trên hành trình.',
     'home.hero.viewProjects': 'Xem dự án',
     'home.hero.aboutMe': 'Giới thiệu',
     'home.values.title1': 'Tư duy vấn đề trước',
     'home.values.desc1': 'Hiểu sâu vấn đề trước khi đưa ra giải pháp',
     'home.values.title2': 'Con Người + AI',
-    'home.values.desc2': 'Khuếch đại tiềm năng con người thông qua đối tác AI, không thay thế nó',
+    'home.values.desc2': 'AI là đối tác tư duy, không chỉ là công cụ - chúng ta cộng tác để giải quyết vấn đề thực tế, không theo đuổi công nghệ',
     'home.values.title3': 'Xây dựng công khai',
     'home.values.desc3': 'Chia sẻ thất bại và bài học để giúp người khác phát triển',
     'home.featured.projects': 'Dự án nổi bật',

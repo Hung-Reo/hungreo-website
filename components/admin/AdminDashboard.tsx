@@ -108,6 +108,12 @@ export function AdminDashboard() {
               Blog
             </Link>
             <Link
+              href="/admin/content/contact"
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap"
+            >
+              Contact
+            </Link>
+            <Link
               href="/admin/documents"
               className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap"
             >
@@ -217,6 +223,13 @@ export function AdminDashboard() {
                 >
                   <div className="text-2xl">✍️</div>
                   <div className="mt-2 text-sm font-medium text-slate-700">Write Blog Post</div>
+                </Link>
+                <Link
+                  href="/admin/content/contact"
+                  className="rounded-lg border-2 border-dashed border-slate-300 p-4 text-center transition-colors hover:border-primary-500 hover:bg-primary-50"
+                >
+                  <div className="text-2xl">📧</div>
+                  <div className="mt-2 text-sm font-medium text-slate-700">Manage Contact</div>
                 </Link>
                 <Link
                   href="/admin/documents"

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
+import { Toaster } from 'sonner'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
@@ -81,6 +82,7 @@ export default function RootLayout({
             </div>
           </SessionProvider>
         </LanguageProvider>
+        <Toaster position="top-center" richColors />
         <Analytics />
       </body>
     </html>

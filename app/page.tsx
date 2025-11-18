@@ -62,7 +62,7 @@ export default function HomePage() {
   return (
     <div className="container mx-auto px-4 py-12">
       {/* Hero Section */}
-      <section className="py-20 text-center">
+      <section className="py-12 text-center">
         <h1 className="text-5xl font-bold text-slate-900 md:text-6xl">
           {t('home.hero.name')}
         </h1>
@@ -75,13 +75,13 @@ export default function HomePage() {
         <div className="mt-8 flex justify-center gap-4">
           <Link
             href="/projects"
-            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-50"
           >
             {t('home.hero.viewProjects')}
           </Link>
           <Link
             href="/about"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-50"
+            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
           >
             {t('home.hero.aboutMe')}
           </Link>
@@ -89,22 +89,22 @@ export default function HomePage() {
       </section>
 
       {/* Core Values */}
-      <section className="py-12">
+      <section className="py-8">
         <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-lg border bg-white p-6">
-            <h3 className="text-lg font-semibold">{t('home.values.title1')}</h3>
+            <h3 className="text-lg font-semibold text-primary-600">{t('home.values.title1')}</h3>
             <p className="mt-2 text-slate-600">
               {t('home.values.desc1')}
             </p>
           </div>
           <div className="rounded-lg border bg-white p-6">
-            <h3 className="text-lg font-semibold">{t('home.values.title2')}</h3>
+            <h3 className="text-lg font-semibold text-primary-600">{t('home.values.title2')}</h3>
             <p className="mt-2 text-slate-600">
               {t('home.values.desc2')}
             </p>
           </div>
           <div className="rounded-lg border bg-white p-6">
-            <h3 className="text-lg font-semibold">{t('home.values.title3')}</h3>
+            <h3 className="text-lg font-semibold text-primary-600">{t('home.values.title3')}</h3>
             <p className="mt-2 text-slate-600">
               {t('home.values.desc3')}
             </p>
@@ -129,11 +129,11 @@ export default function HomePage() {
             </div>
 
             {/* ACT 2: The Question - HIGHLIGHTED */}
-            <div className="mb-8 rounded-lg border-l-4 border-amber-500 bg-amber-50 p-6 shadow-sm">
+            <div className="mb-8 rounded-lg border-l-4 border-primary-500 bg-blue-50 p-6 shadow-sm">
               <p className="text-lg leading-relaxed text-slate-800">
                 {t('home.origin.act2.intro')}
               </p>
-              <p className="mt-4 text-xl font-semibold text-amber-900">
+              <p className="mt-4 text-xl font-semibold text-primary-700">
                 "{t('home.origin.act2.question')}"
               </p>
             </div>
