@@ -17,6 +17,66 @@ export function Footer() {
             <p className="text-sm text-slate-600">
               {t('footer.copyright').replace('{year}', currentYear.toString())}
             </p>
+            {/* Claude Code Credit */}
+            <p className="text-xs text-slate-400">
+              {lang === 'en' ? (
+                <>
+                  Built with <span className="text-red-500">❤️</span> using{' '}
+                  <a
+                    href="https://claude.ai/code"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-600 hover:underline font-medium"
+                  >
+                    Claude Code
+                  </a>{' '}
+                  by Anthropic
+                </>
+              ) : (
+                <>
+                  Được xây dựng với <span className="text-red-500">❤️</span> sử dụng{' '}
+                  <a
+                    href="https://claude.ai/code"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-600 hover:underline font-medium"
+                  >
+                    Claude Code
+                  </a>{' '}
+                  của Anthropic
+                </>
+              )}
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-2 md:items-end">
+            <div className="flex gap-6">
+              <Link
+                href="mailto:hungreo2005@gmail.com"
+                className="text-slate-600 hover:text-primary-600"
+              >
+                {t('footer.email')}
+              </Link>
+              <Link
+                href="https://www.linkedin.com/in/hưng-đinh-03742217b/"
+                target="_blank"
+                className="text-slate-600 hover:text-primary-600"
+              >
+                {t('footer.linkedin')}
+              </Link>
+              <Link
+                href="https://github.com/Hung-Reo"
+                target="_blank"
+                className="text-slate-600 hover:text-primary-600"
+              >
+                {t('footer.github')}
+              </Link>
+              <Link
+                href="/security"
+                className="text-slate-600 hover:text-primary-600"
+              >
+                {t('footer.securityPage')}
+              </Link>
+            </div>
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <Shield className="h-3 w-3" />
               <span>{t('footer.security')}</span>
@@ -25,67 +85,6 @@ export function Footer() {
               </Link>
             </div>
           </div>
-          <div className="flex gap-6">
-            <Link
-              href="mailto:hungreo2005@gmail.com"
-              className="text-slate-600 hover:text-primary-600"
-            >
-              {t('footer.email')}
-            </Link>
-            <Link
-              href="https://www.linkedin.com/in/hưng-đinh-03742217b/"
-              target="_blank"
-              className="text-slate-600 hover:text-primary-600"
-            >
-              {t('footer.linkedin')}
-            </Link>
-            <Link
-              href="https://github.com/Hung-Reo"
-              target="_blank"
-              className="text-slate-600 hover:text-primary-600"
-            >
-              {t('footer.github')}
-            </Link>
-            <Link
-              href="/security"
-              className="text-slate-600 hover:text-primary-600"
-            >
-              {t('footer.securityPage')}
-            </Link>
-          </div>
-        </div>
-
-        {/* Claude Code Credit */}
-        <div className="mt-6 text-center border-t pt-4">
-          <p className="text-xs text-slate-400">
-            {lang === 'en' ? (
-              <>
-                Built with <span className="text-red-500">❤️</span> using{' '}
-                <a
-                  href="https://claude.ai/code"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary-600 hover:underline font-medium"
-                >
-                  Claude Code
-                </a>{' '}
-                by Anthropic
-              </>
-            ) : (
-              <>
-                Được xây dựng với <span className="text-red-500">❤️</span> sử dụng{' '}
-                <a
-                  href="https://claude.ai/code"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary-600 hover:underline font-medium"
-                >
-                  Claude Code
-                </a>{' '}
-                của Anthropic
-              </>
-            )}
-          </p>
         </div>
       </div>
     </footer>
