@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex')
 
     // Store token in KV with 15 minute expiry
-    await kv.setex(`password-reset:${resetTokenHash}`, 900, email) // 900 seconds = 15 minutes
+    await kv.set(`password-reset:${resetTokenHash}`, email, { ex: 900 }) // 900 seconds = 15 minutes
 
     // Send reset email
     const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/reset-password/${resetToken}`

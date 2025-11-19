@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
-import { Trash2, Edit, Plus, Loader2, Search, FileText, BookOpen, Star as StarIcon } from 'lucide-react'
+import { Trash2, Edit, Plus, Loader2, Search, FileText, BookOpen, Star as StarIcon, ArrowLeft } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -114,6 +114,16 @@ export default function AdminBlogPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Back to Dashboard */}
+      <div className="mb-6">
+        <Link href="/admin/dashboard">
+          <Button variant="outline" size="sm" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>

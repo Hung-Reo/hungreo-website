@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Tooltip } from '../ui/Tooltip'
 import { DocumentReviewModal } from './DocumentReviewModal'
@@ -265,6 +266,16 @@ export function DocumentsManager() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Back to Dashboard */}
+        <div className="mb-6">
+          <Link href="/admin/dashboard">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
         {/* Navigation */}
         <div className="mb-6 border-b">
           <nav className="flex gap-6">

@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from '../ui/Button'
 
 interface VectorStats {
   website: number
@@ -129,14 +132,18 @@ export function VectorManager() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back to Dashboard */}
+        <div className="mb-6">
+          <Link href="/admin/dashboard">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => router.push('/admin/dashboard')}
-            className="text-blue-600 hover:text-blue-800 mb-4"
-          >
-            ← Back to Dashboard
-          </button>
           <h1 className="text-3xl font-bold text-gray-900">Vector Database Management</h1>
           <p className="text-gray-600 mt-2">Manage Pinecone vectors for RAG chatbot</p>
         </div>
