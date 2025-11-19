@@ -41,11 +41,13 @@ export const {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log('[Auth] Missing credentials')
           return null
         }
 
         // Check if email matches admin email
         if (credentials.email !== ADMIN_EMAIL) {
+          console.log('[Auth] Email mismatch:', credentials.email, 'vs', ADMIN_EMAIL)
           return null
         }
 
@@ -62,11 +64,16 @@ export const {
           return null
         }
 
+        console.log('[Auth] Using password hash:', passwordHash.substring(0, 20) + '...')
+        console.log('[Auth] Password length:', credentials.password.length)
+
         // Verify password
         const isValid = await bcrypt.compare(
           credentials.password as string,
           passwordHash
         )
+
+        console.log('[Auth] Password valid:', isValid)
 
         if (!isValid) {
           return null

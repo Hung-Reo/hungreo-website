@@ -7,6 +7,8 @@ export default auth((req) => {
   const isAdminRoute = req.nextUrl.pathname.startsWith('/admin')
   const isAdminApiRoute = req.nextUrl.pathname.startsWith('/api/admin')
   const isLoginPage = req.nextUrl.pathname === '/admin/login'
+  const isForgotPasswordPage = req.nextUrl.pathname === '/admin/forgot-password'
+  const isResetPasswordPage = req.nextUrl.pathname.startsWith('/admin/reset-password/')
 
   // SECURITY: Origin validation for admin API routes
   if (isAdminApiRoute) {
@@ -68,10 +70,10 @@ export default auth((req) => {
     }
   }
 
-  // Allow access to login page
-  if (isLoginPage) {
-    // If already logged in, redirect to dashboard
-    if (isLoggedIn && isAdmin) {
+  // Allow access to public auth pages
+  if (isLoginPage || isForgotPasswordPage || isResetPasswordPage) {
+    // If already logged in, redirect to dashboard (except for password reset pages)
+    if (isLoggedIn && isAdmin && !isResetPasswordPage) {
       return NextResponse.redirect(new URL('/admin/dashboard', req.url))
     }
     return NextResponse.next()

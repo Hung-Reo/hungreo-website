@@ -3,6 +3,7 @@
 import { useState, FormEvent, useEffect } from 'react'
 import { signIn, getCsrfToken } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 
 export default function AdminLoginPage() {
@@ -101,12 +102,12 @@ export default function AdminLoginPage() {
           </form>
 
           <div className="mt-4 text-center">
-            <a
+            <Link
               href="/admin/forgot-password"
               className="text-sm text-primary-600 hover:underline"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <p className="mt-4 text-center text-sm text-slate-600">

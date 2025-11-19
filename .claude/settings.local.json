@@ -22,7 +22,10 @@
       "Bash(git push:*)",
       "Bash(npx tsc:*)",
       "Bash(vercel:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(echo:*)",
+      "Bash(.env.local)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
