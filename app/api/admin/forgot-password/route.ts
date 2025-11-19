@@ -3,7 +3,6 @@ import { kv } from '@vercel/kv'
 import { Resend } from 'resend'
 import crypto from 'crypto'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
 
 export async function POST(req: NextRequest) {
@@ -27,6 +26,14 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // Check if Resend is configured
+    if (!process.env.RESEND_API_KEY) {
+      return NextResponse.json(
+        { error: 'Email service not configured. Please contact administrator.' },
+        { status: 503 }
+      )
+    }
+
     // Generate secure reset token
     const resetToken = crypto.randomBytes(32).toString('hex')
     const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex')
@@ -37,6 +44,7 @@ export async function POST(req: NextRequest) {
     // Send reset email
     const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/reset-password/${resetToken}`
 
+    const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
       from: 'Hungreo Website <noreply@hungreo.com>',
       to: email,
