@@ -56,7 +56,6 @@ export const {
 
         // Check if email matches any admin email
         if (!isAdminEmail(credentials.email as string)) {
-          console.log('[Auth] Email not authorized:', credentials.email)
           return null
         }
 
@@ -73,16 +72,11 @@ export const {
           return null
         }
 
-        console.log('[Auth] Using password hash:', passwordHash.substring(0, 20) + '...')
-        console.log('[Auth] Password length:', (credentials.password as string).length)
-
         // Verify password
         const isValid = await bcrypt.compare(
           credentials.password as string,
           passwordHash
         )
-
-        console.log('[Auth] Password valid:', isValid)
 
         if (!isValid) {
           return null

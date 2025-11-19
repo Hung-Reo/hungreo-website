@@ -84,8 +84,6 @@ export async function POST(req: NextRequest) {
     // Delete the used reset token
     await kv.del(`password-reset:${tokenHash}`)
 
-    console.log('[Reset Password] Password updated successfully for:', email)
-
     return NextResponse.json({
       message: 'Password reset successfully',
     })
