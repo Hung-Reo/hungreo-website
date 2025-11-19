@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import useSWR, { mutate } from 'swr'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
 import { ChatLogsStats } from './components/ChatLogsStats'
 import { ChatLogsFilters } from './components/ChatLogsFilters'
 import { ChatLogsTable } from './components/ChatLogsTable'
@@ -146,6 +148,16 @@ export default function ChatLogsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* Back to Dashboard */}
+      <div className="mb-6">
+        <Link href="/admin/dashboard">
+          <Button variant="outline" size="sm" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">

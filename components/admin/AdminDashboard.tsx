@@ -1,38 +1,26 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 import Link from 'next/link'
+import useSWR from 'swr'
 import { Button } from '../ui/Button'
 import type { ChatStats } from '@/lib/chatLogger'
 
+const fetcher = (url: string) => fetch(url).then(r => r.json())
+
 export function AdminDashboard() {
-  const [stats, setStats] = useState<ChatStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [isScraping, setIsScraping] = useState(false)
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
+  // 🚀 SWR replaces useState + useEffect for instant cached loading
+  const { data, error, isLoading, mutate } = useSWR('/api/admin/stats', fetcher, {
+    refreshInterval: 30000, // Auto refresh every 30s
+    revalidateOnFocus: true, // Refresh when tab gains focus
+    revalidateOnReconnect: true, // Refresh when internet reconnects
+    dedupingInterval: 5000, // Dedupe requests within 5s
+  })
 
-  const fetchStats = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/admin/stats')
-      const data = await response.json()
-
-      if (data.success) {
-        setStats(data.stats)
-      } else {
-        setError('Failed to load statistics')
-      }
-    } catch (err) {
-      setError('An error occurred while loading statistics')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const stats = data?.success ? data.stats : null
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/admin/login' })
@@ -146,7 +134,7 @@ export function AdminDashboard() {
             <div className="text-slate-600">Loading statistics...</div>
           </div>
         ) : error ? (
-          <div className="rounded-lg bg-red-50 p-4 text-red-600">{error}</div>
+          <div className="rounded-lg bg-red-50 p-4 text-red-600">Failed to load statistics. Please try again.</div>
         ) : stats ? (
           <div className="space-y-6">
             {/* Overview Cards */}
@@ -246,11 +234,13 @@ export function AdminDashboard() {
                   <div className="mt-2 text-sm font-medium text-slate-700">Add Videos</div>
                 </Link>
                 <button
-                  onClick={fetchStats}
+                  onClick={() => mutate()}
                   className="rounded-lg border-2 border-dashed border-slate-300 p-4 text-center transition-colors hover:border-primary-500 hover:bg-primary-50"
                 >
                   <div className="text-2xl">🔄</div>
-                  <div className="mt-2 text-sm font-medium text-slate-700">Refresh Stats</div>
+                  <div className="mt-2 text-sm font-medium text-slate-700">
+                    {isLoading ? 'Refreshing...' : 'Refresh Stats'}
+                  </div>
                 </button>
                 <button
                   onClick={handleScrapeWebsite}

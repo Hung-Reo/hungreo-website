@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { Plus, Search, Loader2, Edit, Trash2, ExternalLink } from 'lucide-react'
+import { Plus, Search, Loader2, Edit, Trash2, ExternalLink, ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { toast, Toaster } from 'sonner'
 import type { Project } from '@/lib/contentManager'
 
@@ -74,6 +75,16 @@ export default function ProjectsListPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <Toaster position="top-right" richColors />
+
+      {/* Back to Dashboard */}
+      <div className="mb-6">
+        <Link href="/admin/dashboard">
+          <Button variant="outline" size="sm" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
 
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">

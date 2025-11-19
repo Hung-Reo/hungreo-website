@@ -21,7 +21,9 @@ import {
   ArrowDown,
   Eye,
   EyeOff,
+  ArrowLeft,
 } from 'lucide-react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 
 const CONTACT_TYPES = [
@@ -229,6 +231,16 @@ export default function AdminContactPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
+        {/* Back to Dashboard */}
+        <div className="mb-6">
+          <Link href="/admin/dashboard">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">Contact Information</h1>

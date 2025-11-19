@@ -6,6 +6,20 @@
 import { kv } from '@vercel/kv'
 import { notifyHungAboutChat } from './emailNotifier'
 
+/**
+ * SECURITY: Sanitize pathname to prevent sensitive data leakage
+ * Strips tokens, IDs, and other sensitive URL segments before logging
+ */
+function sanitizePathname(pathname: string): string {
+  return pathname
+    // Strip password reset tokens
+    .replace(/\/admin\/reset-password\/[^/]+/, '/admin/reset-password/[token]')
+    // Strip UUIDs and similar patterns
+    .replace(/\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi, '/[id]')
+    // Strip other sensitive ID patterns (32+ char hex strings)
+    .replace(/\/[a-f0-9]{32,}/gi, '/[token]')
+}
+
 export interface ChatLog {
   id: string
   sessionId: string
@@ -39,8 +53,17 @@ export async function logChat(log: ChatLog): Promise<void> {
     const date = new Date(log.timestamp).toISOString().split('T')[0] // YYYY-MM-DD
     const key = `chat:${log.id}`
 
+    // SECURITY: Sanitize pathname before storing
+    const sanitizedLog = {
+      ...log,
+      pageContext: log.pageContext ? {
+        ...log.pageContext,
+        page: sanitizePathname(log.pageContext.page)
+      } : undefined
+    }
+
     // Store the chat log (90-day TTL)
-    await kv.set(key, log, { ex: 60 * 60 * 24 * 90 })
+    await kv.set(key, sanitizedLog, { ex: 60 * 60 * 24 * 90 })
 
     // Add to daily list
     await kv.lpush(`chats:${date}`, log.id)
@@ -56,8 +79,8 @@ export async function logChat(log: ChatLog): Promise<void> {
     if (log.needsHumanReply) {
       await kv.lpush('inbox:needs-reply', log.id)
 
-      // Send email notification (async, don't wait)
-      notifyHungAboutChat(log).catch((error) => {
+      // Send email notification with sanitized log (async, don't wait)
+      notifyHungAboutChat(sanitizedLog).catch((error) => {
         console.error('Failed to send email notification:', error)
       })
     }

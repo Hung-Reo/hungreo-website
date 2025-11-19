@@ -17,6 +17,15 @@ export function ChatBot() {
   const [streamingMessage, setStreamingMessage] = useState<string>('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // SECURITY: Don't render ChatBot on sensitive auth pages to prevent token leakage
+  const isAuthPage = pathname.startsWith('/admin/login') ||
+                     pathname.startsWith('/admin/forgot-password') ||
+                     pathname.startsWith('/admin/reset-password')
+
+  if (isAuthPage) {
+    return null
+  }
+
   // Extract videoId from URL on client side only
   useEffect(() => {
     if (typeof window !== 'undefined' && pathname.includes('/tools/youtube')) {
