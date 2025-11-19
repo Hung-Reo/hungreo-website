@@ -10,8 +10,13 @@ export default auth((req) => {
   const isForgotPasswordPage = req.nextUrl.pathname === '/admin/forgot-password'
   const isResetPasswordPage = req.nextUrl.pathname.startsWith('/admin/reset-password/')
 
+  // Public API routes that don't require authentication
+  const isForgotPasswordApi = req.nextUrl.pathname === '/api/admin/forgot-password'
+  const isResetPasswordApi = req.nextUrl.pathname === '/api/admin/reset-password'
+  const isValidateTokenApi = req.nextUrl.pathname === '/api/admin/validate-reset-token'
+
   // SECURITY: Origin validation for admin API routes
-  if (isAdminApiRoute) {
+  if (isAdminApiRoute && !isForgotPasswordApi && !isResetPasswordApi && !isValidateTokenApi) {
     const origin = req.headers.get('origin')
     const referer = req.headers.get('referer')
     const host = req.headers.get('host')
