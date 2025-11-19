@@ -4,6 +4,15 @@ import { Resend } from 'resend'
 import crypto from 'crypto'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
+const BACKUP_ADMIN_EMAIL = process.env.BACKUP_ADMIN_EMAIL
+
+// Helper to check if email is an admin email
+function isAdminEmail(email: string): boolean {
+  const normalizedEmail = email.toLowerCase()
+  if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) return true
+  if (BACKUP_ADMIN_EMAIL && normalizedEmail === BACKUP_ADMIN_EMAIL.toLowerCase()) return true
+  return false
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,8 +26,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // SECURITY: Check if email matches admin email
-    if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    // SECURITY: Check if email matches any admin email
+    if (!isAdminEmail(email)) {
       // Don't reveal if email exists or not (prevent enumeration)
       // Always return success but don't send email
       return NextResponse.json({
@@ -46,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
-      from: 'Hungreo Website <noreply@hungreo.com>',
+      from: 'Hungreo Website <onboarding@resend.dev>',
       to: email,
       subject: 'Reset Your Admin Password',
       html: `

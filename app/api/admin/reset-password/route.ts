@@ -4,6 +4,15 @@ import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
+const BACKUP_ADMIN_EMAIL = process.env.BACKUP_ADMIN_EMAIL
+
+// Helper to check if email is an admin email
+function isAdminEmail(email: string): boolean {
+  const normalizedEmail = email.toLowerCase()
+  if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) return true
+  if (BACKUP_ADMIN_EMAIL && normalizedEmail === BACKUP_ADMIN_EMAIL.toLowerCase()) return true
+  return false
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,8 +66,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verify email matches admin email
-    if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    // Verify email matches any admin email
+    if (!isAdminEmail(email)) {
       return NextResponse.json(
         { error: 'Invalid reset request' },
         { status: 400 }

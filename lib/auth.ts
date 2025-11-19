@@ -10,6 +10,15 @@ import { kv } from '@vercel/kv'
 
 // Admin credentials from environment variables
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
+const BACKUP_ADMIN_EMAIL = process.env.BACKUP_ADMIN_EMAIL
+
+// Helper to check if email is an admin email
+function isAdminEmail(email: string): boolean {
+  const normalizedEmail = email.toLowerCase()
+  if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) return true
+  if (BACKUP_ADMIN_EMAIL && normalizedEmail === BACKUP_ADMIN_EMAIL.toLowerCase()) return true
+  return false
+}
 
 // SECURITY: Password hash must be stored in environment variable
 // The hash is stored in ADMIN_PASSWORD_HASH environment variable
@@ -45,9 +54,9 @@ export const {
           return null
         }
 
-        // Check if email matches admin email
-        if (credentials.email !== ADMIN_EMAIL) {
-          console.log('[Auth] Email mismatch:', credentials.email, 'vs', ADMIN_EMAIL)
+        // Check if email matches any admin email
+        if (!isAdminEmail(credentials.email as string)) {
+          console.log('[Auth] Email not authorized:', credentials.email)
           return null
         }
 
@@ -83,7 +92,7 @@ export const {
         return {
           id: '1',
           name: 'Hung Dinh',
-          email: ADMIN_EMAIL,
+          email: credentials.email as string,
           role: 'admin',
         }
       },
