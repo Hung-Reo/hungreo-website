@@ -65,7 +65,7 @@ export const {
         }
 
         console.log('[Auth] Using password hash:', passwordHash.substring(0, 20) + '...')
-        console.log('[Auth] Password length:', credentials.password.length)
+        console.log('[Auth] Password length:', (credentials.password as string).length)
 
         // Verify password
         const isValid = await bcrypt.compare(

@@ -3,14 +3,23 @@ import { kv } from '@vercel/kv'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
+
 export async function POST(req: NextRequest) {
   try {
     const { token, newPassword } = await req.json()
 
     // Validate inputs
-    if (!token || !newPassword) {
+    if (!token || typeof token !== 'string') {
       return NextResponse.json(
-        { error: 'Token and new password are required' },
+        { error: 'Token is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!newPassword || typeof newPassword !== 'string') {
+      return NextResponse.json(
+        { error: 'New password is required' },
         { status: 400 }
       )
     }
@@ -18,37 +27,58 @@ export async function POST(req: NextRequest) {
     // Validate password strength
     if (newPassword.length < 8) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters long' },
+        { error: 'Password must be at least 8 characters' },
         { status: 400 }
       )
     }
 
-    // Hash the token to match stored version
+    const hasUpperCase = /[A-Z]/.test(newPassword)
+    const hasLowerCase = /[a-z]/.test(newPassword)
+    const hasNumber = /[0-9]/.test(newPassword)
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword)
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecialChar) {
+      return NextResponse.json(
+        { error: 'Password must contain uppercase, lowercase, number, and special character' },
+        { status: 400 }
+      )
+    }
+
+    // Hash the token to match what was stored
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
 
-    // Verify token exists in KV
+    // Get and verify the token
     const email = await kv.get<string>(`password-reset:${tokenHash}`)
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Invalid or expired reset token' },
+        { error: 'Invalid or expired reset link' },
         { status: 400 }
       )
     }
 
-    // Generate new password hash
-    const newPasswordHash = await bcrypt.hash(newPassword, 10)
+    // Verify email matches admin email
+    if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      return NextResponse.json(
+        { error: 'Invalid reset request' },
+        { status: 400 }
+      )
+    }
 
-    // Store new password hash in KV (as backup/override)
-    // You'll still need to update ADMIN_PASSWORD_HASH env variable in Vercel
-    await kv.set('admin:password-hash', newPasswordHash)
+    // Hash the new password
+    const passwordHash = await bcrypt.hash(newPassword, 10)
 
-    // Delete used reset token
+    // Store the new password hash in KV
+    // This will be used by lib/auth.ts which checks KV first before falling back to env var
+    await kv.set('admin:password-hash', passwordHash)
+
+    // Delete the used reset token
     await kv.del(`password-reset:${tokenHash}`)
 
+    console.log('[Reset Password] Password updated successfully for:', email)
+
     return NextResponse.json({
-      message: 'Password reset successful. Please update ADMIN_PASSWORD_HASH in Vercel environment variables.',
-      newPasswordHash, // Return this so user can copy to Vercel
+      message: 'Password reset successfully',
     })
   } catch (error) {
     console.error('[Reset Password] Error:', error)

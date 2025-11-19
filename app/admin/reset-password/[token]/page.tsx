@@ -1,28 +1,76 @@
 'use client'
 
-import { useState } from 'react'
-import { Lock, Eye, EyeOff, Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Lock, CheckCircle, XCircle } from 'lucide-react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 
-export default function ResetPasswordPage({ params }: { params: { token: string } }) {
+interface ResetPasswordPageProps {
+  params: {
+    token: string
+  }
+}
+
+export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
   const router = useRouter()
-  const [newPassword, setNewPassword] = useState('')
+  const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [newHash, setNewHash] = useState('')
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
+  const [validatingToken, setValidatingToken] = useState(true)
+  const [tokenValid, setTokenValid] = useState(false)
+
+  // Validate token on mount
+  useEffect(() => {
+    async function validateToken() {
+      try {
+        const res = await fetch('/api/admin/validate-reset-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: params.token }),
+        })
+
+        if (res.ok) {
+          setTokenValid(true)
+        } else {
+          const data = await res.json()
+          setError(data.error || 'Invalid or expired reset link')
+        }
+      } catch (err) {
+        setError('Failed to validate reset link')
+      } finally {
+        setValidatingToken(false)
+      }
+    }
+
+    validateToken()
+  }, [params.token])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError('')
 
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match')
+    // Validation
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
       return
     }
 
-    if (newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters')
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    // Password strength check
+    const hasUpperCase = /[A-Z]/.test(password)
+    const hasLowerCase = /[a-z]/.test(password)
+    const hasNumber = /[0-9]/.test(password)
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecialChar) {
+      setError('Password must contain uppercase, lowercase, number, and special character')
       return
     }
 
@@ -34,26 +82,84 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           token: params.token,
-          newPassword,
+          newPassword: password,
         }),
       })
 
       const data = await res.json()
 
       if (res.ok) {
-        setNewHash(data.newPasswordHash)
-        toast.success('Password reset successful!')
+        setSuccess(true)
+        toast.success('Password reset successfully!')
+
+        // Redirect to login after 3 seconds
+        setTimeout(() => {
+          router.push('/admin/login')
+        }, 3000)
       } else {
+        setError(data.error || 'Failed to reset password')
         toast.error(data.error || 'Failed to reset password')
       }
-    } catch (error) {
-      console.error('Reset password error:', error)
+    } catch (err) {
+      setError('Something went wrong')
       toast.error('Something went wrong')
     } finally {
       setLoading(false)
     }
   }
 
+  // Loading state while validating token
+  if (validatingToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-slate-600">Validating reset link...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Invalid token state
+  if (!tokenValid) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg border shadow-sm p-8 text-center">
+            <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Invalid Reset Link</h1>
+            <p className="text-slate-600 mb-6">{error}</p>
+            <Link
+              href="/admin/forgot-password"
+              className="inline-block bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Request New Link
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Success state
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg border shadow-sm p-8 text-center">
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Password Reset Successful!</h1>
+            <p className="text-slate-600 mb-6">
+              Your password has been updated. You can now log in with your new password.
+            </p>
+            <p className="text-sm text-slate-500">Redirecting to login page...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Reset password form
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md">
@@ -62,105 +168,71 @@ export default function ResetPasswordPage({ params }: { params: { token: string 
             <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-full mb-4">
               <Lock className="h-6 w-6 text-primary-600" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Reset Password</h1>
-            <p className="text-slate-600 mt-2">Enter your new password below</p>
+            <h1 className="text-2xl font-bold text-slate-900">Reset Your Password</h1>
+            <p className="text-slate-600 mt-2">
+              Enter your new password below
+            </p>
           </div>
 
-          {!newHash ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 mb-1">
-                  New Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="newPassword"
-                    type={showPassword ? 'text' : 'password'}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    placeholder="Enter new password"
-                    className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-                <p className="text-xs text-slate-500 mt-1">At least 8 characters</p>
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  placeholder="Confirm new password"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? 'Resetting...' : 'Reset Password'}
-              </button>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-green-900">Password Reset Successful!</p>
-                    <p className="text-sm text-green-700 mt-1">
-                      Your password has been updated. You can now log in with your new password.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900 mb-2">
-                  📋 For Production: Update Environment Variable
-                </p>
-                <p className="text-xs text-blue-700 mb-2">
-                  Copy this hash and add it to Vercel → Settings → Environment Variables:
-                </p>
-                <div className="bg-white border rounded p-2 font-mono text-xs break-all">
-                  ADMIN_PASSWORD_HASH={newHash}
-                </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(newHash)
-                    toast.success('Hash copied to clipboard!')
-                  }}
-                  className="mt-2 text-xs text-blue-600 hover:underline"
-                >
-                  Copy hash to clipboard
-                </button>
-              </div>
-
-              <button
-                onClick={() => router.push('/admin/login')}
-                className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                Go to Login
-              </button>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+              {error}
             </div>
           )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+                New Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+                placeholder="Enter new password"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Must be at least 8 characters with uppercase, lowercase, number, and special character
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1">
+                Confirm New Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+                placeholder="Confirm new password"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? 'Resetting Password...' : 'Reset Password'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <Link
+              href="/admin/login"
+              className="text-sm text-slate-600 hover:text-slate-900"
+            >
+              Back to Login
+            </Link>
+          </div>
         </div>
       </div>
     </div>
