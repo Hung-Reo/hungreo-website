@@ -25,7 +25,8 @@
       "Bash(node -e:*)",
       "Bash(echo:*)",
       "Bash(.env.local)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
