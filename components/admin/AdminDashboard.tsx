@@ -172,7 +172,7 @@ export function AdminDashboard() {
                 <p className="text-sm text-slate-600">No questions yet</p>
               ) : (
                 <div className="space-y-3">
-                  {stats.topQuestions.map((q, index) => (
+                  {stats.topQuestions.map((q: { question: string; count: number }, index: number) => (
                     <div
                       key={index}
                       className="flex items-center justify-between border-b pb-2 last:border-0"
