@@ -2,6 +2,18 @@
 
 > Building in public: BA → PM transition journey with AI - **Built with Claude Code** ❤️
 
+## 🔒 Security Notice
+
+**IMPORTANT:** This repository uses automated security scanning to prevent accidental exposure of secrets.
+
+- ✅ **GitHub Actions** - Scans every commit for exposed API keys, tokens, and passwords
+- ✅ **Pre-commit Hooks** - Blocks commits containing secrets
+- ✅ **Gitleaks** - Continuous monitoring for sensitive data
+
+**See:** [SECURITY_POLICY.md](SECURITY_POLICY.md) for full security guidelines.
+
+---
+
 ## 🎯 Project Vision
 
 A personal portfolio website showcasing my transition from Business Analyst to Product Manager, featuring AI-powered projects, lessons learned, and technical insights. This platform serves as both a professional portfolio and a knowledge-sharing hub for the community.
@@ -179,8 +191,10 @@ The website includes a comprehensive admin dashboard for content management:
 
 **Admin Login:**
 - URL: `/admin/login`
-- Email: `hungreo2005@gmail.com`
-- Password: `Admin@123`
+- Email: Set via `ADMIN_EMAIL` environment variable
+- Password: Set via `ADMIN_PASSWORD_HASH` environment variable (bcrypt hash)
+
+**Security:** See [SECURITY_POLICY.md](SECURITY_POLICY.md) and [docs/HOW_TO_CHANGE_ADMIN_PASSWORD.md](docs/HOW_TO_CHANGE_ADMIN_PASSWORD.md) for password management.
 
 **Admin Dashboard Features:**
 

@@ -318,7 +318,7 @@ open https://hungreo.vercel.app/tools/knowledge
 
 **Admin Credentials**:
 - Email: `hungreo2005@gmail.com`
-- Password: `Admin@123`
+- Password: `YOUR_SECURE_PASSWORD`
 
 **Important**: Change admin password in production by updating `ADMIN_PASSWORD_HASH` environment variable in Vercel Dashboard.
 

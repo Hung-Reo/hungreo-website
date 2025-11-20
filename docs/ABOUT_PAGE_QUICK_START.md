@@ -6,7 +6,7 @@
 ```
 URL: http://localhost:3000/admin/login
 Email: hungreo2005@gmail.com
-Password: Admin@123
+Password: YOUR_SECURE_PASSWORD
 ```
 
 ### 2. Go to About Editor

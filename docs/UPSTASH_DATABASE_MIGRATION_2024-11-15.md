@@ -30,9 +30,9 @@ Successfully migrated from old Upstash Redis database to a new one due to hittin
 #### Local (.env.local)
 ```bash
 UPSTASH_REDIS_REST_URL=https://large-heron-11467.upstash.io
-UPSTASH_REDIS_REST_TOKEN=ASzLAAIncDJkNTM0YjFkZGY0ZmI0NDY1YjE2NGMzZTU4MzljNzM2Y3AyMTE0Njc
+UPSTASH_REDIS_REST_TOKEN=YOUR_UPSTASH_TOKEN_HERE
 KV_REST_API_URL=https://large-heron-11467.upstash.io
-KV_REST_API_TOKEN=ASzLAAIncDJkNTM0YjFkZGY0ZmI0NDY1YjE2NGMzZTU4MzljNzM2Y3AyMTE0Njc
+KV_REST_API_TOKEN=YOUR_UPSTASH_TOKEN_HERE
 ```
 
 #### Production (Vercel)
@@ -73,7 +73,7 @@ KV_REST_API_TOKEN=ASzLAAIncDJkNTM0YjFkZGY0ZmI0NDY1YjE2NGMzZTU4MzljNzM2Y3AyMTE0Nj
 ### 1. Login to Admin Panel
 URL: https://hungreo.vercel.app/admin/login
 - Email: `hungreo2005@gmail.com`
-- Password: `Admin@123`
+- Password: `YOUR_SECURE_PASSWORD`
 
 ### 2. Re-add About Page Content
 1. Go to https://hungreo.vercel.app/admin/dashboard

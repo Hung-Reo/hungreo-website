@@ -1,0 +1,67 @@
+# Gitleaks Configuration
+title = "Gitleaks Config for Hungreo Website"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "upstash-token"
+description = "Upstash Redis Token"
+regex = '''UPSTASH_REDIS_REST_TOKEN\s*=\s*["']?A[a-zA-Z0-9]{50,}["']?'''
+tags = ["key", "upstash"]
+
+[[rules]]
+id = "vercel-kv-token"
+description = "Vercel KV Token"
+regex = '''KV_REST_API_TOKEN\s*=\s*["']?A[a-zA-Z0-9]{50,}["']?'''
+tags = ["key", "vercel"]
+
+[[rules]]
+id = "resend-api-key"
+description = "Resend API Key"
+regex = '''re_[a-zA-Z0-9]{30,}'''
+tags = ["key", "resend"]
+
+[[rules]]
+id = "nextauth-secret"
+description = "NextAuth Secret"
+regex = '''NEXTAUTH_SECRET\s*=\s*["'][^"'\s]{32,}["']'''
+tags = ["key", "auth"]
+
+[[rules]]
+id = "admin-password"
+description = "Admin Password in Docs"
+regex = '''(Password|password):\s*`?Admin@\d+`?'''
+tags = ["password", "admin"]
+
+[[rules]]
+id = "bcrypt-hash"
+description = "Bcrypt Password Hash in Docs"
+regex = '''\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}'''
+tags = ["password", "bcrypt"]
+# Only alert if in markdown files
+[rules.allowlist]
+paths = [
+  '''.*\.ts$''',
+  '''.*\.tsx$''',
+  '''.*\.js$''',
+]
+
+[allowlist]
+description = "Allowlisted files and patterns"
+paths = [
+  '''.gitleaksignore''',
+  '''node_modules/''',
+  '''.next/''',
+  '''dist/''',
+  '''build/''',
+]
+
+regexes = [
+  '''YOUR_.*_HERE''',
+  '''EXAMPLE_.*''',
+  '''<your-.*>''',
+  '''\[your-.*\]''',
+  '''sk-proj-example''',
+  '''AIzaEXAMPLE''',
+]

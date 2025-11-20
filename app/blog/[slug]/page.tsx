@@ -6,8 +6,40 @@ import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { BlogPost } from '@/lib/contentManager'
 import { Loader2, ArrowLeft, Calendar, Clock, Tag, BookOpen } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import DOMPurify from 'isomorphic-dompurify'
+import { marked } from 'marked'
+
+// Configure marked for better parsing
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+})
+
+// Helper function to convert content to HTML
+function contentToHTML(content: string): string {
+  if (!content) return ''
+
+  try {
+    // Strip any wrapping HTML tags (AI parser sometimes wraps content in <p> tags)
+    let cleanContent = content
+
+    // Remove opening and closing <p> tags if they wrap the entire content
+    if (cleanContent.startsWith('<p>') && cleanContent.endsWith('</p>')) {
+      cleanContent = cleanContent.slice(3, -4)
+    }
+
+    // Also remove any stray <p> or </p> tags
+    cleanContent = cleanContent.replace(/<\/?p>/g, '')
+
+    // Parse markdown to HTML
+    const html = marked.parse(cleanContent) as string
+
+    return html
+  } catch (error) {
+    console.error('Markdown parsing error:', error)
+    return content
+  }
+}
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
@@ -148,11 +180,12 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         )}
 
         {/* Content */}
-        <div className="prose prose-slate prose-lg max-w-none mb-12">
-          <ReactMarkdown remarkPlugins={[remarkGfm as any]}>
-            {post[lang].content}
-          </ReactMarkdown>
-        </div>
+        <div
+          className="prose prose-slate prose-lg max-w-none mb-12"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(contentToHTML(post[lang].content || ''))
+          }}
+        />
 
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (

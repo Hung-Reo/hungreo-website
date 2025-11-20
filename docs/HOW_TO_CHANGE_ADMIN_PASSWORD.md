@@ -2,7 +2,7 @@
 
 ## Current Password
 - Email: `hungreo2005@gmail.com`
-- Password: `Admin@123`
+- Password: `YOUR_SECURE_PASSWORD`
 
 ---
 

@@ -178,7 +178,7 @@ export default function BlogPage() {
                 {lang === 'en' ? 'Featured Posts' : 'Bài viết nổi bật'}
               </h2>
             </div>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {featuredPosts.map((post) => (
                 <BlogPostCard key={post.id} post={post} lang={lang} router={router} featured />
               ))}
@@ -221,17 +221,11 @@ function BlogPostCard({ post, lang, router, featured = false }: BlogPostCardProp
   return (
     <article
       onClick={() => router.push(`/blog/${post.slug}`)}
-      className={`group bg-white rounded-lg border shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden ${
-        featured ? 'md:flex md:flex-row' : ''
-      }`}
+      className="group bg-white rounded-lg border shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden flex flex-col"
     >
       {/* Featured Image */}
       {post.featuredImage && (
-        <div
-          className={`overflow-hidden bg-slate-100 ${
-            featured ? 'md:w-1/2' : 'aspect-video'
-          }`}
-        >
+        <div className="flex-shrink-0 overflow-hidden bg-slate-100 aspect-video w-full">
           <img
             src={post.featuredImage}
             alt={post[lang].title}
@@ -240,7 +234,7 @@ function BlogPostCard({ post, lang, router, featured = false }: BlogPostCardProp
         </div>
       )}
 
-      <div className={`p-6 ${featured ? 'md:w-1/2 flex flex-col justify-between' : ''}`}>
+      <div className="p-6 flex flex-col flex-1">
         {/* Category */}
         {post.category && (
           <div className="mb-3">
@@ -251,16 +245,12 @@ function BlogPostCard({ post, lang, router, featured = false }: BlogPostCardProp
         )}
 
         {/* Title */}
-        <h3
-          className={`font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors ${
-            featured ? 'text-2xl' : 'text-xl'
-          }`}
-        >
+        <h3 className="font-bold text-xl text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">
           {post[lang].title}
         </h3>
 
         {/* Excerpt */}
-        <p className={`text-slate-600 mb-4 ${featured ? 'line-clamp-3' : 'line-clamp-2'}`}>
+        <p className="text-slate-600 mb-4 line-clamp-2">
           {post[lang].excerpt}
         </p>
 
