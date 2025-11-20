@@ -9,7 +9,7 @@ import {
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { BilingualTabs } from '@/components/admin/BilingualTabs'
-import { MarkdownEditor } from '@/components/admin/MarkdownEditor'
+import RichTextEditor from '@/components/admin/RichTextEditor'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { StatusToggle } from '@/components/admin/StatusToggle'
 
@@ -514,17 +514,18 @@ export default function BlogEditorPage({
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Content (Markdown)
+                      Content
                     </label>
-                    <MarkdownEditor
-                      value={formData.en?.content || ''}
-                      onChange={(value) => {
+                    <RichTextEditor
+                      content={formData.en?.content || ''}
+                      onChange={(markdown) => {
                         setFormData({
                           ...formData,
-                          en: { ...formData.en, content: value },
+                          en: { ...formData.en, content: markdown },
                         })
                         setHasUnsavedChanges(true)
                       }}
+                      placeholder="Write your blog content here..."
                     />
                   </div>
                 </>
@@ -570,17 +571,18 @@ export default function BlogEditorPage({
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Nội dung (Markdown)
+                      Nội dung
                     </label>
-                    <MarkdownEditor
-                      value={formData.vi?.content || ''}
-                      onChange={(value) => {
+                    <RichTextEditor
+                      content={formData.vi?.content || ''}
+                      onChange={(markdown) => {
                         setFormData({
                           ...formData,
-                          vi: { ...formData.vi, content: value },
+                          vi: { ...formData.vi, content: markdown },
                         })
                         setHasUnsavedChanges(true)
                       }}
+                      placeholder="Viết nội dung blog của bạn ở đây..."
                     />
                   </div>
                 </>

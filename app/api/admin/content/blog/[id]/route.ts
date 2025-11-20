@@ -55,9 +55,9 @@ export async function PUT(
     const body = await req.json()
 
     // Validate required fields
-    if (!body.en?.title || !body.en?.description) {
+    if (!body.en?.title || !body.en?.excerpt) {
       return NextResponse.json(
-        { error: 'Missing required English fields (title, description)' },
+        { error: 'Missing required English fields (title, excerpt)' },
         { status: 400 }
       )
     }

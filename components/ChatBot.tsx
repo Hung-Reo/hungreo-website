@@ -35,15 +35,6 @@ export function ChatBot() {
 
   const { currentSession, isLoading: historyLoading, addMessage, clearSession, getConversationContext } = useChatHistory(pageContext)
 
-  // SECURITY: Don't render ChatBot on sensitive auth pages to prevent token leakage
-  const isAuthPage = pathname.startsWith('/admin/login') ||
-                     pathname.startsWith('/admin/forgot-password') ||
-                     pathname.startsWith('/admin/reset-password')
-
-  if (isAuthPage) {
-    return null
-  }
-
   // Display messages from current session, filter out empty messages
   const messages = (currentSession?.messages || []).filter(m => m.content?.trim())
 
@@ -150,6 +141,15 @@ export function ChatBot() {
     if (window.confirm('Are you sure you want to clear the chat history?')) {
       clearSession()
     }
+  }
+
+  // SECURITY: Don't render ChatBot on sensitive auth pages to prevent token leakage
+  const isAuthPage = pathname.startsWith('/admin/login') ||
+                     pathname.startsWith('/admin/forgot-password') ||
+                     pathname.startsWith('/admin/reset-password')
+
+  if (isAuthPage) {
+    return null
   }
 
   return (

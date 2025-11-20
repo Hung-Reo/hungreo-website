@@ -93,6 +93,9 @@ export default function AdminBlogPage() {
 
   // Filter posts
   const filteredPosts = posts.filter(post => {
+    // Filter out posts without title (invalid/corrupted data)
+    if (!post.en?.title) return false
+
     // Status filter
     if (statusFilter !== 'all' && post.status !== statusFilter) return false
 
@@ -102,9 +105,9 @@ export default function AdminBlogPage() {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      const matchesTitle = post.en.title.toLowerCase().includes(query) ||
-                          post.vi.title?.toLowerCase().includes(query)
-      const matchesTags = post.tags.some(tag => tag.toLowerCase().includes(query))
+      const matchesTitle = post.en?.title?.toLowerCase().includes(query) ||
+                          post.vi?.title?.toLowerCase().includes(query)
+      const matchesTags = post.tags?.some(tag => tag.toLowerCase().includes(query))
       const matchesCategory = post.category?.toLowerCase().includes(query)
       if (!matchesTitle && !matchesTags && !matchesCategory) return false
     }
@@ -309,9 +312,9 @@ export default function AdminBlogPage() {
                       <td className="px-4 py-3">
                         <div>
                           <div className="font-medium text-slate-900">
-                            {post.en.title}
+                            {post.en?.title || 'Untitled'}
                           </div>
-                          {post.vi.title && (
+                          {post.vi?.title && (
                             <div className="text-sm text-slate-600">
                               {post.vi.title}
                             </div>
@@ -338,7 +341,7 @@ export default function AdminBlogPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
-                          {post.tags.slice(0, 2).map((tag) => (
+                          {post.tags?.slice(0, 2).map((tag) => (
                             <span
                               key={tag}
                               className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded"
@@ -346,7 +349,7 @@ export default function AdminBlogPage() {
                               #{tag}
                             </span>
                           ))}
-                          {post.tags.length > 2 && (
+                          {post.tags && post.tags.length > 2 && (
                             <span className="text-xs text-slate-500">
                               +{post.tags.length - 2}
                             </span>
@@ -357,7 +360,7 @@ export default function AdminBlogPage() {
                         {post.readTime || 0} min
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-600">
-                        {formatDate(new Date(post.updatedAt).toISOString())}
+                        {post.updatedAt ? formatDate(new Date(post.updatedAt).toISOString()) : 'N/A'}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {post.featured && (
@@ -374,7 +377,7 @@ export default function AdminBlogPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDelete(post.id, post.en.title)}
+                            onClick={() => handleDelete(post.id, post.en?.title || 'Untitled')}
                             disabled={deleting === post.id}
                           >
                             {deleting === post.id ? (

@@ -27,11 +27,70 @@ import {
   Undo,
   Redo
 } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
+import { marked } from 'marked'
+import TurndownService from 'turndown'
+
+// Configure marked for Markdown→HTML
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+})
+
+// Configure turndown for HTML→Markdown
+const turndownService = new TurndownService({
+  headingStyle: 'atx',
+  codeBlockStyle: 'fenced',
+})
+
+// Helper: Normalize Markdown headings
+function normalizeHeadings(md: string): string {
+  if (!md) return md
+  let out = md
+
+  // 1) Gom các khối # # # → ### (xoá khoảng trắng giữa #)
+  out = out.replace(/^(\s*)(#)(\s+#)+/gm, (full, indent, hash, rest) => {
+    const count = 1 + (rest.match(/#/g)?.length || 0)
+    return `${indent}${'#'.repeat(count)} `
+  })
+
+  // 2) Đảm bảo có space sau dãy # (sửa kiểu "###Problem" → "### Problem")
+  out = out.replace(/^(\s*#+)([^\s#])/gm, '$1 $2')
+
+  return out
+}
+
+// Helper: Markdown → HTML
+function markdownToHtml(markdown: string): string {
+  if (!markdown) return ''
+
+  // Normalize headings first
+  let normalized = normalizeHeadings(markdown)
+
+  // Strip wrapping <p> tags if AI parser added them
+  if (normalized.startsWith('<p>') && normalized.endsWith('</p>')) {
+    normalized = normalized.slice(3, -4)
+  }
+  normalized = normalized.replace(/<\/?p>/g, '')
+
+  return marked.parse(normalized) as string
+}
+
+// Helper: HTML → Markdown
+function htmlToMarkdown(html: string): string {
+  if (!html) return ''
+
+  let markdown = turndownService.turndown(html)
+
+  // Normalize headings after conversion
+  markdown = normalizeHeadings(markdown)
+
+  return markdown
+}
 
 interface RichTextEditorProps {
-  content: string
-  onChange: (html: string) => void
+  content: string // Markdown format
+  onChange: (markdown: string) => void // Returns Markdown
   placeholder?: string
   className?: string
 }
@@ -243,6 +302,9 @@ const MenuBar = ({ editor }: { editor: any }) => {
 }
 
 export default function RichTextEditor({ content, onChange, placeholder = 'Start typing...', className = '' }: RichTextEditorProps) {
+  // Convert initial Markdown content to HTML for Tiptap
+  const initialHtml = markdownToHtml(content)
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -265,19 +327,47 @@ export default function RichTextEditor({ content, onChange, placeholder = 'Start
         placeholder,
       }),
     ],
-    content,
+    content: initialHtml,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML())
+      // Convert HTML back to Markdown before calling onChange
+      const html = editor.getHTML()
+      const markdown = htmlToMarkdown(html)
+      onChange(markdown)
     },
     editorProps: {
       attributes: {
         class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] p-4',
       },
     },
+    immediatelyRender: false,
   })
+
+  // Update editor content when prop changes (convert Markdown to HTML first)
+  useEffect(() => {
+    if (editor && content) {
+      const html = markdownToHtml(content)
+      const currentHtml = editor.getHTML()
+
+      // Only update if content actually changed to avoid cursor issues
+      if (html !== currentHtml) {
+        editor.commands.setContent(html)
+      }
+    }
+  }, [editor, content])
 
   return (
     <div className={`border border-gray-300 rounded-lg overflow-hidden ${className}`}>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .ProseMirror p.is-editor-empty:first-child::before {
+            content: attr(data-placeholder);
+            float: left;
+            color: #adb5bd;
+            pointer-events: none;
+            height: 0;
+          }
+        `
+      }} />
       <MenuBar editor={editor} />
       <EditorContent editor={editor} />
     </div>

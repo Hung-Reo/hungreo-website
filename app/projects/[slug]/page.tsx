@@ -8,6 +8,40 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import type { Project } from '@/lib/contentManager'
 import { Loader2, ArrowLeft, Github, ExternalLink, Lightbulb, Code } from 'lucide-react'
 import DOMPurify from 'isomorphic-dompurify'
+import { marked } from 'marked'
+
+// Configure marked for better parsing
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+})
+
+// Helper function to convert content to HTML
+// Always converts Markdown to HTML, regardless of existing HTML tags
+function contentToHTML(content: string): string {
+  if (!content) return ''
+
+  try {
+    // Strip any wrapping HTML tags (AI parser sometimes wraps content in <p> tags)
+    let cleanContent = content
+
+    // Remove opening and closing <p> tags if they wrap the entire content
+    if (cleanContent.startsWith('<p>') && cleanContent.endsWith('</p>')) {
+      cleanContent = cleanContent.slice(3, -4)
+    }
+
+    // Also remove any stray <p> or </p> tags
+    cleanContent = cleanContent.replace(/<\/?p>/g, '')
+
+    // Parse markdown to HTML
+    const html = marked.parse(cleanContent) as string
+
+    return html
+  } catch (error) {
+    console.error('Markdown parsing error:', error)
+    return content
+  }
+}
 
 export default function ProjectPage({ params }: { params: { slug: string } }) {
   const { language } = useLanguage()
@@ -150,7 +184,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <div
           className="prose prose-slate prose-lg max-w-none mb-12"
           dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(project[lang].content || '')
+            __html: DOMPurify.sanitize(contentToHTML(project[lang].content || ''))
           }}
         />
 
