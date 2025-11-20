@@ -333,7 +333,7 @@ export default async function AboutPage() {
 2. **Login to Admin**
    - URL: http://localhost:3000/admin/login
    - Email: hungreo2005@gmail.com
-   - Password: Admin@123
+   - Password: YOUR_SECURE_PASSWORD
 
 3. **Navigate to About Editor**
    - Go to: http://localhost:3000/admin/content/about

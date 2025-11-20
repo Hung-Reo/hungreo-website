@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
 import { BilingualTabs } from '@/components/admin/BilingualTabs'
-import { MarkdownEditor } from '@/components/admin/MarkdownEditor'
+import RichTextEditor from '@/components/admin/RichTextEditor'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { StatusToggle } from '@/components/admin/StatusToggle'
 import type { Project } from '@/lib/contentManager'
@@ -321,7 +321,7 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {formData?.slug && (
+          {formData?.slug && formData?.status === 'published' && (
             <Button variant="outline" onClick={() => window.open(`/projects/${formData.slug}`, '_blank')}>
               <Eye className="mr-2 h-4 w-4" />
               Preview
@@ -508,20 +508,20 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
             {/* Content (Markdown) */}
             <div>
               <label className="text-sm font-medium text-slate-700 block mb-2">
-                Detailed Content (Markdown)
+                Detailed Content
               </label>
-              <MarkdownEditor
-                value={formData[activeTab]?.content || ''}
-                onChange={(value) =>
+              <RichTextEditor
+                content={formData[activeTab]?.content || ''}
+                onChange={(html) =>
                   setFormData({
                     ...formData,
                     [activeTab]: {
                       ...formData[activeTab],
-                      content: value,
+                      content: html,
                     },
                   })
                 }
-                height={400}
+                placeholder="Write your project details here..."
               />
             </div>
           </div>

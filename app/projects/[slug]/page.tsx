@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { Project } from '@/lib/contentManager'
 import { Loader2, ArrowLeft, Github, ExternalLink, Lightbulb, Code } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import DOMPurify from 'isomorphic-dompurify'
 
 export default function ProjectPage({ params }: { params: { slug: string } }) {
   const { language } = useLanguage()
@@ -148,11 +147,12 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         )}
 
         {/* Content */}
-        <div className="prose prose-slate prose-lg max-w-none mb-12">
-          <ReactMarkdown remarkPlugins={[remarkGfm as any]}>
-            {project[lang].content}
-          </ReactMarkdown>
-        </div>
+        <div
+          className="prose prose-slate prose-lg max-w-none mb-12"
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(project[lang].content || '')
+          }}
+        />
 
         {/* Screenshots Gallery */}
         {project.screenshots && project.screenshots.length > 0 && (

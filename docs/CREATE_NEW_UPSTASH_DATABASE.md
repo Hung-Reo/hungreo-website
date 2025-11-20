@@ -120,7 +120,7 @@ Hoặc redeploy từ Vercel Dashboard:
 Sau khi deploy xong:
 
 1. **Check Admin Login**: https://hungreo.vercel.app/admin/login
-   - Login với `hungreo2005@gmail.com` / `Admin@123`
+   - Login với `hungreo2005@gmail.com` / `YOUR_SECURE_PASSWORD`
 
 2. **Check Videos**: https://hungreo.vercel.app/admin/videos
    - Sẽ hiển thị "No videos found" (database mới, chưa có data)

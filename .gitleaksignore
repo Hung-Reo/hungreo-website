@@ -1,0 +1,10 @@
+# Gitleaks Ignore File
+# Add false positives here
+
+# Example tokens in documentation (not real)
+docs/CREATE_NEW_UPSTASH_DATABASE.md:*YOUR_UPSTASH_TOKEN_HERE*
+docs/CREATE_NEW_UPSTASH_DATABASE.md:*AxxxYourNewTokenHere*
+
+# Test files
+**/*test*.ts:*
+**/*spec*.ts:*

@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit security checks..."
+
+# Check for exposed passwords
+if git diff --cached --name-only | grep -E '\.(md|txt)$' > /dev/null; then
+  echo "📝 Checking markdown files for exposed secrets..."
+
+  if git diff --cached | grep -E "Admin@123|Password: \`[A-Za-z0-9!@#$%^&*]{8,}\`"; then
+    echo "❌ ERROR: Found exposed passwords in staged files!"
+    echo "   Please remove passwords before committing."
+    exit 1
+  fi
+
+  if git diff --cached | grep -E "UPSTASH_REDIS_REST_TOKEN=A[a-zA-Z0-9]{50,}"; then
+    echo "❌ ERROR: Found real Upstash token in staged files!"
+    echo "   Please use placeholder instead: YOUR_UPSTASH_TOKEN_HERE"
+    exit 1
+  fi
+
+  if git diff --cached | grep -E "sk-[a-zA-Z0-9]{40,}|AIza[a-zA-Z0-9]{35,}|re_[a-zA-Z0-9]{30,}"; then
+    echo "❌ ERROR: Found API keys in staged files!"
+    echo "   Please remove API keys before committing."
+    exit 1
+  fi
+fi
+
+echo "✅ Security checks passed!"
