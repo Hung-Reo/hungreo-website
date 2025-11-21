@@ -17,6 +17,15 @@ export function ChatBot() {
   const [streamingMessage, setStreamingMessage] = useState<string>('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Listen for custom event from TurtleWalker
+  useEffect(() => {
+    const handleOpenChatbot = () => {
+      setIsOpen(true)
+    }
+    window.addEventListener('openChatbot', handleOpenChatbot)
+    return () => window.removeEventListener('openChatbot', handleOpenChatbot)
+  }, [])
+
   // Extract videoId from URL on client side only
   useEffect(() => {
     if (typeof window !== 'undefined' && pathname.includes('/tools/youtube')) {

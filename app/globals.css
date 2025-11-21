@@ -48,4 +48,170 @@
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2;
   }
+
+  /* === Turtle Walker Animations === */
+
+  /* Container for turtle walking track */
+  .turtle-track {
+    position: absolute;
+    top: 10px;
+    left: 180px;
+    width: 400px;
+    height: 80px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* Clickable button wrapper - Sprite Animation */
+  .turtle-button-sprite {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    pointer-events: auto;
+    padding: 0;
+    outline: none;
+    animation: walkCycle 20s infinite linear;
+    transform-origin: center center;
+  }
+
+  .turtle-button-sprite:hover {
+    transform: scale(1.15);
+    transition: transform 0.2s;
+  }
+
+  .turtle-button-sprite:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+  }
+
+  .turtle-button-sprite:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 50%;
+  }
+
+  /* The turtle sprite image */
+  .turtle-walk-sprite {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    pointer-events: none;
+    transform-origin: center bottom;
+  }
+
+  /* Shadow under the turtle */
+  .turtle-shadow {
+    position: absolute;
+    width: 24px;
+    height: 6px;
+    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    animation: shadowSquash 0.8s infinite ease-in-out;
+  }
+
+  /* Complete walk cycle: go right, flip, go left, flip back */
+  @keyframes walkCycle {
+    0% {
+      left: 0%;
+      transform: scaleX(1);
+    }
+    48% {
+      left: calc(100% - 32px);
+      transform: scaleX(1);
+    }
+    50% {
+      left: calc(100% - 32px);
+      transform: scaleX(-1);
+    }
+    98% {
+      left: 0%;
+      transform: scaleX(-1);
+    }
+    100% {
+      left: 0%;
+      transform: scaleX(1);
+    }
+  }
+
+  /* Vertical bobbing */
+  @keyframes bobY {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  /* Body tilt */
+  @keyframes tiltBody {
+    0% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-1deg);
+    }
+    75% {
+      transform: rotate(1deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+
+  /* Shadow squash */
+  @keyframes shadowSquash {
+    0% {
+      transform: translateX(-50%) scaleX(1);
+      opacity: 0.15;
+    }
+    50% {
+      transform: translateX(-50%) scaleX(0.75);
+      opacity: 0.22;
+    }
+    100% {
+      transform: translateX(-50%) scaleX(1);
+      opacity: 0.15;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .turtle-track {
+      left: 100px;
+      width: 200px;
+    }
+    .turtle-button-sprite,
+    .turtle-walk-sprite {
+      width: 28px;
+      height: 28px;
+    }
+    .turtle-shadow {
+      width: 20px;
+      height: 5px;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .turtle-button-sprite,
+    .turtle-walk-sprite,
+    .turtle-shadow {
+      animation: none !important;
+    }
+    .turtle-button-sprite {
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
 }
