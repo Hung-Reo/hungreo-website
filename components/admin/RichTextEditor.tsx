@@ -27,7 +27,7 @@ import {
   Undo,
   Redo
 } from 'lucide-react'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { marked } from 'marked'
 import TurndownService from 'turndown'
 
@@ -305,6 +305,9 @@ export default function RichTextEditor({ content, onChange, placeholder = 'Start
   // Convert initial Markdown content to HTML for Tiptap
   const initialHtml = markdownToHtml(content)
 
+  // Track if update is from internal editor change (to prevent cursor jump)
+  const isInternalUpdateRef = useRef(false)
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -329,10 +332,18 @@ export default function RichTextEditor({ content, onChange, placeholder = 'Start
     ],
     content: initialHtml,
     onUpdate: ({ editor }) => {
+      // Mark this as an internal update
+      isInternalUpdateRef.current = true
+
       // Convert HTML back to Markdown before calling onChange
       const html = editor.getHTML()
       const markdown = htmlToMarkdown(html)
       onChange(markdown)
+
+      // Reset flag after a short delay to allow parent to update
+      setTimeout(() => {
+        isInternalUpdateRef.current = false
+      }, 0)
     },
     editorProps: {
       attributes: {
@@ -342,16 +353,19 @@ export default function RichTextEditor({ content, onChange, placeholder = 'Start
     immediatelyRender: false,
   })
 
-  // Update editor content when prop changes (convert Markdown to HTML first)
+  // Update editor content when prop changes from EXTERNAL source only
   useEffect(() => {
-    if (editor && content) {
-      const html = markdownToHtml(content)
-      const currentHtml = editor.getHTML()
+    if (!editor || !content) return
 
-      // Only update if content actually changed to avoid cursor issues
-      if (html !== currentHtml) {
-        editor.commands.setContent(html)
-      }
+    // Skip update if this change came from internal editor update (user typing)
+    if (isInternalUpdateRef.current) return
+
+    const html = markdownToHtml(content)
+    const currentHtml = editor.getHTML()
+
+    // Only update if content actually changed to avoid unnecessary re-renders
+    if (html !== currentHtml) {
+      editor.commands.setContent(html, { emitUpdate: false }) // Don't emit update event to prevent infinite loop
     }
   }, [editor, content])
 
