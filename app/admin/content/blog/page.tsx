@@ -52,8 +52,19 @@ export default function AdminBlogPage() {
       const res = await fetch('/api/admin/content/blog')
       if (!res.ok) throw new Error('Failed to fetch blog posts')
       const data = await res.json()
-      setPosts(data.posts || [])
-      setStats(data.stats || { total: 0, draft: 0, published: 0, featured: 0 })
+
+      // Filter out invalid posts (posts without titles)
+      const validPosts = (data.posts || []).filter((p: BlogPost) => p.en?.title)
+
+      setPosts(validPosts)
+
+      // Recalculate stats based on valid posts only
+      setStats({
+        total: validPosts.length,
+        draft: validPosts.filter((p: BlogPost) => p.status === 'draft').length,
+        published: validPosts.filter((p: BlogPost) => p.status === 'published').length,
+        featured: validPosts.filter((p: BlogPost) => p.featured).length,
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load blog posts')
     } finally {

@@ -16,15 +16,18 @@ import type { BlogPost } from '@/lib/contentManager'
 export async function GET(req: NextRequest) {
   const allPosts = await getAllBlogPosts()
 
-  // Sort by updatedAt descending
-  const posts = allPosts.sort((a, b) => b.updatedAt - a.updatedAt)
+  // Filter out invalid posts (without title - corrupted data)
+  const validPosts = allPosts.filter(p => p.en?.title)
 
-  // Calculate stats
+  // Sort by updatedAt descending
+  const posts = validPosts.sort((a, b) => b.updatedAt - a.updatedAt)
+
+  // Calculate stats based on valid posts only
   const stats = {
-    total: allPosts.length,
-    draft: allPosts.filter(p => p.status === 'draft').length,
-    published: allPosts.filter(p => p.status === 'published').length,
-    featured: allPosts.filter(p => p.featured).length,
+    total: validPosts.length,
+    draft: validPosts.filter(p => p.status === 'draft').length,
+    published: validPosts.filter(p => p.status === 'published').length,
+    featured: validPosts.filter(p => p.featured).length,
   }
 
   return NextResponse.json({
