@@ -7,6 +7,20 @@ import { chunkText } from '@/lib/documentProcessor'
 
 export const runtime = 'nodejs'
 
+/**
+ * OPTIONS - Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'GET, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
 // GET single video
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {

@@ -240,8 +240,14 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Save failed')
+        let errorMessage = 'Save failed'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || `Server error: ${response.status} ${response.statusText}`
+        } catch (parseError) {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
@@ -252,7 +258,9 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
         router.push(`/admin/content/projects/${result.project.id}`)
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Save failed')
+      const errorMessage = error instanceof Error ? error.message : 'Save failed'
+      toast.error(errorMessage)
+      console.error('Save error:', error)
     } finally {
       setSaving(false)
     }

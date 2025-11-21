@@ -5,6 +5,20 @@ import { getPineconeIndex } from '@/lib/pinecone'
 export const runtime = 'nodejs'
 
 /**
+ * OPTIONS - Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'GET, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
+/**
  * GET /api/admin/vectors?type=website|document|video
  * List all vectors of a specific type
  */

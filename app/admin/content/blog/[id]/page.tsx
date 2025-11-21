@@ -296,8 +296,14 @@ export default function BlogEditorPage({
       })
 
       if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error || 'Failed to save blog post')
+        let errorMessage = 'Failed to save blog post'
+        try {
+          const errorData = await res.json()
+          errorMessage = errorData.error || `Server error: ${res.status} ${res.statusText}`
+        } catch (parseError) {
+          errorMessage = `Server error: ${res.status} ${res.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await res.json()
@@ -308,7 +314,9 @@ export default function BlogEditorPage({
         router.push(`/admin/content/blog/${result.post.id}`)
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save blog post')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save blog post'
+      toast.error(errorMessage)
+      console.error('Save error:', err)
     } finally {
       setSaving(false)
     }
