@@ -74,8 +74,14 @@ export default function AboutEditorPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Upload failed')
+        let errorMessage = 'Upload failed'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || `Upload failed: ${response.status} ${response.statusText}`
+        } catch (parseError) {
+          errorMessage = `Upload failed: ${response.status} ${response.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
@@ -166,8 +172,16 @@ export default function AboutEditorPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Save failed')
+        // Safely parse error response
+        let errorMessage = 'Save failed'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || `Server error: ${response.status} ${response.statusText}`
+        } catch (parseError) {
+          // Response is not JSON (e.g., 405 Method Not Allowed)
+          errorMessage = `Server error: ${response.status} ${response.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
       toast.success('About page saved successfully!')
@@ -175,6 +189,7 @@ export default function AboutEditorPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Save failed'
       toast.error(errorMessage)
+      console.error('Save error:', err)
     } finally {
       setSaving(false)
     }
@@ -458,8 +473,14 @@ export default function AboutEditorPage() {
                         })
 
                         if (!response.ok) {
-                          const errorData = await response.json()
-                          throw new Error(errorData.error || 'Upload failed')
+                          let errorMessage = 'Upload failed'
+                          try {
+                            const errorData = await response.json()
+                            errorMessage = errorData.error || `Upload failed: ${response.status} ${response.statusText}`
+                          } catch (parseError) {
+                            errorMessage = `Upload failed: ${response.status} ${response.statusText}`
+                          }
+                          throw new Error(errorMessage)
                         }
 
                         const result = await response.json()

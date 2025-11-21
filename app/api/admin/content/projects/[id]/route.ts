@@ -7,6 +7,23 @@ import {
   generateSlug,
 } from '@/lib/contentManager'
 
+// Force Node.js runtime for PUT/DELETE support
+export const runtime = 'nodejs'
+
+/**
+ * OPTIONS - Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'GET, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
 /**
  * GET - Fetch single project by ID
  */

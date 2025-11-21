@@ -2,6 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getAboutContent, saveAboutContent, AboutContent } from '@/lib/contentManager'
 
+// Force Node.js runtime for PUT/POST/DELETE support
+export const runtime = 'nodejs'
+
+/**
+ * OPTIONS - Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'GET, PUT, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
 /**
  * GET - Fetch about content (public or admin)
  */

@@ -13,6 +13,20 @@ import { chunkText } from '@/lib/textUtils'
 
 export const runtime = 'nodejs'
 
+/**
+ * OPTIONS - Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Allow': 'GET, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  })
+}
+
 // GET single document
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
