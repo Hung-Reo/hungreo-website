@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getPublishedProjects } from '@/lib/contentManager'
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * GET - List all published projects (Public route)
  */

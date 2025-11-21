@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getBlogPostBySlug } from '@/lib/contentManager'
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * GET - Fetch published blog post by slug (Public route)
  */

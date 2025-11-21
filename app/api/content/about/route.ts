@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getAboutContent } from '@/lib/contentManager'
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * Public API endpoint for About page content
  * No authentication required - this is public data

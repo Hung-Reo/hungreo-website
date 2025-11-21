@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProjectBySlug } from '@/lib/contentManager'
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * GET - Fetch published project by slug (Public route)
  */

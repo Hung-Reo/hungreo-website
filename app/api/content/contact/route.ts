@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getContactContent } from '@/lib/contentManager'
 
+// Force dynamic rendering to prevent caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * GET - Fetch visible contact methods (public route)
  */
