@@ -65,8 +65,8 @@
   /* Clickable button wrapper - Sprite Animation */
   .turtle-button-sprite {
     position: absolute;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -95,8 +95,8 @@
 
   /* The turtle sprite image */
   .turtle-walk-sprite {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     pointer-events: none;
     transform-origin: center bottom;
@@ -105,11 +105,11 @@
   /* Shadow under the turtle */
   .turtle-shadow {
     position: absolute;
-    width: 24px;
-    height: 6px;
+    width: 28px;
+    height: 7px;
     background: radial-gradient(ellipse, rgba(0, 0, 0, 0.15) 0%, transparent 70%);
     border-radius: 50%;
-    bottom: -4px;
+    bottom: -5px;
     left: 50%;
     transform: translateX(-50%);
     pointer-events: none;
@@ -123,11 +123,11 @@
       transform: scaleX(1);
     }
     48% {
-      left: calc(100% - 32px);
+      left: calc(100% - 40px);
       transform: scaleX(1);
     }
     50% {
-      left: calc(100% - 32px);
+      left: calc(100% - 40px);
       transform: scaleX(-1);
     }
     98% {
@@ -185,19 +185,19 @@
     }
   }
 
-  /* Responsive */
+  /* Responsive - Mobile fixes */
   @media (max-width: 768px) {
     .turtle-track {
-      left: 100px;
-      width: 200px;
+      left: 80px;
+      width: 150px; /* Shorter track: from "Hung Dinh" to hamburger menu */
     }
     .turtle-button-sprite,
     .turtle-walk-sprite {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
     }
     .turtle-shadow {
-      width: 20px;
+      width: 22px;
       height: 5px;
     }
   }

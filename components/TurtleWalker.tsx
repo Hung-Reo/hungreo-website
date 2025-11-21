@@ -40,7 +40,7 @@ export function TurtleWalker({ onClick }: TurtleWalkerProps) {
 
     const frameInterval = setInterval(() => {
       setCurrentFrame((prev) => (prev + 1) % FRAMES.length)
-    }, 250) // Change frame every 250ms
+    }, 300) // Change frame every 300ms - slower on mobile to prevent flickering
 
     return () => clearInterval(frameInterval)
   }, [imagesLoaded])
