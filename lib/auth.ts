@@ -59,7 +59,7 @@ export const {
 
         // Fall back to environment variable if not in KV
         if (!passwordHash) {
-          passwordHash = ADMIN_PASSWORD_HASH
+          passwordHash = ADMIN_PASSWORD_HASH ?? null
         }
 
         if (!passwordHash) {
