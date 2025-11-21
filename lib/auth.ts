@@ -26,13 +26,8 @@ function isAdminEmail(email: string): boolean {
 // node -e "require('bcryptjs').hash('YOUR_NEW_PASSWORD', 10).then(console.log)"
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH
 
-// Validate that password hash is configured
-if (!ADMIN_PASSWORD_HASH) {
-  throw new Error(
-    'ADMIN_PASSWORD_HASH environment variable is required. ' +
-    'Generate a hash with: node -e "require(\'bcryptjs\').hash(\'YOUR_PASSWORD\', 10).then(console.log)"'
-  )
-}
+// NOTE: Validation is now done at runtime in authorize() to prevent build-time errors
+// This allows the build to complete even if ADMIN_PASSWORD_HASH is not set during build
 
 export const {
   handlers: { GET, POST },
@@ -68,7 +63,10 @@ export const {
         }
 
         if (!passwordHash) {
-          console.error('[Auth] No password hash configured')
+          console.error(
+            '[Auth] ADMIN_PASSWORD_HASH environment variable is required. ' +
+            'Generate a hash with: node -e "require(\'bcryptjs\').hash(\'YOUR_PASSWORD\', 10).then(console.log)"'
+          )
           return null
         }
 
