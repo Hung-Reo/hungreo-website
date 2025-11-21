@@ -16,7 +16,14 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json(content)
+    // IMPORTANT: Disable caching to ensure fresh content after admin updates
+    return NextResponse.json(content, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    })
   } catch (error) {
     console.error('[Public API] Error fetching about content:', error)
     return NextResponse.json(

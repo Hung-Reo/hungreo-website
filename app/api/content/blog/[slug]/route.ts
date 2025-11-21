@@ -25,7 +25,12 @@ export async function GET(
     )
   }
 
-  return NextResponse.json(post)
+  // IMPORTANT: Disable caching to ensure fresh content after admin updates
+  return NextResponse.json(post, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    }
+  })
 }
-
-export const revalidate = 60 // ISR: Revalidate every 60 seconds
