@@ -1,6 +1,7 @@
 # Personal Brand Portfolio Website
 
 > Building in public: BA → PM transition journey with AI - **Built with Claude Code** ❤️
+<!-- Force deployment: 2025-11-21 -->
 
 ## 🔒 Security Notice
 
