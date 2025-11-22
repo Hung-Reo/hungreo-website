@@ -73,7 +73,7 @@
     pointer-events: auto;
     padding: 0;
     outline: none;
-    animation: walkCycle 20s infinite linear;
+    animation: walkCycle 30s infinite linear;
     transform-origin: center center;
   }
 
@@ -188,8 +188,8 @@
   /* Responsive - Mobile fixes */
   @media (max-width: 768px) {
     .turtle-track {
-      left: 80px;
-      width: 150px; /* Shorter track: from "Hung Dinh" to hamburger menu */
+      left: 110px;
+      width: 120px; /* Shorter track: starts after "Hung Dinh" */
     }
     .turtle-button-sprite,
     .turtle-walk-sprite {

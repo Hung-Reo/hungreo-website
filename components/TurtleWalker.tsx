@@ -13,6 +13,12 @@ const FRAMES = [
   '/turtle-frame-4.png',
   '/turtle-frame-5.png',
   '/turtle-frame-6.png',
+  '/turtle-frame-7.png',
+  '/turtle-frame-8.png',
+  '/turtle-frame-9.png',
+  '/turtle-frame-10.png',
+  '/turtle-frame-11.png',
+  '/turtle-frame-12.png',
 ]
 
 export function TurtleWalker({ onClick }: TurtleWalkerProps) {
@@ -40,7 +46,7 @@ export function TurtleWalker({ onClick }: TurtleWalkerProps) {
 
     const frameInterval = setInterval(() => {
       setCurrentFrame((prev) => (prev + 1) % FRAMES.length)
-    }, 300) // Change frame every 300ms - slower on mobile to prevent flickering
+    }, 350) // Change frame every 350ms - smoother walking with 12 frames
 
     return () => clearInterval(frameInterval)
   }, [imagesLoaded])
