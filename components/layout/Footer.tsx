@@ -21,7 +21,7 @@ export function Footer() {
             <p className="text-xs text-slate-400">
               {lang === 'en' ? (
                 <>
-                  Built with <span className="text-red-500">❤️</span> using{' '}
+                  Vibe coded with <span className="text-red-500">❤️</span> using{' '}
                   <a
                     href="https://claude.ai/code"
                     target="_blank"
@@ -34,7 +34,7 @@ export function Footer() {
                 </>
               ) : (
                 <>
-                  Được xây dựng với <span className="text-red-500">❤️</span> sử dụng{' '}
+                  Vibe coded với <span className="text-red-500">❤️</span> sử dụng{' '}
                   <a
                     href="https://claude.ai/code"
                     target="_blank"
