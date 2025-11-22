@@ -73,7 +73,7 @@
     pointer-events: auto;
     padding: 0;
     outline: none;
-    animation: walkCycle 30s infinite linear;
+    animation: walkCycle 45s infinite linear;
     transform-origin: center center;
   }
 
@@ -188,17 +188,22 @@
   /* Responsive - Mobile fixes */
   @media (max-width: 768px) {
     .turtle-track {
-      left: 110px;
-      width: 120px; /* Shorter track: starts after "Hung Dinh" */
+      left: 130px; /* Start further right - after "Hung Dinh" */
+      width: 100px; /* Shorter track to prevent overflow */
+      top: 12px;
     }
-    .turtle-button-sprite,
+    .turtle-button-sprite {
+      width: 28px;
+      height: 28px;
+      animation: walkCycle 45s infinite linear; /* Same slower speed */
+    }
     .turtle-walk-sprite {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
     }
     .turtle-shadow {
-      width: 22px;
-      height: 5px;
+      width: 18px;
+      height: 4px;
     }
   }
 

@@ -46,7 +46,7 @@ export function TurtleWalker({ onClick }: TurtleWalkerProps) {
 
     const frameInterval = setInterval(() => {
       setCurrentFrame((prev) => (prev + 1) % FRAMES.length)
-    }, 350) // Change frame every 350ms - smoother walking with 12 frames
+    }, 450) // Change frame every 450ms - slower, smoother walking
 
     return () => clearInterval(frameInterval)
   }, [imagesLoaded])
