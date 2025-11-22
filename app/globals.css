@@ -93,6 +93,13 @@
     border-radius: 50%;
   }
 
+  /* Container for stacked frames - prevents flickering */
+  .turtle-frames-stack {
+    position: relative;
+    width: 40px;
+    height: 40px;
+  }
+
   /* The turtle sprite image */
   .turtle-walk-sprite {
     width: 40px;
@@ -196,6 +203,10 @@
       width: 28px;
       height: 28px;
       animation: walkCycle 45s infinite linear; /* Same slower speed */
+    }
+    .turtle-frames-stack {
+      width: 28px;
+      height: 28px;
     }
     .turtle-walk-sprite {
       width: 28px;

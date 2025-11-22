@@ -73,13 +73,24 @@ export function TurtleWalker({ onClick }: TurtleWalkerProps) {
         aria-label="Click to chat with Huy Rùa"
         title="Chat with Huy Rùa 🐢"
       >
-        <img
-          key={currentFrame}
-          src={FRAMES[currentFrame]}
-          alt="Huy Rùa AI Mascot"
-          className="turtle-walk-sprite"
-          draggable={false}
-        />
+        {/* Stack all frames, only show current one - prevents flickering */}
+        <div className="turtle-frames-stack">
+          {FRAMES.map((src, index) => (
+            <img
+              key={src}
+              src={src}
+              alt="Huy Rùa AI Mascot"
+              className="turtle-walk-sprite"
+              style={{
+                opacity: index === currentFrame ? 1 : 0,
+                position: index === 0 ? 'relative' : 'absolute',
+                top: 0,
+                left: 0,
+              }}
+              draggable={false}
+            />
+          ))}
+        </div>
         <div className="turtle-shadow" />
       </button>
     </div>
