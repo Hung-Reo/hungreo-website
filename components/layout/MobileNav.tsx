@@ -3,19 +3,28 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
-
-const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/projects', label: 'Projects' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/contact', label: 'Contact' },
-]
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const { t } = useLanguage()
+
+  // Navigation items with translation keys (same as desktop)
+  const navItems = [
+    { href: '/', labelKey: 'header.home' },
+    { href: '/about', labelKey: 'header.about' },
+    { href: '/projects', labelKey: 'header.projects' },
+    { href: '/blog', labelKey: 'header.blog' },
+    { href: '/tools/knowledge', labelKey: 'header.aiTools' },
+    { href: '/contact', labelKey: 'header.contact' },
+  ]
+
+  // Show admin link only if user is authenticated as admin
+  const isAdmin = session?.user && (session.user as any).role === 'admin'
 
   return (
     <div className="md:hidden">
@@ -61,9 +70,23 @@ export function MobileNav() {
                     : 'text-slate-600 hover:bg-slate-50'
                 )}
               >
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin/dashboard"
+                onClick={() => setIsOpen(false)}
+                className={cn(
+                  'rounded-lg px-4 py-3 text-base font-medium transition-colors',
+                  pathname.startsWith('/admin')
+                    ? 'bg-primary-50 text-primary-600'
+                    : 'text-slate-600 hover:bg-slate-50'
+                )}
+              >
+                {t('header.admin')}
+              </Link>
+            )}
           </nav>
         </div>
       )}
