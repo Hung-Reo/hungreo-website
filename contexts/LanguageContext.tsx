@@ -232,8 +232,8 @@ const translations = {
     'security.compliance.gdpr': 'GDPR Compliant - User data rights respected',
     'security.compliance.audits': 'Regular Security Audits - Quarterly reviews',
     'security.footer.contact': 'For security or privacy questions, contact:',
-    'security.footer.audit': 'Last Security Audit: January 13, 2025 | Next Scheduled Audit: April 13, 2025',
-    'security.footer.updated': 'This page is updated regularly. Last update: January 13, 2025',
+    'security.footer.audit': 'Last Security Audit: November 2025 | Next Scheduled Audit: February 2026',
+    'security.footer.updated': 'This page is updated regularly. Last update: November 2025',
   },
   vi: {
     // Header Navigation
@@ -448,8 +448,8 @@ const translations = {
     'security.compliance.gdpr': 'Tuân thủ GDPR - Tôn trọng quyền dữ liệu người dùng',
     'security.compliance.audits': 'Kiểm tra bảo mật định kỳ - Hàng quý',
     'security.footer.contact': 'Câu hỏi về bảo mật hoặc quyền riêng tư, liên hệ:',
-    'security.footer.audit': 'Kiểm tra bảo mật lần cuối: 13/1/2025 | Kiểm tra tiếp theo: 13/4/2025',
-    'security.footer.updated': 'Trang này được cập nhật thường xuyên. Cập nhật lần cuối: 13/1/2025',
+    'security.footer.audit': 'Kiểm tra bảo mật lần cuối: Tháng 11/2025 | Kiểm tra tiếp theo: Tháng 2/2026',
+    'security.footer.updated': 'Trang này được cập nhật thường xuyên. Cập nhật lần cuối: Tháng 11/2025',
   },
 }
 
