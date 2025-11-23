@@ -278,8 +278,8 @@ export default function SecurityPage() {
       {/* Footer */}
       <div className="border-t pt-8 text-center text-sm text-slate-600">
         <p>For security or privacy questions, contact: <a href="mailto:hungreo2005@gmail.com" className="text-primary-600 hover:underline">hungreo2005@gmail.com</a></p>
-        <p className="mt-2">Last Security Audit: January 13, 2025 | Next Scheduled Audit: April 13, 2025</p>
-        <p className="mt-4 text-xs">This page is updated regularly. Last update: January 13, 2025</p>
+        <p className="mt-2">Last Security Audit: November 23, 2025 | Next Scheduled Audit: February 23, 2026</p>
+        <p className="mt-4 text-xs">This page is updated regularly. Last update: November 23, 2025</p>
       </div>
     </div>
   )

@@ -166,7 +166,7 @@ const translations = {
     // Security Page
     'security.title': 'Security & Privacy',
     'security.subtitle': 'At Hungreo, we take the security and privacy of your data seriously. This page outlines the measures we\'ve implemented to protect your information.',
-    'security.lastUpdated': 'Last Updated: January 13, 2025',
+    'security.lastUpdated': 'Last Updated: November 23, 2025',
     'security.commitment.title': 'Our Commitment to Security',
     'security.commitment.description': 'We implement industry-standard security practices to ensure your data is protected at all times. Our website is secured with HTTPS encryption, rate limiting, and comprehensive input validation.',
     'security.features.title': 'Security Features',
@@ -382,7 +382,7 @@ const translations = {
     // Security Page
     'security.title': 'Bảo mật & Quyền riêng tư',
     'security.subtitle': 'Tại Hungreo, chúng tôi coi trọng bảo mật và quyền riêng tư dữ liệu của bạn. Trang này mô tả các biện pháp chúng tôi đã triển khai để bảo vệ thông tin của bạn.',
-    'security.lastUpdated': 'Cập nhật lần cuối: 13 tháng 1, 2025',
+    'security.lastUpdated': 'Cập nhật lần cuối: 23 tháng 11, 2025',
     'security.commitment.title': 'Cam kết bảo mật',
     'security.commitment.description': 'Chúng tôi triển khai các phương pháp bảo mật tiêu chuẩn ngành để đảm bảo dữ liệu của bạn luôn được bảo vệ. Website được bảo mật bằng mã hóa HTTPS, giới hạn tốc độ và xác thực đầu vào toàn diện.',
     'security.features.title': 'Tính năng bảo mật',
