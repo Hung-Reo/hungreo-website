@@ -54,20 +54,20 @@ export default function KnowledgePage() {
       {/* Info Section */}
       <div className="mt-16 rounded-lg border border-slate-200 bg-slate-50 p-6">
         <h2 className="mb-3 text-xl font-semibold text-slate-900">
-          How it works
+          {t('knowledge.howItWorks.title')}
         </h2>
         <ul className="space-y-2 text-slate-600">
           <li className="flex items-start gap-2">
             <span className="text-primary-600">•</span>
-            <span>Browse videos by category: Leadership, AI Works, Health, Entertaining, or Human Philosophy</span>
+            <span>{t('knowledge.howItWorks.browse')}</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-primary-600">•</span>
-            <span>Each video page includes the full transcript and an AI chatbot</span>
+            <span>{t('knowledge.howItWorks.transcript')}</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-primary-600">•</span>
-            <span>Ask questions about the video content and get instant, context-aware answers</span>
+            <span>{t('knowledge.howItWorks.ask')}</span>
           </li>
         </ul>
       </div>

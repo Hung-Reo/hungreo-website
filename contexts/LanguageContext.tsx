@@ -52,6 +52,10 @@ const translations = {
     'knowledge.browseVideos': 'Browse videos',
     'knowledge.noVideos': 'No videos available',
     'knowledge.noVideosSearch': 'No videos found matching your search',
+    'knowledge.howItWorks.title': 'How it works',
+    'knowledge.howItWorks.browse': 'Browse videos by category: Leadership, AI Works, Health, Entertaining, or Human Philosophy',
+    'knowledge.howItWorks.transcript': 'Each video page includes the full transcript and an AI chatbot',
+    'knowledge.howItWorks.ask': 'Ask questions about the video content and get instant, context-aware answers',
 
     // Common
     'common.readMore': 'Read more',
@@ -268,6 +272,10 @@ const translations = {
     'knowledge.browseVideos': 'Duyệt video',
     'knowledge.noVideos': 'Không có video nào',
     'knowledge.noVideosSearch': 'Không tìm thấy video nào phù hợp',
+    'knowledge.howItWorks.title': 'Cách hoạt động',
+    'knowledge.howItWorks.browse': 'Duyệt video theo danh mục: Lãnh đạo, AI & Công nghệ, Sức khỏe, Giải trí, hoặc Triết học con người',
+    'knowledge.howItWorks.transcript': 'Mỗi trang video bao gồm bản ghi đầy đủ và chatbot AI',
+    'knowledge.howItWorks.ask': 'Đặt câu hỏi về nội dung video và nhận câu trả lời ngay lập tức',
 
     // Common
     'common.readMore': 'Đọc thêm',
