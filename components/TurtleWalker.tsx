@@ -56,7 +56,7 @@ export function TurtleWalker({ onClick }: TurtleWalkerProps) {
       <div className="turtle-track">
         <div className="turtle-button-sprite">
           <img
-            src="/robot-rua.png"
+            src="/robot-rua.png?v=2"
             alt="Loading..."
             className="turtle-walk-sprite"
           />

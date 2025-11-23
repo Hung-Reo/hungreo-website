@@ -173,7 +173,7 @@ export function ChatBot() {
         >
           {/* Robot Rùa Icon */}
           <img
-            src="/robot-rua.png"
+            src="/robot-rua.png?v=2"
             alt="Robot Rùa"
             className="h-full w-full object-cover"
           />
