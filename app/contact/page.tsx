@@ -126,17 +126,6 @@ export default function ContactPage() {
           )}
         </div>
 
-        {/* Note about contact form */}
-        {methods.length > 0 && (
-          <div className="mt-12 rounded-lg bg-blue-50 p-6">
-            <p className="text-sm text-slate-600">
-              <strong>
-                {lang === 'en' ? 'Note: ' : 'Lưu ý: '}
-              </strong>
-              {t('contact.note')}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   )

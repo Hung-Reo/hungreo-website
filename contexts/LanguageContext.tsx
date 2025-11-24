@@ -165,7 +165,6 @@ const translations = {
     'contact.linkedin.description': 'Connect with me',
     'contact.github.label': 'GitHub',
     'contact.github.description': 'View my code',
-    'contact.note': 'A contact form will be added in Phase 2. For now, please reach out via email or social links above.',
 
     // Security Page
     'security.title': 'Security & Privacy',
@@ -385,7 +384,6 @@ const translations = {
     'contact.linkedin.description': 'Kết nối với tôi',
     'contact.github.label': 'GitHub',
     'contact.github.description': 'Xem code của tôi',
-    'contact.note': 'Form liên hệ sẽ được thêm vào trong Phase 2. Hiện tại, vui lòng liên hệ qua email hoặc mạng xã hội ở trên.',
 
     // Security Page
     'security.title': 'Bảo mật & Quyền riêng tư',
