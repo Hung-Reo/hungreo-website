@@ -125,6 +125,12 @@ export function AdminDashboard() {
             >
               Chat Logs
             </Link>
+            <Link
+              href="/admin/contact-requests"
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap"
+            >
+              Contact Requests
+            </Link>
           </nav>
         </div>
 
@@ -138,7 +144,7 @@ export function AdminDashboard() {
         ) : stats ? (
           <div className="space-y-6">
             {/* Overview Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
               <StatCard
                 title="Total Chats"
                 value={stats.totalChats}
@@ -163,6 +169,15 @@ export function AdminDashboard() {
                 icon="⚠️"
                 color="bg-red-50 text-red-600"
               />
+              <Link href="/admin/contact-requests">
+                <StatCard
+                  title="Contact Requests"
+                  value={stats.contactRequests?.pending || 0}
+                  icon="📬"
+                  color="bg-amber-50 text-amber-600"
+                  subtitle="pending"
+                />
+              </Link>
             </div>
 
             {/* Top Questions */}
@@ -233,6 +248,13 @@ export function AdminDashboard() {
                   <div className="text-2xl">🎥</div>
                   <div className="mt-2 text-sm font-medium text-slate-700">Add Videos</div>
                 </Link>
+                <Link
+                  href="/admin/contact-requests"
+                  className="rounded-lg border-2 border-dashed border-slate-300 p-4 text-center transition-colors hover:border-primary-500 hover:bg-primary-50"
+                >
+                  <div className="text-2xl">📬</div>
+                  <div className="mt-2 text-sm font-medium text-slate-700">Contact Requests</div>
+                </Link>
                 <button
                   onClick={() => mutate()}
                   className="rounded-lg border-2 border-dashed border-slate-300 p-4 text-center transition-colors hover:border-primary-500 hover:bg-primary-50"
@@ -266,18 +288,23 @@ function StatCard({
   value,
   icon,
   color,
+  subtitle,
 }: {
   title: string
   value: number
   icon: string
   color: string
+  subtitle?: string
 }) {
   return (
-    <div className="rounded-lg bg-white p-6 shadow">
+    <div className="rounded-lg bg-white p-6 shadow hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-slate-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
+          <p className="mt-2 text-3xl font-bold text-slate-900">
+            {value}
+            {subtitle && <span className="text-sm font-normal text-slate-500 ml-1">{subtitle}</span>}
+          </p>
         </div>
         <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${color}`}>
           <span className="text-2xl">{icon}</span>

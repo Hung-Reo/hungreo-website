@@ -230,4 +230,86 @@
       transform: translateX(-50%);
     }
   }
+
+  /* === Mini Turtle for ChatBot Header === */
+  .mini-turtle-track {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 40px;
+    pointer-events: none;
+  }
+
+  .mini-turtle-sprite {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    animation: miniWalkCycle 25s infinite linear;
+  }
+
+  .mini-turtle-frames {
+    position: relative;
+    width: 32px;
+    height: 32px;
+  }
+
+  .mini-turtle-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  @keyframes miniWalkCycle {
+    0% {
+      left: 0%;
+      transform: scaleX(1);
+    }
+    48% {
+      left: calc(100% - 32px);
+      transform: scaleX(1);
+    }
+    50% {
+      left: calc(100% - 32px);
+      transform: scaleX(-1);
+    }
+    98% {
+      left: 0%;
+      transform: scaleX(-1);
+    }
+    100% {
+      left: 0%;
+      transform: scaleX(1);
+    }
+  }
+
+  /* Responsive - adjust for mobile */
+  @media (max-width: 640px) {
+    .mini-turtle-track {
+      width: 120px;
+    }
+    .mini-turtle-sprite {
+      width: 28px;
+      height: 28px;
+      animation: miniWalkCycle 20s infinite linear;
+    }
+    .mini-turtle-frames {
+      width: 28px;
+      height: 28px;
+    }
+    .mini-turtle-img {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mini-turtle-sprite {
+      animation: none !important;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
 }

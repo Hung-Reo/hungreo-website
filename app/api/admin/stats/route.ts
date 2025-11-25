@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getChatStats } from '@/lib/chatLogger'
+import { getContactRequestStats } from '@/lib/contactRequestLogger'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -30,7 +31,15 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch fresh data
-    const stats = await getChatStats()
+    const [chatStats, contactStats] = await Promise.all([
+      getChatStats(),
+      getContactRequestStats(),
+    ])
+
+    const stats = {
+      ...chatStats,
+      contactRequests: contactStats,
+    }
 
     // Update cache
     cachedStats = stats
