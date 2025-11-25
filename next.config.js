@@ -13,6 +13,10 @@ const nextConfig = {
       },
     ],
   },
+  // Externalize @sparticuz/chromium to prevent bundling issues
+  experimental: {
+    serverComponentsExternalPackages: ['@sparticuz/chromium'],
+  },
 }
 
 module.exports = nextConfig
