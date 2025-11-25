@@ -48,26 +48,27 @@ async function getBrowserOptions() {
     console.log('[Scraper] Using serverless Chromium for production')
 
     return {
-      args: [...chromium.args, '--disable-gpu', '--single-process', '--no-zygote'],
-      executablePath: await chromium.executablePath('/tmp'),
-      headless: true,
+      args: chromium.args,
+      executablePath: await chromium.executablePath(), // NO argument - let package handle it
+      headless: true, // Always headless in serverless
     }
   }
 }
 
 /**
  * Scrape a single page using Puppeteer for full React rendering
+ * @param browser - Existing browser instance (reused across pages)
+ * @param path - Path to scrape
  */
-export async function scrapePage(path: string): Promise<ScrapedPage> {
-  let browser
+async function scrapePageWithBrowser(browser: any, path: string): Promise<ScrapedPage> {
+  let page
 
   try {
     const url = `${BASE_URL}${path}`
-    console.log(`[Scraper] Launching browser for ${url}`)
+    console.log(`[Scraper] Navigating to ${url}`)
 
-    // Launch browser with appropriate options
-    browser = await puppeteer.launch(await getBrowserOptions())
-    const page = await browser.newPage()
+    // Create new page in existing browser
+    page = await browser.newPage()
 
     // Set viewport and user agent
     await page.setViewport({ width: 1280, height: 800 })
@@ -83,7 +84,7 @@ export async function scrapePage(path: string): Promise<ScrapedPage> {
       timeout: 30000, // 30 second timeout
     })
 
-    console.log(`[Scraper] Page loaded, extracting content`)
+    console.log(`[Scraper] Page loaded, extracting content from ${url}`)
 
     // Extract content after React has rendered
     const pageData = await page.evaluate(() => {
@@ -180,7 +181,8 @@ export async function scrapePage(path: string): Promise<ScrapedPage> {
       console.log(`[Scraper] Last 200 chars: ...${cleanedContent.substring(cleanedContent.length - 200)}`)
     }
 
-    await browser.close()
+    // Close page but NOT browser (reused across scrapes)
+    await page.close()
 
     return {
       url: path,
@@ -191,28 +193,46 @@ export async function scrapePage(path: string): Promise<ScrapedPage> {
     }
   } catch (error) {
     console.error(`[Scraper] Failed to scrape ${path}:`, error)
-    if (browser) {
-      await browser.close().catch(() => {})
+    if (page) {
+      await page.close().catch(() => {})
     }
     throw new Error(`Failed to scrape ${path}: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
 /**
- * Scrape all website pages
+ * Scrape all website pages using a single browser instance
  */
 export async function scrapeAllPages(): Promise<ScrapedPage[]> {
   const pages: ScrapedPage[] = []
+  let browser
 
   console.log(`[Scraper] Starting to scrape ${PAGES_TO_SCRAPE.length} pages`)
 
-  for (const path of PAGES_TO_SCRAPE) {
-    try {
-      const page = await scrapePage(path)
-      pages.push(page)
-      console.log(`[Scraper] ✅ Successfully scraped ${path}`)
-    } catch (error) {
-      console.error(`[Scraper] ❌ Skipping ${path} due to error:`, error)
+  try {
+    // Launch browser ONCE
+    console.log('[Scraper] Launching browser...')
+    browser = await puppeteer.launch(await getBrowserOptions())
+    console.log('[Scraper] Browser launched successfully')
+
+    // Scrape each page sequentially using the same browser
+    for (const path of PAGES_TO_SCRAPE) {
+      try {
+        const page = await scrapePageWithBrowser(browser, path)
+        pages.push(page)
+        console.log(`[Scraper] ✅ Successfully scraped ${path}`)
+      } catch (error) {
+        console.error(`[Scraper] ❌ Skipping ${path} due to error:`, error)
+      }
+    }
+  } catch (error) {
+    console.error('[Scraper] Failed to launch browser:', error)
+  } finally {
+    // Always close browser at the end
+    if (browser) {
+      console.log('[Scraper] Closing browser...')
+      await browser.close().catch(() => {})
+      console.log('[Scraper] Browser closed')
     }
   }
 
