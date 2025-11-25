@@ -32,7 +32,9 @@ const PAGES_TO_SCRAPE = [
  */
 async function getBrowserOptions() {
   // Check if running locally (has Chrome/Chromium installed)
-  const isLocal = process.env.NODE_ENV === 'development' || !process.env.AWS_EXECUTION_ENV
+  // Vercel sets VERCEL=1 and AWS_REGION, check both
+  const isProduction = process.env.VERCEL === '1' || process.env.AWS_EXECUTION_ENV || process.env.AWS_REGION
+  const isLocal = process.env.NODE_ENV === 'development' && !isProduction
 
   if (isLocal) {
     // Local development - use system Chrome
@@ -43,10 +45,11 @@ async function getBrowserOptions() {
     }
   } else {
     // Production (Vercel) - use serverless Chromium
+    console.log('[Scraper] Using serverless Chromium for production')
     return {
       args: chromium.args,
       executablePath: await chromium.executablePath(),
-      headless: true, // Always headless in serverless environments
+      headless: true,
     }
   }
 }
