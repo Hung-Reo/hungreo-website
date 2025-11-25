@@ -14,18 +14,18 @@ function MiniTurtleWalker() {
   const [imagesLoaded, setImagesLoaded] = useState(false)
 
   const FRAMES = [
-    '/turtle-frame-1.png',
-    '/turtle-frame-2.png',
-    '/turtle-frame-3.png',
-    '/turtle-frame-4.png',
-    '/turtle-frame-5.png',
-    '/turtle-frame-6.png',
-    '/turtle-frame-7.png',
-    '/turtle-frame-8.png',
-    '/turtle-frame-9.png',
-    '/turtle-frame-10.png',
-    '/turtle-frame-11.png',
-    '/turtle-frame-12.png',
+    '/turtle-frame-1-blue.png',
+    '/turtle-frame-2-blue.png',
+    '/turtle-frame-3-blue.png',
+    '/turtle-frame-4-blue.png',
+    '/turtle-frame-5-blue.png',
+    '/turtle-frame-6-blue.png',
+    '/turtle-frame-7-blue.png',
+    '/turtle-frame-8-blue.png',
+    '/turtle-frame-9-blue.png',
+    '/turtle-frame-10-blue.png',
+    '/turtle-frame-11-blue.png',
+    '/turtle-frame-12-blue.png',
   ]
 
   // Preload all frames
