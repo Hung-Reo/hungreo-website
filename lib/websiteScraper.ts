@@ -46,9 +46,10 @@ async function getBrowserOptions() {
   } else {
     // Production (Vercel) - use serverless Chromium
     console.log('[Scraper] Using serverless Chromium for production')
+
     return {
-      args: chromium.args,
-      executablePath: await chromium.executablePath(),
+      args: [...chromium.args, '--disable-gpu', '--single-process', '--no-zygote'],
+      executablePath: await chromium.executablePath('/tmp'),
       headless: true,
     }
   }

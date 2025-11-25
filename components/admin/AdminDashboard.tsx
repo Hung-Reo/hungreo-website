@@ -180,28 +180,6 @@ export function AdminDashboard() {
               </Link>
             </div>
 
-            {/* Top Questions */}
-            <div className="rounded-lg bg-white p-6 shadow">
-              <h2 className="mb-4 text-lg font-semibold text-slate-900">Top Questions</h2>
-              {stats.topQuestions.length === 0 ? (
-                <p className="text-sm text-slate-600">No questions yet</p>
-              ) : (
-                <div className="space-y-3">
-                  {stats.topQuestions.map((q: { question: string; count: number }, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between border-b pb-2 last:border-0"
-                    >
-                      <span className="text-sm text-slate-700">{q.question}</span>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                        {q.count}x
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Quick Actions */}
             <div className="rounded-lg bg-white p-6 shadow">
               <h2 className="mb-4 text-lg font-semibold text-slate-900">Quick Actions</h2>
@@ -275,6 +253,28 @@ export function AdminDashboard() {
                   </div>
                 </button>
               </div>
+            </div>
+
+            {/* Top Questions */}
+            <div className="rounded-lg bg-white p-6 shadow">
+              <h2 className="mb-4 text-lg font-semibold text-slate-900">Top Questions</h2>
+              {stats.topQuestions.length === 0 ? (
+                <p className="text-sm text-slate-600">No questions yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {stats.topQuestions.map((q: { question: string; count: number }, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between border-b pb-2 last:border-0"
+                    >
+                      <span className="text-sm text-slate-700">{q.question}</span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                        {q.count}x
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : null}
