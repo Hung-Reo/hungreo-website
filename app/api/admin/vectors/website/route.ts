@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/admin/vectors/website
  * Get all website vectors grouped by page
+ * Query param: ?detailed=pageUrl to get full vector content for a specific page
  */
 export async function GET(req: NextRequest) {
   try {
@@ -16,11 +17,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { searchParams } = new URL(req.url)
+    const detailedPage = searchParams.get('detailed')
+
     const index = await getPineconeIndex()
 
     // Query all website vectors
-    // Note: Pinecone doesn't support "count by metadata" natively
-    // So we query all vectors and group manually
     const queryResponse = await index.query({
       vector: new Array(1536).fill(0), // Dummy vector for metadata-only query
       topK: 10000, // Max limit
@@ -29,7 +31,26 @@ export async function GET(req: NextRequest) {
       includeValues: false,
     })
 
-    // Group vectors by page
+    // If requesting detailed view for a specific page
+    if (detailedPage) {
+      const pageVectors = queryResponse.matches
+        .filter((match) => match.metadata?.page === detailedPage)
+        .map((match) => ({
+          id: match.id,
+          content: match.metadata?.description || '',
+          chunkIndex: (match.metadata?.chunkIndex as number) || 0,
+          title: match.metadata?.title || '',
+        }))
+        .sort((a, b) => a.chunkIndex - b.chunkIndex)
+
+      return NextResponse.json({
+        success: true,
+        page: detailedPage,
+        vectors: pageVectors,
+      })
+    }
+
+    // Group vectors by page (summary view)
     const pageMap = new Map<string, {
       page: string
       vectorCount: number

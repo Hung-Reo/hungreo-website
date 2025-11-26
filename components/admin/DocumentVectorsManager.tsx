@@ -20,12 +20,21 @@ interface DocumentVector {
   status: 'synced' | 'out-of-sync'
 }
 
+interface VectorDetail {
+  id: string
+  content: string
+  chunkIndex: number
+  fileName: string
+}
+
 export function DocumentVectorsManager() {
   const [documents, setDocuments] = useState<DocumentVector[]>([])
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [viewingDoc, setViewingDoc] = useState<DocumentVector | null>(null)
+  const [vectorDetails, setVectorDetails] = useState<VectorDetail[]>([])
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
   useEffect(() => {
     fetchDocuments()
@@ -45,6 +54,27 @@ export function DocumentVectorsManager() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const fetchDocumentDetails = async (documentId: string) => {
+    try {
+      setIsLoadingDetails(true)
+      const response = await fetch(`/api/admin/vectors/documents?detailed=${encodeURIComponent(documentId)}`)
+      const data = await response.json()
+
+      if (data.success) {
+        setVectorDetails(data.vectors)
+      }
+    } catch (error) {
+      console.error('Failed to fetch document details:', error)
+    } finally {
+      setIsLoadingDetails(false)
+    }
+  }
+
+  const handleViewDetails = async (doc: DocumentVector) => {
+    setViewingDoc(doc)
+    await fetchDocumentDetails(doc.id)
   }
 
   const handleSelectAll = () => {
@@ -254,7 +284,7 @@ export function DocumentVectorsManager() {
                         {doc.expectedVectors} vectors • Uploaded {formatTimeAgo(doc.uploadedAt)}
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setViewingDoc(doc)}>
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(doc)}>
                       View Details
                     </Button>
                   </div>
@@ -363,21 +393,37 @@ export function DocumentVectorsManager() {
 
               <div className="mb-6">
                 <label className="text-sm font-medium text-slate-600">
-                  Pinecone Vector IDs ({viewingDoc.pineconeIds.length})
+                  Vector Chunks ({viewingDoc.vectorCount})
                 </label>
-                {viewingDoc.pineconeIds.length > 0 ? (
-                  <div className="mt-2 max-h-60 overflow-y-auto rounded-lg border bg-slate-50 p-4">
-                    <div className="space-y-1 font-mono text-xs text-slate-700">
-                      {viewingDoc.pineconeIds.map((id, index) => (
-                        <div key={id} className="border-b border-slate-200 pb-1">
-                          {index + 1}. {id}
+                {isLoadingDetails ? (
+                  <div className="mt-2 flex items-center justify-center rounded-lg border bg-slate-50 p-8">
+                    <span className="text-slate-600">Loading chunk content...</span>
+                  </div>
+                ) : vectorDetails.length > 0 ? (
+                  <div className="mt-2 max-h-96 overflow-y-auto rounded-lg border bg-slate-50 p-4">
+                    <div className="space-y-4">
+                      {vectorDetails.map((vector, index) => (
+                        <div key={vector.id} className="rounded-lg border border-slate-200 bg-white p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="text-sm font-semibold text-slate-900">
+                              Chunk {vector.chunkIndex + 1}
+                            </div>
+                            <div className="font-mono text-xs text-slate-500">{vector.id}</div>
+                          </div>
+                          <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                            {vector.content}
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                ) : (
+                ) : viewingDoc.pineconeIds.length === 0 ? (
                   <div className="mt-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700">
                     No Pinecone IDs stored. This document may need to be re-approved to generate vectors.
+                  </div>
+                ) : (
+                  <div className="mt-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700">
+                    No vector content found. Click "View Details" to load.
                   </div>
                 )}
               </div>

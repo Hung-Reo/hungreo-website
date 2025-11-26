@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic'
 /**
  * GET /api/admin/vectors/documents
  * Get all approved documents with their vector information
+ * Query param: ?detailed=documentId to get full vector content for a specific document
  */
 export async function GET(req: NextRequest) {
   try {
@@ -17,11 +18,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get all documents from KV
-    const allDocs = await getAllDocuments(1000, 0)
-
-    // Filter only approved documents (those that have vectors)
-    const approvedDocs = allDocs.filter((doc) => doc.status === 'approved')
+    const { searchParams } = new URL(req.url)
+    const detailedDocId = searchParams.get('detailed')
 
     // Get Pinecone index
     const index = await getPineconeIndex()
@@ -34,6 +32,31 @@ export async function GET(req: NextRequest) {
       includeMetadata: true,
       includeValues: false,
     })
+
+    // If requesting detailed view for a specific document
+    if (detailedDocId) {
+      const docVectors = queryResponse.matches
+        .filter((match) => match.metadata?.documentId === detailedDocId)
+        .map((match) => ({
+          id: match.id,
+          content: match.metadata?.description || '',
+          chunkIndex: (match.metadata?.chunkIndex as number) || 0,
+          fileName: match.metadata?.fileName || '',
+        }))
+        .sort((a, b) => a.chunkIndex - b.chunkIndex)
+
+      return NextResponse.json({
+        success: true,
+        documentId: detailedDocId,
+        vectors: docVectors,
+      })
+    }
+
+    // Get all documents from KV
+    const allDocs = await getAllDocuments(1000, 0)
+
+    // Filter only approved documents (those that have vectors)
+    const approvedDocs = allDocs.filter((doc) => doc.status === 'approved')
 
     // Map document IDs to vector counts
     const vectorCountMap = new Map<string, number>()

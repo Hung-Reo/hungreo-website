@@ -13,6 +13,13 @@ interface PageVectors {
   vectorIds: string[]
 }
 
+interface VectorDetail {
+  id: string
+  content: string
+  chunkIndex: number
+  title: string
+}
+
 export function WebsiteVectorsManager() {
   const [pages, setPages] = useState<PageVectors[]>([])
   const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set())
@@ -20,6 +27,8 @@ export function WebsiteVectorsManager() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isReScraping, setIsReScraping] = useState(false)
   const [viewingPage, setViewingPage] = useState<PageVectors | null>(null)
+  const [vectorDetails, setVectorDetails] = useState<VectorDetail[]>([])
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false)
 
   useEffect(() => {
     fetchPages()
@@ -39,6 +48,27 @@ export function WebsiteVectorsManager() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const fetchPageDetails = async (page: string) => {
+    try {
+      setIsLoadingDetails(true)
+      const response = await fetch(`/api/admin/vectors/website?detailed=${encodeURIComponent(page)}`)
+      const data = await response.json()
+
+      if (data.success) {
+        setVectorDetails(data.vectors)
+      }
+    } catch (error) {
+      console.error('Failed to fetch page details:', error)
+    } finally {
+      setIsLoadingDetails(false)
+    }
+  }
+
+  const handleViewDetails = async (page: PageVectors) => {
+    setViewingPage(page)
+    await fetchPageDetails(page.page)
   }
 
   const handleSelectAll = () => {
@@ -244,7 +274,7 @@ export function WebsiteVectorsManager() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setViewingPage(page)}
+                      onClick={() => handleViewDetails(page)}
                     >
                       View Details
                     </Button>
@@ -331,17 +361,35 @@ export function WebsiteVectorsManager() {
 
               <div className="mb-6">
                 <label className="text-sm font-medium text-slate-600">
-                  Vector IDs ({viewingPage.vectorIds.length})
+                  Vector Chunks ({viewingPage.vectorCount})
                 </label>
-                <div className="mt-2 max-h-60 overflow-y-auto rounded-lg border bg-slate-50 p-4">
-                  <div className="space-y-1 font-mono text-xs text-slate-700">
-                    {viewingPage.vectorIds.map((id, index) => (
-                      <div key={id} className="border-b border-slate-200 pb-1">
-                        {index + 1}. {id}
-                      </div>
-                    ))}
+                {isLoadingDetails ? (
+                  <div className="mt-2 flex items-center justify-center rounded-lg border bg-slate-50 p-8">
+                    <span className="text-slate-600">Loading chunk content...</span>
                   </div>
-                </div>
+                ) : vectorDetails.length > 0 ? (
+                  <div className="mt-2 max-h-96 overflow-y-auto rounded-lg border bg-slate-50 p-4">
+                    <div className="space-y-4">
+                      {vectorDetails.map((vector, index) => (
+                        <div key={vector.id} className="rounded-lg border border-slate-200 bg-white p-4">
+                          <div className="mb-2 flex items-center justify-between">
+                            <div className="text-sm font-semibold text-slate-900">
+                              Chunk {vector.chunkIndex + 1}
+                            </div>
+                            <div className="font-mono text-xs text-slate-500">{vector.id}</div>
+                          </div>
+                          <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                            {vector.content}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700">
+                    No vector content found. Click "View Details" to load.
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-2 border-t pt-4">
