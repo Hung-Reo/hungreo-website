@@ -25,6 +25,7 @@ export function DocumentVectorsManager() {
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [viewingDoc, setViewingDoc] = useState<DocumentVector | null>(null)
 
   useEffect(() => {
     fetchDocuments()
@@ -253,6 +254,9 @@ export function DocumentVectorsManager() {
                         {doc.expectedVectors} vectors • Uploaded {formatTimeAgo(doc.uploadedAt)}
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" onClick={() => setViewingDoc(doc)}>
+                      View Details
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -280,6 +284,113 @@ export function DocumentVectorsManager() {
           )}
         </div>
       </div>
+
+      {/* Details Modal */}
+      {viewingDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
+            <div className="sticky top-0 flex items-center justify-between border-b bg-white px-6 py-4">
+              <h2 className="text-xl font-semibold text-slate-900">
+                {viewingDoc.fileName} - Vector Details
+              </h2>
+              <button
+                onClick={() => setViewingDoc(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-slate-600">File Name</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {viewingDoc.fileName}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">File Type</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {viewingDoc.fileType.toUpperCase()}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">File Size</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {formatFileSize(viewingDoc.fileSize)}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Word Count</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {viewingDoc.wordCount}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Vectors in Pinecone</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {viewingDoc.vectorCount} / {viewingDoc.expectedVectors}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Sync Status</label>
+                  <div className="mt-1">
+                    {viewingDoc.status === 'synced' ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-sm font-medium text-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        Synced
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-sm font-medium text-yellow-700">
+                        <AlertTriangle className="h-4 w-4" />
+                        Out of sync
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Uploaded</label>
+                  <div className="mt-1 text-sm text-slate-600">
+                    {formatTimeAgo(viewingDoc.uploadedAt)} ({new Date(viewingDoc.uploadedAt).toLocaleString()})
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Uploaded By</label>
+                  <div className="mt-1 text-sm text-slate-600">{viewingDoc.uploadedBy}</div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="text-sm font-medium text-slate-600">
+                  Pinecone Vector IDs ({viewingDoc.pineconeIds.length})
+                </label>
+                {viewingDoc.pineconeIds.length > 0 ? (
+                  <div className="mt-2 max-h-60 overflow-y-auto rounded-lg border bg-slate-50 p-4">
+                    <div className="space-y-1 font-mono text-xs text-slate-700">
+                      {viewingDoc.pineconeIds.map((id, index) => (
+                        <div key={id} className="border-b border-slate-200 pb-1">
+                          {index + 1}. {id}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700">
+                    No Pinecone IDs stored. This document may need to be re-approved to generate vectors.
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 border-t pt-4">
+                <Button variant="outline" onClick={() => setViewingDoc(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

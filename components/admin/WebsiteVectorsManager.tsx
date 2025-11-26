@@ -19,6 +19,7 @@ export function WebsiteVectorsManager() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isReScraping, setIsReScraping] = useState(false)
+  const [viewingPage, setViewingPage] = useState<PageVectors | null>(null)
 
   useEffect(() => {
     fetchPages()
@@ -240,6 +241,13 @@ export function WebsiteVectorsManager() {
                         {page.vectorCount} vectors • Last scraped {formatTimeAgo(page.lastScraped)}
                       </div>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setViewingPage(page)}
+                    >
+                      View Details
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -276,6 +284,75 @@ export function WebsiteVectorsManager() {
           )}
         </div>
       </div>
+
+      {/* Details Modal */}
+      {viewingPage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl">
+            <div className="sticky top-0 flex items-center justify-between border-b bg-white px-6 py-4">
+              <h2 className="text-xl font-semibold text-slate-900">
+                {viewingPage.page} - Vector Details
+              </h2>
+              <button
+                onClick={() => setViewingPage(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Page</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {viewingPage.page} ({getPageTitle(viewingPage.page)})
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Vector Count</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {viewingPage.vectorCount}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Last Scraped</label>
+                  <div className="mt-1 text-lg font-semibold text-slate-900">
+                    {formatTimeAgo(viewingPage.lastScraped)}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-slate-600">Timestamp</label>
+                  <div className="mt-1 text-sm text-slate-600">
+                    {new Date(viewingPage.lastScraped).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="text-sm font-medium text-slate-600">
+                  Vector IDs ({viewingPage.vectorIds.length})
+                </label>
+                <div className="mt-2 max-h-60 overflow-y-auto rounded-lg border bg-slate-50 p-4">
+                  <div className="space-y-1 font-mono text-xs text-slate-700">
+                    {viewingPage.vectorIds.map((id, index) => (
+                      <div key={id} className="border-b border-slate-200 pb-1">
+                        {index + 1}. {id}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 border-t pt-4">
+                <Button variant="outline" onClick={() => setViewingPage(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
