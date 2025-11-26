@@ -5,6 +5,8 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '../ui/Button'
+import { ProgressModal } from '../ui/ProgressModal'
+import { useJobPolling } from '@/hooks/useJobPolling'
 
 interface PageVectors {
   page: string
@@ -29,6 +31,28 @@ export function WebsiteVectorsManager() {
   const [viewingPage, setViewingPage] = useState<PageVectors | null>(null)
   const [vectorDetails, setVectorDetails] = useState<VectorDetail[]>([])
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+
+  // Add polling hook for progress tracking
+  const { job, isPolling, reset: resetJob } = useJobPolling({
+    jobId: currentJobId,
+    onComplete: (result) => {
+      alert(
+        `Re-scrape completed!\n\n` +
+        `Pages scraped: ${result.pagesScraped}\n` +
+        `New vectors: ${result.totalVectors}\n` +
+        `Deleted vectors: ${result.deletedVectors}` +
+        (result.errors?.length ? `\n\nWarnings:\n${result.errors.join('\n')}` : '')
+      )
+      setSelectedPages(new Set())
+      fetchPages()
+      setCurrentJobId(null)
+    },
+    onError: (error) => {
+      alert(`Re-scrape failed: ${error}`)
+      setCurrentJobId(null)
+    },
+  })
 
   useEffect(() => {
     fetchPages()
@@ -153,12 +177,12 @@ export function WebsiteVectorsManager() {
 
       const data = await response.json()
 
-      if (data.success) {
-        const message = data.errors && data.errors.length > 0
-          ? `Re-scraped ${data.pagesScraped} page(s) with ${data.totalVectors} new vectors.\n\nDeleted ${data.deletedVectors} old vectors.\n\nWarnings:\n${data.errors.join('\n')}`
-          : `Successfully re-scraped ${data.pagesScraped} page(s) with ${data.totalVectors} new vectors.\n\nDeleted ${data.deletedVectors} old vectors.`
-
-        alert(message)
+      if (data.success && data.jobId) {
+        // Start polling for progress
+        setCurrentJobId(data.jobId)
+      } else if (data.success) {
+        // Fallback if no jobId (shouldn't happen)
+        alert(`Successfully re-scraped ${data.pagesScraped} page(s)`)
         setSelectedPages(new Set())
         await fetchPages()
       } else {
@@ -418,6 +442,20 @@ export function WebsiteVectorsManager() {
           </div>
         </div>
       )}
+
+      {/* Progress Modal */}
+      <ProgressModal
+        isOpen={isPolling}
+        status={job?.status || 'processing'}
+        title="Re-scraping Website Pages"
+        message={job?.progress.message || 'Starting re-scrape...'}
+        progress={job?.progress}
+        error={job?.error}
+        onClose={() => {
+          resetJob()
+          setCurrentJobId(null)
+        }}
+      />
     </div>
   )
 }

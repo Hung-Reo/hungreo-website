@@ -8,6 +8,7 @@ import chromium from '@sparticuz/chromium'
 import { getPineconeIndex } from './pinecone'
 import { createEmbedding } from './openai'
 import { chunkText } from './textUtils'
+import { getAllProjects, getAllBlogPosts } from './contentManager'
 
 export interface ScrapedPage {
   url: string
@@ -21,13 +22,42 @@ export interface ScrapedPage {
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ||
                  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
-const PAGES_TO_SCRAPE = [
+const STATIC_PAGES = [
   '/',
   '/about',
   '/projects',
   '/blog',
   '/contact',
 ]
+
+/**
+ * Get all dynamic pages (blog posts and projects)
+ */
+async function getDynamicPages(): Promise<string[]> {
+  const dynamicPages: string[] = []
+
+  try {
+    // Get all published projects
+    const projects = await getAllProjects()
+    const publishedProjects = projects.filter(p => p.status === 'published')
+    publishedProjects.forEach(p => {
+      dynamicPages.push(`/projects/${p.slug}`)
+    })
+
+    // Get all published blog posts
+    const blogPosts = await getAllBlogPosts()
+    const publishedPosts = blogPosts.filter(p => p.status === 'published')
+    publishedPosts.forEach(p => {
+      dynamicPages.push(`/blog/${p.slug}`)
+    })
+
+    console.log(`[Scraper] Found ${publishedProjects.length} projects and ${publishedPosts.length} blog posts`)
+  } catch (error) {
+    console.error('[Scraper] Failed to fetch dynamic pages:', error)
+  }
+
+  return dynamicPages
+}
 
 /**
  * Get browser launch options based on environment
@@ -204,12 +234,17 @@ async function scrapePageWithBrowser(browser: any, path: string): Promise<Scrape
 
 /**
  * Scrape all website pages using a single browser instance
+ * Includes both static pages and dynamic content (blog posts, projects)
  */
 export async function scrapeAllPages(): Promise<ScrapedPage[]> {
   const pages: ScrapedPage[] = []
   let browser
 
-  console.log(`[Scraper] Starting to scrape ${PAGES_TO_SCRAPE.length} pages`)
+  // Get all pages to scrape (static + dynamic)
+  const dynamicPages = await getDynamicPages()
+  const allPages = [...STATIC_PAGES, ...dynamicPages]
+
+  console.log(`[Scraper] Starting to scrape ${allPages.length} pages (${STATIC_PAGES.length} static + ${dynamicPages.length} dynamic)`)
 
   try {
     // Launch browser ONCE
@@ -218,7 +253,7 @@ export async function scrapeAllPages(): Promise<ScrapedPage[]> {
     console.log('[Scraper] Browser launched successfully')
 
     // Scrape each page sequentially using the same browser
-    for (const path of PAGES_TO_SCRAPE) {
+    for (const path of allPages) {
       try {
         const page = await scrapePageWithBrowser(browser, path)
         pages.push(page)
@@ -238,7 +273,7 @@ export async function scrapeAllPages(): Promise<ScrapedPage[]> {
     }
   }
 
-  console.log(`[Scraper] Scraped ${pages.length}/${PAGES_TO_SCRAPE.length} pages successfully`)
+  console.log(`[Scraper] Scraped ${pages.length}/${allPages.length} pages successfully`)
 
   return pages
 }

@@ -5,12 +5,15 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { Button } from '../ui/Button'
+import { ProgressModal } from '../ui/ProgressModal'
+import { useJobPolling } from '@/hooks/useJobPolling'
 import type { ChatStats } from '@/lib/chatLogger'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export function AdminDashboard() {
   const [isScraping, setIsScraping] = useState(false)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
 
   // 🚀 SWR replaces useState + useEffect for instant cached loading
   const { data, error, isLoading, mutate } = useSWR('/api/admin/stats', fetcher, {
@@ -21,6 +24,25 @@ export function AdminDashboard() {
   })
 
   const stats = data?.success ? data.stats : null
+
+  // Add polling hook for progress tracking
+  const { job, isPolling, reset: resetJob } = useJobPolling({
+    jobId: currentJobId,
+    onComplete: (result) => {
+      alert(
+        `Website scraped successfully!\n\n` +
+        `Pages scraped: ${result.pagesScraped}\n` +
+        `Vectors created: ${result.vectorsCreated}` +
+        (result.errors?.length ? `\n\nErrors:\n${result.errors.join('\n')}` : '')
+      )
+      mutate() // Refresh stats
+      setCurrentJobId(null)
+    },
+    onError: (error) => {
+      alert(`Scrape failed: ${error}`)
+      setCurrentJobId(null)
+    },
+  })
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/admin/login' })
@@ -37,13 +59,13 @@ export function AdminDashboard() {
 
       const data = await response.json()
 
-      if (data.success) {
-        const { result } = data
-        alert(
-          `Website scraped successfully!\n\nPages scraped: ${result.pagesScraped}\nVectors created: ${result.vectorsCreated}\n${
-            result.errors.length > 0 ? '\nErrors:\n' + result.errors.join('\n') : ''
-          }`
-        )
+      if (data.success && data.jobId) {
+        // Start polling for progress
+        setCurrentJobId(data.jobId)
+      } else if (data.success) {
+        // Fallback if no jobId
+        alert(`Website scraped successfully!\n\nPages: ${data.result.pagesScraped}\nVectors: ${data.result.vectorsCreated}`)
+        mutate()
       } else {
         alert(`Scrape failed: ${data.error}`)
       }
@@ -279,6 +301,20 @@ export function AdminDashboard() {
           </div>
         ) : null}
       </div>
+
+      {/* Progress Modal */}
+      <ProgressModal
+        isOpen={isPolling}
+        status={job?.status || 'processing'}
+        title="Scraping Website"
+        message={job?.progress.message || 'Starting full website scrape...'}
+        progress={job?.progress}
+        error={job?.error}
+        onClose={() => {
+          resetJob()
+          setCurrentJobId(null)
+        }}
+      />
     </div>
   )
 }
