@@ -1,0 +1,281 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { signOut } from 'next-auth/react'
+import Link from 'next/link'
+import { ArrowLeft, RefreshCw } from 'lucide-react'
+import { Button } from '../ui/Button'
+
+interface PageVectors {
+  page: string
+  vectorCount: number
+  lastScraped: number
+  vectorIds: string[]
+}
+
+export function WebsiteVectorsManager() {
+  const [pages, setPages] = useState<PageVectors[]>([])
+  const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set())
+  const [isLoading, setIsLoading] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isReScraping, setIsReScraping] = useState(false)
+
+  useEffect(() => {
+    fetchPages()
+  }, [])
+
+  const fetchPages = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/admin/vectors/website')
+      const data = await response.json()
+
+      if (data.success) {
+        setPages(data.pages)
+      }
+    } catch (error) {
+      console.error('Failed to fetch pages:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSelectAll = () => {
+    if (selectedPages.size === pages.length) {
+      setSelectedPages(new Set())
+    } else {
+      setSelectedPages(new Set(pages.map((p) => p.page)))
+    }
+  }
+
+  const handleSelectPage = (page: string) => {
+    const newSelected = new Set(selectedPages)
+    if (newSelected.has(page)) {
+      newSelected.delete(page)
+    } else {
+      newSelected.add(page)
+    }
+    setSelectedPages(newSelected)
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedPages.size === 0) return
+
+    const selectedPagesArray = Array.from(selectedPages)
+    const totalVectors = pages
+      .filter((p) => selectedPages.has(p.page))
+      .reduce((sum, p) => sum + p.vectorCount, 0)
+
+    if (
+      !window.confirm(
+        `Delete ${selectedPages.size} page(s) (${totalVectors} vectors)?\n\nPages: ${selectedPagesArray.join(', ')}\n\nThis cannot be undone.`
+      )
+    ) {
+      return
+    }
+
+    try {
+      setIsDeleting(true)
+      const response = await fetch('/api/admin/vectors/website', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pages: selectedPagesArray }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`Successfully deleted ${data.deleted} vectors from ${selectedPages.size} page(s)`)
+        setSelectedPages(new Set())
+        await fetchPages()
+      } else {
+        alert(`Delete failed: ${data.error}`)
+      }
+    } catch (error) {
+      alert('Delete failed. Please try again.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleReScrapeSelected = async () => {
+    if (selectedPages.size === 0) return
+
+    const selectedPagesArray = Array.from(selectedPages)
+
+    if (
+      !window.confirm(
+        `Re-scrape ${selectedPages.size} page(s)?\n\nPages: ${selectedPagesArray.join(', ')}\n\nThis will delete old vectors and create new ones.`
+      )
+    ) {
+      return
+    }
+
+    try {
+      setIsReScraping(true)
+
+      // TODO: Implement selective re-scrape API
+      alert('Re-scrape feature coming soon! For now, use the "Scrape Website" button in the main dashboard.')
+
+    } catch (error) {
+      alert('Re-scrape failed. Please try again.')
+    } finally {
+      setIsReScraping(false)
+    }
+  }
+
+  const getPageTitle = (path: string) => {
+    const titles: Record<string, string> = {
+      '/': 'Home',
+      '/about': 'About Me',
+      '/projects': 'Projects',
+      '/blog': 'Blog',
+      '/contact': 'Contact',
+    }
+    return titles[path] || path
+  }
+
+  const formatTimeAgo = (timestamp: number) => {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000)
+    if (seconds < 60) return 'just now'
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) return `${minutes}m ago`
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    return `${days}d ago`
+  }
+
+  const selectedVectorCount = pages
+    .filter((p) => selectedPages.has(p.page))
+    .reduce((sum, p) => sum + p.vectorCount, 0)
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <header className="border-b bg-white">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4">
+          <h1 className="text-2xl font-bold text-slate-900">Website Vectors</h1>
+          <Button onClick={() => signOut({ callbackUrl: '/admin/login' })} variant="outline" size="sm">
+            Logout
+          </Button>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Back to Vectors */}
+        <div className="mb-6">
+          <Link href="/admin/vectors">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Vector Overview
+            </Button>
+          </Link>
+        </div>
+
+        {/* Page List */}
+        <div className="rounded-lg bg-white shadow">
+          <div className="border-b px-6 py-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Website Pages in Vector DB
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchPages}
+              disabled={isLoading}
+              className="gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <span className="text-slate-600">Loading...</span>
+            </div>
+          ) : pages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <span className="text-slate-600 mb-4">No website vectors found</span>
+              <Link href="/admin/dashboard">
+                <Button size="sm">Go to Dashboard to Scrape Website</Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* Select All */}
+              <div className="border-b px-6 py-3 bg-slate-50">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedPages.size === pages.length}
+                    onChange={handleSelectAll}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  <span className="text-sm font-medium text-slate-700">
+                    Select All ({pages.length} pages)
+                  </span>
+                </label>
+              </div>
+
+              {/* Pages List */}
+              <div className="divide-y">
+                {pages.map((page) => (
+                  <div
+                    key={page.page}
+                    className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPages.has(page.page)}
+                      onChange={() => handleSelectPage(page.page)}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-slate-900">
+                        {page.page} <span className="text-slate-500">({getPageTitle(page.page)})</span>
+                      </div>
+                      <div className="mt-1 text-sm text-slate-500">
+                        {page.vectorCount} vectors • Last scraped {formatTimeAgo(page.lastScraped)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Actions */}
+              {selectedPages.size > 0 && (
+                <div className="border-t bg-slate-50 px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-slate-600">
+                      Selected: <strong>{selectedPages.size}</strong> page(s) (
+                      <strong>{selectedVectorCount}</strong> vectors)
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={handleReScrapeSelected}
+                        disabled={isReScraping}
+                      >
+                        {isReScraping ? 'Re-scraping...' : 'Re-scrape Selected'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleDeleteSelected}
+                        disabled={isDeleting}
+                        className="text-red-600 hover:bg-red-50"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Delete Selected Vectors'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '../ui/Button'
@@ -14,17 +13,8 @@ interface VectorStats {
   total: number
 }
 
-interface Vector {
-  id: string
-  score?: number
-  metadata: Record<string, any>
-}
-
 export function VectorManager() {
-  const router = useRouter()
   const [stats, setStats] = useState<VectorStats | null>(null)
-  const [selectedType, setSelectedType] = useState<'website' | 'document' | 'video' | null>(null)
-  const [vectors, setVectors] = useState<Vector[]>([])
   const [loading, setLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
@@ -40,24 +30,6 @@ export function VectorManager() {
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Fetch vectors by type
-  const fetchVectors = async (type: 'website' | 'document' | 'video') => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/admin/vectors?type=${type}`)
-      const data = await res.json()
-
-      if (data.success) {
-        setVectors(data.vectors)
-        setSelectedType(type)
-      }
-    } catch (error) {
-      console.error('Failed to fetch vectors:', error)
     } finally {
       setLoading(false)
     }
@@ -82,43 +54,11 @@ export function VectorManager() {
       if (data.success) {
         alert(data.message)
         await fetchStats()
-        if (selectedType === type || type === 'all') {
-          setVectors([])
-          setSelectedType(null)
-        }
       } else {
         alert('Delete failed: ' + data.error)
       }
     } catch (error) {
       console.error('Failed to delete vectors:', error)
-      alert('Delete failed')
-    } finally {
-      setDeleteLoading(false)
-    }
-  }
-
-  // Delete specific vector
-  const deleteVector = async (vectorId: string) => {
-    if (!confirm(`Delete vector ${vectorId}?`)) return
-
-    try {
-      setDeleteLoading(true)
-      const res = await fetch(`/api/admin/vectors?id=${vectorId}`, {
-        method: 'DELETE',
-      })
-      const data = await res.json()
-
-      if (data.success) {
-        alert('Vector deleted')
-        await fetchStats()
-        if (selectedType) {
-          await fetchVectors(selectedType)
-        }
-      } else {
-        alert('Delete failed: ' + data.error)
-      }
-    } catch (error) {
-      console.error('Failed to delete vector:', error)
       alert('Delete failed')
     } finally {
       setDeleteLoading(false)
@@ -155,23 +95,29 @@ export function VectorManager() {
             <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.total || 0}</p>
           </div>
 
-          <div className="bg-blue-50 p-6 rounded-lg shadow cursor-pointer hover:bg-blue-100" onClick={() => fetchVectors('website')}>
-            <h3 className="text-sm font-medium text-blue-600">Website Vectors</h3>
-            <p className="text-3xl font-bold text-blue-900 mt-2">{stats?.website || 0}</p>
-            <button className="text-xs text-blue-600 mt-2">View Details →</button>
-          </div>
+          <Link href="/admin/vectors/website">
+            <div className="bg-blue-50 p-6 rounded-lg shadow cursor-pointer hover:bg-blue-100">
+              <h3 className="text-sm font-medium text-blue-600">Website Vectors</h3>
+              <p className="text-3xl font-bold text-blue-900 mt-2">{stats?.website || 0}</p>
+              <button className="text-xs text-blue-600 mt-2">View Details →</button>
+            </div>
+          </Link>
 
-          <div className="bg-green-50 p-6 rounded-lg shadow cursor-pointer hover:bg-green-100" onClick={() => fetchVectors('document')}>
-            <h3 className="text-sm font-medium text-green-600">Document Vectors</h3>
-            <p className="text-3xl font-bold text-green-900 mt-2">{stats?.document || 0}</p>
-            <button className="text-xs text-green-600 mt-2">View Details →</button>
-          </div>
+          <Link href="/admin/vectors/documents">
+            <div className="bg-green-50 p-6 rounded-lg shadow cursor-pointer hover:bg-green-100">
+              <h3 className="text-sm font-medium text-green-600">Document Vectors</h3>
+              <p className="text-3xl font-bold text-green-900 mt-2">{stats?.document || 0}</p>
+              <button className="text-xs text-green-600 mt-2">View Details →</button>
+            </div>
+          </Link>
 
-          <div className="bg-purple-50 p-6 rounded-lg shadow cursor-pointer hover:bg-purple-100" onClick={() => fetchVectors('video')}>
-            <h3 className="text-sm font-medium text-purple-600">Video Vectors</h3>
-            <p className="text-3xl font-bold text-purple-900 mt-2">{stats?.video || 0}</p>
-            <button className="text-xs text-purple-600 mt-2">View Details →</button>
-          </div>
+          <Link href="/admin/videos">
+            <div className="bg-purple-50 p-6 rounded-lg shadow cursor-pointer hover:bg-purple-100">
+              <h3 className="text-sm font-medium text-purple-600">Video Vectors</h3>
+              <p className="text-3xl font-bold text-purple-900 mt-2">{stats?.video || 0}</p>
+              <button className="text-xs text-purple-600 mt-2">View Details →</button>
+            </div>
+          </Link>
 
           <div className="bg-gray-50 p-6 rounded-lg shadow">
             <h3 className="text-sm font-medium text-gray-500">Unknown Type</h3>
@@ -217,80 +163,6 @@ export function VectorManager() {
           </div>
         </div>
 
-        {/* Vector List */}
-        {selectedType && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900 capitalize">
-                {selectedType} Vectors ({vectors.length})
-              </h2>
-              <button
-                onClick={() => {
-                  setSelectedType(null)
-                  setVectors([])
-                }}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                Close
-              </button>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-gray-600 mt-2">Loading vectors...</p>
-              </div>
-            ) : vectors.length === 0 ? (
-              <p className="text-gray-600 text-center py-8">No vectors found</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Metadata</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {vectors.map((vector) => (
-                      <tr key={vector.id}>
-                        <td className="px-6 py-4 text-sm font-mono text-gray-900">
-                          {vector.id.substring(0, 20)}...
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {vector.metadata?.title || 'N/A'}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {vector.metadata?.description?.substring(0, 50) || 'N/A'}...
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          <details>
-                            <summary className="cursor-pointer text-blue-600">View</summary>
-                            <pre className="mt-2 text-xs bg-gray-50 p-2 rounded overflow-x-auto">
-                              {JSON.stringify(vector.metadata, null, 2)}
-                            </pre>
-                          </details>
-                        </td>
-                        <td className="px-6 py-4 text-right text-sm">
-                          <button
-                            onClick={() => deleteVector(vector.id)}
-                            disabled={deleteLoading}
-                            className="text-red-600 hover:text-red-800 disabled:text-gray-400"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Info Section */}
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-8">
