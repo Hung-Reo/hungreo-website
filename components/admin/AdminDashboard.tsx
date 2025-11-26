@@ -29,17 +29,12 @@ export function AdminDashboard() {
   const { job, isPolling, reset: resetJob } = useJobPolling({
     jobId: currentJobId,
     onComplete: (result) => {
-      alert(
-        `Website scraped successfully!\n\n` +
-        `Pages scraped: ${result.pagesScraped}\n` +
-        `Vectors created: ${result.vectorsCreated}` +
-        (result.errors?.length ? `\n\nErrors:\n${result.errors.join('\n')}` : '')
-      )
+      // Don't show alert here - ProgressModal already shows success
       mutate() // Refresh stats
       setCurrentJobId(null)
     },
     onError: (error) => {
-      alert(`Scrape failed: ${error}`)
+      // Don't show alert here - ProgressModal already shows error
       setCurrentJobId(null)
     },
   })

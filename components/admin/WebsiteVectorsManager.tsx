@@ -37,19 +37,13 @@ export function WebsiteVectorsManager() {
   const { job, isPolling, reset: resetJob } = useJobPolling({
     jobId: currentJobId,
     onComplete: (result) => {
-      alert(
-        `Re-scrape completed!\n\n` +
-        `Pages scraped: ${result.pagesScraped}\n` +
-        `New vectors: ${result.totalVectors}\n` +
-        `Deleted vectors: ${result.deletedVectors}` +
-        (result.errors?.length ? `\n\nWarnings:\n${result.errors.join('\n')}` : '')
-      )
+      // Don't show alert here - ProgressModal already shows success
       setSelectedPages(new Set())
       fetchPages()
       setCurrentJobId(null)
     },
     onError: (error) => {
-      alert(`Re-scrape failed: ${error}`)
+      // Don't show alert here - ProgressModal already shows error
       setCurrentJobId(null)
     },
   })

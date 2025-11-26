@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { scrapeSelectedPages } from '@/lib/websiteScraper'
+import { scrapeSelectedPages, expandSelectedPages } from '@/lib/websiteScraper'
 import { getPineconeIndex } from '@/lib/pinecone'
 import { createJob, updateJobProgress, completeJob, failJob } from '@/lib/jobTracker'
 
@@ -29,11 +29,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Expand pages to include dynamic children (e.g., /blog -> /blog + /blog/[slug])
+    const expandedPages = await expandSelectedPages(pages)
+    console.log('[Re-scrape] Original pages:', pages)
+    console.log('[Re-scrape] Expanded to:', expandedPages)
+
     const jobId = `rescrape-${Date.now()}`
 
     try {
-      // Delete old vectors for selected pages first
-      console.log('[Re-scrape] Deleting old vectors for pages:', pages)
+      // Delete old vectors for all expanded pages first
+      console.log('[Re-scrape] Deleting old vectors for expanded pages:', expandedPages)
       const index = await getPineconeIndex()
 
       // Query existing vectors for these pages
@@ -46,7 +51,7 @@ export async function POST(req: NextRequest) {
       })
 
       const vectorIdsToDelete = queryResponse.matches
-        .filter((match) => pages.includes(match.metadata?.page as string))
+        .filter((match) => expandedPages.includes(match.metadata?.page as string))
         .map((match) => match.id)
 
       if (vectorIdsToDelete.length > 0) {
@@ -58,15 +63,15 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Create job tracker
-      await createJob(jobId, 'selective-rescrape', pages.length)
+      // Create job tracker with expanded page count
+      await createJob(jobId, 'selective-rescrape', expandedPages.length)
 
-      // Scrape and embed selected pages
-      console.log('[Re-scrape] Scraping selected pages:', pages)
+      // Scrape and embed expanded pages
+      console.log('[Re-scrape] Scraping expanded pages:', expandedPages)
 
-      await updateJobProgress(jobId, 1, `Scraping ${pages.length} page(s)...`)
+      await updateJobProgress(jobId, 1, `Scraping ${expandedPages.length} page(s)...`)
 
-      const result = await scrapeSelectedPages(pages)
+      const result = await scrapeSelectedPages(expandedPages)
 
       await completeJob(jobId, {
         pagesScraped: result.pagesScraped,

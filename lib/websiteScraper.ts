@@ -60,6 +60,48 @@ async function getDynamicPages(): Promise<string[]> {
 }
 
 /**
+ * Expand selected pages to include dynamic children
+ * If user selects /blog, include all /blog/[slug] pages
+ * If user selects /projects, include all /projects/[slug] pages
+ */
+export async function expandSelectedPages(selectedPages: string[]): Promise<string[]> {
+  const expandedPages = new Set<string>()
+
+  // Add all originally selected pages
+  selectedPages.forEach(page => expandedPages.add(page))
+
+  // Check if /blog or /projects is selected
+  const needsBlogPages = selectedPages.includes('/blog')
+  const needsProjectPages = selectedPages.includes('/projects')
+
+  if (needsBlogPages || needsProjectPages) {
+    try {
+      if (needsBlogPages) {
+        const blogPosts = await getAllBlogPosts()
+        const publishedPosts = blogPosts.filter(p => p.status === 'published')
+        publishedPosts.forEach(p => {
+          expandedPages.add(`/blog/${p.slug}`)
+        })
+        console.log(`[Scraper] Expanded /blog to include ${publishedPosts.length} blog posts`)
+      }
+
+      if (needsProjectPages) {
+        const projects = await getAllProjects()
+        const publishedProjects = projects.filter(p => p.status === 'published')
+        publishedProjects.forEach(p => {
+          expandedPages.add(`/projects/${p.slug}`)
+        })
+        console.log(`[Scraper] Expanded /projects to include ${publishedProjects.length} projects`)
+      }
+    } catch (error) {
+      console.error('[Scraper] Failed to expand pages:', error)
+    }
+  }
+
+  return Array.from(expandedPages)
+}
+
+/**
  * Get browser launch options based on environment
  */
 async function getBrowserOptions() {
