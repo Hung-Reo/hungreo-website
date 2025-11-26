@@ -2,9 +2,39 @@ import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@vercel/kv'
 import { Resend } from 'resend'
 import crypto from 'crypto'
+import { Ratelimit } from '@upstash/ratelimit'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
 const BACKUP_ADMIN_EMAIL = process.env.BACKUP_ADMIN_EMAIL
+
+// Rate limiter for forgot-password endpoint
+// SECURITY: Prevent email flooding and token generation spam
+const forgotPasswordRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(3, '15 m'), // 3 requests per 15 minutes per IP
+  analytics: true,
+  prefix: 'ratelimit:forgot-password:ip',
+})
+
+const forgotPasswordEmailRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(2, '1 h'), // 2 requests per hour per email
+  analytics: true,
+  prefix: 'ratelimit:forgot-password:email',
+})
+
+// Helper to get client IP (using trusted headers only)
+function getClientIp(request: Request): string {
+  const vercelForwardedFor = request.headers.get('x-vercel-forwarded-for')
+  if (vercelForwardedFor) {
+    return vercelForwardedFor.split(',')[0].trim()
+  }
+  const cfConnectingIp = request.headers.get('cf-connecting-ip')
+  if (cfConnectingIp) {
+    return cfConnectingIp
+  }
+  return 'anonymous'
+}
 
 // Helper to check if email is an admin email
 function isAdminEmail(email: string): boolean {
@@ -16,6 +46,18 @@ function isAdminEmail(email: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
+    // SECURITY: Apply IP-based rate limiting first (prevents spam from single IP)
+    const clientIp = getClientIp(req)
+    const ipRateLimitResult = await forgotPasswordRateLimit.limit(clientIp)
+
+    if (!ipRateLimitResult.success) {
+      console.warn(`[Forgot Password] Rate limit exceeded for IP: ${clientIp}`)
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const { email } = await req.json()
 
     // Validate email
@@ -24,6 +66,17 @@ export async function POST(req: NextRequest) {
         { error: 'Email is required' },
         { status: 400 }
       )
+    }
+
+    // SECURITY: Apply email-based rate limiting (prevents spam to specific email)
+    const emailRateLimitResult = await forgotPasswordEmailRateLimit.limit(email.toLowerCase())
+
+    if (!emailRateLimitResult.success) {
+      console.warn(`[Forgot Password] Rate limit exceeded for email: ${email}`)
+      // Return generic message to prevent enumeration
+      return NextResponse.json({
+        message: 'If this email is registered, a password reset link has been sent.',
+      })
     }
 
     // SECURITY: Check if email matches any admin email

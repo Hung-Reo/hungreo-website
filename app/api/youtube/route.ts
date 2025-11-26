@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOpenAIClient } from '@/lib/openai'
+import { publicApiRateLimit, getClientIp } from '@/lib/rateLimit'
 import axios from 'axios'
 
 // Use Node.js runtime for better compatibility
@@ -64,6 +65,18 @@ async function getTranscript(videoId: string): Promise<string> {
 
 export async function POST(req: NextRequest) {
   try {
+    // SECURITY: Apply rate limiting to prevent API abuse (3 requests per minute per IP)
+    const clientIp = getClientIp(req)
+    const rateLimitResult = await publicApiRateLimit.limit(clientIp)
+
+    if (!rateLimitResult.success) {
+      console.warn(`[YouTube API] Rate limit exceeded for IP: ${clientIp}`)
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const { url } = await req.json()
 
     if (!url) {

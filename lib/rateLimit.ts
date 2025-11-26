@@ -78,29 +78,42 @@ export const fileUploadRateLimit = new Ratelimit({
 })
 
 /**
+ * Rate limiter for public API endpoints (YouTube, etc.)
+ * Limits: 3 requests per minute per IP
+ * Prevents abuse of expensive operations (OpenAI, YouTube API)
+ */
+export const publicApiRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(3, '1 m'),
+  analytics: true,
+  prefix: 'ratelimit:public:api',
+})
+
+/**
  * Helper function to get client IP from request
+ * SECURITY: Only trust Vercel-provided headers to prevent IP spoofing
  * Falls back to 'anonymous' if IP cannot be determined
  */
 export function getClientIp(request: Request): string {
-  // Try various headers that might contain the real IP
-  const forwardedFor = request.headers.get('x-forwarded-for')
-  const realIp = request.headers.get('x-real-ip')
-  const cfConnectingIp = request.headers.get('cf-connecting-ip') // Cloudflare
+  // SECURITY FIX: Only use Vercel's trusted x-vercel-forwarded-for header
+  // This header is set by Vercel's infrastructure and cannot be spoofed by clients
+  const vercelForwardedFor = request.headers.get('x-vercel-forwarded-for')
 
-  if (forwardedFor) {
-    // x-forwarded-for can contain multiple IPs, get the first one
-    return forwardedFor.split(',')[0].trim()
+  if (vercelForwardedFor) {
+    // x-vercel-forwarded-for can contain multiple IPs, get the first one (client IP)
+    return vercelForwardedFor.split(',')[0].trim()
   }
 
-  if (realIp) {
-    return realIp
-  }
-
+  // Secondary option: Cloudflare's CF-Connecting-IP (only if using Cloudflare)
+  const cfConnectingIp = request.headers.get('cf-connecting-ip')
   if (cfConnectingIp) {
     return cfConnectingIp
   }
 
+  // DO NOT trust x-forwarded-for or x-real-ip as they can be forged by clients
+
   // Fallback to anonymous if we can't determine IP
+  // This will cause all unidentifiable requests to share the same rate limit
   return 'anonymous'
 }
 
