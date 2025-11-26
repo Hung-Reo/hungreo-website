@@ -7,6 +7,8 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Tooltip } from '../ui/Tooltip'
 import { DocumentReviewModal } from './DocumentReviewModal'
+import { ProgressModal } from '../ui/ProgressModal'
+import { useJobPolling } from '@/hooks/useJobPolling'
 import type { Document, DocumentStatus } from '@/lib/documentManager'
 
 interface DocumentStats {
@@ -31,6 +33,22 @@ export function DocumentsManager() {
     totalChunks?: number
     costEstimate?: number
   }) | null>(null)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+
+  // Job polling hook
+  const { job, isPolling, reset: resetJob } = useJobPolling({
+    jobId: currentJobId,
+    onComplete: () => {
+      alert('Document approved and vectors created successfully!')
+      fetchDocuments()
+      setReviewDocument(null)
+      setCurrentJobId(null)
+    },
+    onError: (error) => {
+      alert(`Approval failed: ${error}`)
+      setCurrentJobId(null)
+    },
+  })
 
   useEffect(() => {
     fetchDocuments()
@@ -195,9 +213,15 @@ export function DocumentsManager() {
       const data = await response.json()
 
       if (data.success) {
-        alert('Document approved and added to Pinecone successfully!')
-        fetchDocuments()
-        setReviewDocument(null)
+        // Start polling if jobId is returned
+        if (data.jobId) {
+          setCurrentJobId(data.jobId)
+        } else {
+          // Fallback for immediate completion
+          alert('Document approved and added to Pinecone successfully!')
+          fetchDocuments()
+          setReviewDocument(null)
+        }
       } else {
         alert(`Approval failed: ${data.error}`)
       }
@@ -453,6 +477,20 @@ export function DocumentsManager() {
             onSaveDraft={handleReviewSaveDraft}
           />
         )}
+
+        {/* Progress Modal for Document Approval */}
+        <ProgressModal
+          isOpen={isPolling}
+          status={job?.status || 'processing'}
+          title="Creating Document Embeddings"
+          message={job?.progress.message || 'Processing...'}
+          progress={job?.progress}
+          error={job?.error}
+          onClose={() => {
+            resetJob()
+            setCurrentJobId(null)
+          }}
+        />
       </div>
     </div>
   )
