@@ -7,7 +7,7 @@ import {
   saveDocument,
   type DocumentStatus,
 } from '@/lib/documentManager'
-import { getPineconeIndex } from '@/lib/pinecone'
+import { getPineconeIndex, listAllVectorIds } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
 import { chunkText } from '@/lib/textUtils'
 import { createJob, updateJobProgress, completeJob, failJob } from '@/lib/jobTracker'
@@ -180,10 +180,43 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         await index.deleteMany(document.pineconeIds)
         console.log('[Delete] Pinecone vectors deleted successfully')
       } else {
-        // Fallback: try to delete by document ID pattern
-        console.warn('[Delete] No pineconeIds found, attempting cleanup by document ID pattern')
-        // Note: Pinecone doesn't support prefix deletion, so this is best-effort
-        // In production, you should ensure pineconeIds are always saved
+        // Fallback: use filter-based deletion by documentId to prevent orphan vectors
+        console.warn('[Delete] No pineconeIds found, using filter-based deletion by documentId')
+
+        try {
+          // Get all document vectors matching this documentId
+          const allDocVectorIds = await listAllVectorIds({ vectorType: 'document' })
+
+          // Fetch metadata to filter by documentId
+          const FETCH_BATCH_SIZE = 1000
+          const vectorIdsToDelete: string[] = []
+
+          for (let i = 0; i < allDocVectorIds.length; i += FETCH_BATCH_SIZE) {
+            const batch = allDocVectorIds.slice(i, i + FETCH_BATCH_SIZE)
+            const fetchResponse = await index.fetch(batch)
+
+            for (const [vectorId, vector] of Object.entries(fetchResponse.records)) {
+              if (vector.metadata?.documentId === id) {
+                vectorIdsToDelete.push(vectorId)
+              }
+            }
+          }
+
+          if (vectorIdsToDelete.length > 0) {
+            console.log(`[Delete] Found ${vectorIdsToDelete.length} orphan vectors, deleting...`)
+            const DELETE_BATCH_SIZE = 100
+            for (let i = 0; i < vectorIdsToDelete.length; i += DELETE_BATCH_SIZE) {
+              const batch = vectorIdsToDelete.slice(i, i + DELETE_BATCH_SIZE)
+              await index.deleteMany(batch)
+            }
+            console.log('[Delete] Orphan vectors deleted successfully')
+          } else {
+            console.log('[Delete] No vectors found for this document')
+          }
+        } catch (error) {
+          console.error('[Delete] Failed to delete orphan vectors:', error)
+          // Continue with document deletion even if vector cleanup fails
+        }
       }
     }
 

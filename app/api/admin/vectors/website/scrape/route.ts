@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { scrapeSelectedPages, expandSelectedPages } from '@/lib/websiteScraper'
-import { getPineconeIndex } from '@/lib/pinecone'
+import { getPineconeIndex, listAllVectorIds } from '@/lib/pinecone'
 import { createJob, updateJobProgress, completeJob, failJob } from '@/lib/jobTracker'
 
 export const runtime = 'nodejs'
@@ -41,18 +41,25 @@ export async function POST(req: NextRequest) {
       console.log('[Re-scrape] Deleting old vectors for expanded pages:', expandedPages)
       const index = await getPineconeIndex()
 
-      // Query existing vectors for these pages
-      const queryResponse = await index.query({
-        vector: new Array(1536).fill(0),
-        topK: 10000,
-        filter: { vectorType: 'website' },
-        includeMetadata: true,
-        includeValues: false,
-      })
+      // Get all website vector IDs using proper pagination
+      const websiteVectorIds = await listAllVectorIds({ vectorType: 'website' })
+      console.log(`[Re-scrape] Found ${websiteVectorIds.length} total website vectors`)
 
-      const vectorIdsToDelete = queryResponse.matches
-        .filter((match) => expandedPages.includes(match.metadata?.page as string))
-        .map((match) => match.id)
+      // Fetch metadata to filter by page
+      const FETCH_BATCH_SIZE = 1000
+      const vectorIdsToDelete: string[] = []
+
+      for (let i = 0; i < websiteVectorIds.length; i += FETCH_BATCH_SIZE) {
+        const batch = websiteVectorIds.slice(i, i + FETCH_BATCH_SIZE)
+        const fetchResponse = await index.fetch(batch)
+
+        for (const [id, vector] of Object.entries(fetchResponse.records)) {
+          const page = vector.metadata?.page as string
+          if (expandedPages.includes(page)) {
+            vectorIdsToDelete.push(id)
+          }
+        }
+      }
 
       if (vectorIdsToDelete.length > 0) {
         console.log(`[Re-scrape] Deleting ${vectorIdsToDelete.length} old vectors`)

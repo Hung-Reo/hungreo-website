@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { getPineconeIndex } from '@/lib/pinecone'
+import { getPineconeIndex, listAllVectorIds } from '@/lib/pinecone'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -22,24 +22,36 @@ export async function GET(req: NextRequest) {
 
     const index = await getPineconeIndex()
 
-    // Query all website vectors
-    const queryResponse = await index.query({
-      vector: new Array(1536).fill(0), // Dummy vector for metadata-only query
-      topK: 10000, // Max limit
-      filter: { vectorType: 'website' },
-      includeMetadata: true,
-      includeValues: false,
-    })
+    // Get all website vector IDs using proper pagination (no topK limit)
+    console.log('[Vectors] Listing all website vectors...')
+    const websiteVectorIds = await listAllVectorIds({ vectorType: 'website' })
+    console.log(`[Vectors] Found ${websiteVectorIds.length} website vectors`)
+
+    // Fetch metadata for all vectors in batches
+    const FETCH_BATCH_SIZE = 1000
+    const allVectors: Array<{ id: string; metadata: Record<string, any> }> = []
+
+    for (let i = 0; i < websiteVectorIds.length; i += FETCH_BATCH_SIZE) {
+      const batch = websiteVectorIds.slice(i, i + FETCH_BATCH_SIZE)
+      const fetchResponse = await index.fetch(batch)
+
+      for (const [id, vector] of Object.entries(fetchResponse.records)) {
+        allVectors.push({
+          id,
+          metadata: vector.metadata || {},
+        })
+      }
+    }
 
     // If requesting detailed view for a specific page
     if (detailedPage) {
-      const pageVectors = queryResponse.matches
-        .filter((match) => match.metadata?.page === detailedPage)
-        .map((match) => ({
-          id: match.id,
-          content: match.metadata?.description || '',
-          chunkIndex: (match.metadata?.chunkIndex as number) || 0,
-          title: match.metadata?.title || '',
+      const pageVectors = allVectors
+        .filter((vector) => vector.metadata?.page === detailedPage)
+        .map((vector) => ({
+          id: vector.id,
+          content: vector.metadata?.description || '',
+          chunkIndex: (vector.metadata?.chunkIndex as number) || 0,
+          title: vector.metadata?.title || '',
         }))
         .sort((a, b) => a.chunkIndex - b.chunkIndex)
 
@@ -58,9 +70,9 @@ export async function GET(req: NextRequest) {
       vectorIds: string[]
     }>()
 
-    queryResponse.matches.forEach((match) => {
-      const page = (match.metadata?.page as string) || 'unknown'
-      const lastScraped = (match.metadata?.lastScraped as number) || 0
+    allVectors.forEach((vector) => {
+      const page = (vector.metadata?.page as string) || 'unknown'
+      const lastScraped = (vector.metadata?.lastScraped as number) || 0
 
       if (!pageMap.has(page)) {
         pageMap.set(page, {
@@ -73,7 +85,7 @@ export async function GET(req: NextRequest) {
 
       const pageData = pageMap.get(page)!
       pageData.vectorCount++
-      pageData.vectorIds.push(match.id)
+      pageData.vectorIds.push(vector.id)
       // Update lastScraped to most recent
       if (lastScraped > pageData.lastScraped) {
         pageData.lastScraped = lastScraped
@@ -95,7 +107,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       pages,
-      totalVectors: queryResponse.matches.length,
+      totalVectors: allVectors.length,
     })
   } catch (error: any) {
     console.error('Failed to get website vectors:', error)
@@ -128,19 +140,26 @@ export async function DELETE(req: NextRequest) {
 
     const index = await getPineconeIndex()
 
-    // Get all website vectors
-    const queryResponse = await index.query({
-      vector: new Array(1536).fill(0),
-      topK: 10000,
-      filter: { vectorType: 'website' },
-      includeMetadata: true,
-      includeValues: false,
-    })
+    // Get all website vector IDs using proper pagination
+    console.log('[Vectors] Listing all website vectors for deletion...')
+    const websiteVectorIds = await listAllVectorIds({ vectorType: 'website' })
+    console.log(`[Vectors] Found ${websiteVectorIds.length} website vectors`)
 
-    // Filter vectors belonging to selected pages
-    const vectorIdsToDelete = queryResponse.matches
-      .filter((match) => pages.includes(match.metadata?.page as string))
-      .map((match) => match.id)
+    // Fetch metadata to filter by page
+    const FETCH_BATCH_SIZE = 1000
+    const vectorIdsToDelete: string[] = []
+
+    for (let i = 0; i < websiteVectorIds.length; i += FETCH_BATCH_SIZE) {
+      const batch = websiteVectorIds.slice(i, i + FETCH_BATCH_SIZE)
+      const fetchResponse = await index.fetch(batch)
+
+      for (const [id, vector] of Object.entries(fetchResponse.records)) {
+        const page = vector.metadata?.page as string
+        if (pages.includes(page)) {
+          vectorIdsToDelete.push(id)
+        }
+      }
+    }
 
     if (vectorIdsToDelete.length === 0) {
       return NextResponse.json({

@@ -5,7 +5,7 @@
 
 import puppeteer from 'puppeteer-core'
 import chromium from '@sparticuz/chromium'
-import { getPineconeIndex } from './pinecone'
+import { getPineconeIndex, listAllVectorIds } from './pinecone'
 import { createEmbedding } from './openai'
 import { chunkText } from './textUtils'
 import { getAllProjects, getAllBlogPosts } from './contentManager'
@@ -329,10 +329,22 @@ export async function updateKnowledgeBase(pages: ScrapedPage[]): Promise<number>
 
   console.log('[Scraper] Updating Pinecone knowledge base')
 
-  // First, delete existing website vectors
+  // First, delete existing website vectors using proper pagination (no topK limit)
   try {
-    await index.deleteMany({ type: 'website' })
-    console.log('[Scraper] Deleted existing website vectors')
+    console.log('[Scraper] Listing all existing website vectors...')
+    const vectorIdsToDelete = await listAllVectorIds({ vectorType: 'website' })
+
+    if (vectorIdsToDelete.length > 0) {
+      console.log(`[Scraper] Deleting ${vectorIdsToDelete.length} existing website vectors...`)
+      const BATCH_SIZE = 100
+      for (let i = 0; i < vectorIdsToDelete.length; i += BATCH_SIZE) {
+        const batch = vectorIdsToDelete.slice(i, i + BATCH_SIZE)
+        await index.deleteMany(batch)
+      }
+      console.log('[Scraper] Deleted existing website vectors')
+    } else {
+      console.log('[Scraper] No existing website vectors to delete')
+    }
   } catch (error) {
     console.error('[Scraper] Failed to delete existing website vectors:', error)
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { getPineconeIndex } from '@/lib/pinecone'
+import { getPineconeIndex, listAllVectorIds } from '@/lib/pinecone'
 import { getAllDocuments } from '@/lib/documentManager'
 
 export const runtime = 'nodejs'
@@ -24,24 +24,36 @@ export async function GET(req: NextRequest) {
     // Get Pinecone index
     const index = await getPineconeIndex()
 
-    // Query all document vectors to verify they exist
-    const queryResponse = await index.query({
-      vector: new Array(1536).fill(0),
-      topK: 10000,
-      filter: { vectorType: 'document' },
-      includeMetadata: true,
-      includeValues: false,
-    })
+    // Get all document vector IDs using proper pagination (no topK limit)
+    console.log('[Vectors] Listing all document vectors...')
+    const documentVectorIds = await listAllVectorIds({ vectorType: 'document' })
+    console.log(`[Vectors] Found ${documentVectorIds.length} document vectors`)
+
+    // Fetch metadata for all vectors in batches
+    const FETCH_BATCH_SIZE = 1000
+    const allVectors: Array<{ id: string; metadata: Record<string, any> }> = []
+
+    for (let i = 0; i < documentVectorIds.length; i += FETCH_BATCH_SIZE) {
+      const batch = documentVectorIds.slice(i, i + FETCH_BATCH_SIZE)
+      const fetchResponse = await index.fetch(batch)
+
+      for (const [id, vector] of Object.entries(fetchResponse.records)) {
+        allVectors.push({
+          id,
+          metadata: vector.metadata || {},
+        })
+      }
+    }
 
     // If requesting detailed view for a specific document
     if (detailedDocId) {
-      const docVectors = queryResponse.matches
-        .filter((match) => match.metadata?.documentId === detailedDocId)
-        .map((match) => ({
-          id: match.id,
-          content: match.metadata?.description || '',
-          chunkIndex: (match.metadata?.chunkIndex as number) || 0,
-          fileName: match.metadata?.fileName || '',
+      const docVectors = allVectors
+        .filter((vector) => vector.metadata?.documentId === detailedDocId)
+        .map((vector) => ({
+          id: vector.id,
+          content: vector.metadata?.description || '',
+          chunkIndex: (vector.metadata?.chunkIndex as number) || 0,
+          fileName: vector.metadata?.fileName || '',
         }))
         .sort((a, b) => a.chunkIndex - b.chunkIndex)
 
@@ -60,8 +72,8 @@ export async function GET(req: NextRequest) {
 
     // Map document IDs to vector counts
     const vectorCountMap = new Map<string, number>()
-    queryResponse.matches.forEach((match) => {
-      const docId = match.metadata?.documentId as string
+    allVectors.forEach((vector) => {
+      const docId = vector.metadata?.documentId as string
       if (docId) {
         vectorCountMap.set(docId, (vectorCountMap.get(docId) || 0) + 1)
       }
@@ -119,19 +131,26 @@ export async function DELETE(req: NextRequest) {
 
     const index = await getPineconeIndex()
 
-    // Get all document vectors
-    const queryResponse = await index.query({
-      vector: new Array(1536).fill(0),
-      topK: 10000,
-      filter: { vectorType: 'document' },
-      includeMetadata: true,
-      includeValues: false,
-    })
+    // Get all document vector IDs using proper pagination
+    console.log('[Vectors] Listing all document vectors for deletion...')
+    const documentVectorIds = await listAllVectorIds({ vectorType: 'document' })
+    console.log(`[Vectors] Found ${documentVectorIds.length} document vectors`)
 
-    // Filter vectors belonging to selected documents
-    const vectorIdsToDelete = queryResponse.matches
-      .filter((match) => documentIds.includes(match.metadata?.documentId as string))
-      .map((match) => match.id)
+    // Fetch metadata to filter by documentId
+    const FETCH_BATCH_SIZE = 1000
+    const vectorIdsToDelete: string[] = []
+
+    for (let i = 0; i < documentVectorIds.length; i += FETCH_BATCH_SIZE) {
+      const batch = documentVectorIds.slice(i, i + FETCH_BATCH_SIZE)
+      const fetchResponse = await index.fetch(batch)
+
+      for (const [id, vector] of Object.entries(fetchResponse.records)) {
+        const docId = vector.metadata?.documentId as string
+        if (documentIds.includes(docId)) {
+          vectorIdsToDelete.push(id)
+        }
+      }
+    }
 
     if (vectorIdsToDelete.length === 0) {
       return NextResponse.json({
