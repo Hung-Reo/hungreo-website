@@ -10,6 +10,7 @@ import {
 import { getPineconeIndex } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
 import { chunkText } from '@/lib/textUtils'
+import { createJob, updateJobProgress, completeJob, failJob } from '@/lib/jobTracker'
 
 export const runtime = 'nodejs'
 
@@ -83,51 +84,72 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     // If approving, generate embeddings and add to Pinecone
     if (status === 'approved' && document.status !== 'approved') {
-      console.log('[Approve] Creating embeddings for document:', document.id)
-      console.log('[Approve] Document has', document.chunks?.length || 0, 'chunks')
+      const jobId = `doc-${id}`
 
-      const index = await getPineconeIndex()
-      const pineconeIds: string[] = []
+      try {
+        console.log('[Approve] Creating embeddings for document:', document.id)
+        console.log('[Approve] Document has', document.chunks?.length || 0, 'chunks')
 
-      // Generate embeddings for each chunk
-      for (let i = 0; i < document.chunks.length; i++) {
-        const chunk = document.chunks[i]
-        console.log(`[Approve] Processing chunk ${i + 1}/${document.chunks.length}`)
-        const embedding = await createEmbedding(chunk)
+        // Create job tracker
+        await createJob(jobId, 'document-approval', document.chunks.length)
 
-        const vectorId = `${document.id}_chunk_${i}`
-        await index.upsert([
-          {
-            id: vectorId,
-            values: embedding,
-            metadata: {
-              title: document.fileName,
-              description: chunk.substring(0, 500),
-              type: 'document', // Vector type for categorization
-              vectorType: 'document', // Explicit field for filtering
-              fileType: document.fileType,
-              chunkIndex: i,
-              totalChunks: document.chunks.length,
-              documentId: document.id,
-              uploadedAt: document.uploadedAt,
-              uploadedBy: document.uploadedBy,
+        const index = await getPineconeIndex()
+        const pineconeIds: string[] = []
+
+        // Generate embeddings for each chunk
+        for (let i = 0; i < document.chunks.length; i++) {
+          const chunk = document.chunks[i]
+          console.log(`[Approve] Processing chunk ${i + 1}/${document.chunks.length}`)
+
+          // Update progress
+          await updateJobProgress(
+            jobId,
+            i + 1,
+            `Processing chunk ${i + 1}/${document.chunks.length}`
+          )
+
+          const embedding = await createEmbedding(chunk)
+
+          const vectorId = `${document.id}_chunk_${i}`
+          await index.upsert([
+            {
+              id: vectorId,
+              values: embedding,
+              metadata: {
+                title: document.fileName,
+                description: chunk.substring(0, 500),
+                type: 'document', // Vector type for categorization
+                vectorType: 'document', // Explicit field for filtering
+                fileType: document.fileType,
+                chunkIndex: i,
+                totalChunks: document.chunks.length,
+                documentId: document.id,
+                uploadedAt: document.uploadedAt,
+                uploadedBy: document.uploadedBy,
+              },
             },
-          },
-        ])
+          ])
 
-        pineconeIds.push(vectorId)
+          pineconeIds.push(vectorId)
+        }
+
+        console.log('[Approve] Successfully added', pineconeIds.length, 'vectors to Pinecone')
+
+        // Update document with Pinecone IDs
+        document.pineconeIds = pineconeIds
+
+        // Complete job
+        await completeJob(jobId, { vectorCount: pineconeIds.length })
+      } catch (error: any) {
+        await failJob(jobId, error.message)
+        throw error
       }
-
-      console.log('[Approve] Successfully added', pineconeIds.length, 'vectors to Pinecone')
-
-      // Update document with Pinecone IDs
-      document.pineconeIds = pineconeIds
     }
 
     // Update status
     await updateDocumentStatus(id, status as DocumentStatus, notes)
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, jobId: status === 'approved' ? `doc-${id}` : undefined })
   } catch (error: any) {
     console.error('Update document error:', error)
     return NextResponse.json({ error: error.message || 'Failed to update document' }, { status: 500 })

@@ -145,11 +145,28 @@ export function WebsiteVectorsManager() {
     try {
       setIsReScraping(true)
 
-      // TODO: Implement selective re-scrape API
-      alert('Re-scrape feature coming soon! For now, use the "Scrape Website" button in the main dashboard.')
+      const response = await fetch('/api/admin/vectors/website/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pages: selectedPagesArray }),
+      })
 
+      const data = await response.json()
+
+      if (data.success) {
+        const message = data.errors && data.errors.length > 0
+          ? `Re-scraped ${data.pagesScraped} page(s) with ${data.totalVectors} new vectors.\n\nDeleted ${data.deletedVectors} old vectors.\n\nWarnings:\n${data.errors.join('\n')}`
+          : `Successfully re-scraped ${data.pagesScraped} page(s) with ${data.totalVectors} new vectors.\n\nDeleted ${data.deletedVectors} old vectors.`
+
+        alert(message)
+        setSelectedPages(new Set())
+        await fetchPages()
+      } else {
+        alert(`Re-scrape failed: ${data.error}`)
+      }
     } catch (error) {
       alert('Re-scrape failed. Please try again.')
+      console.error('Re-scrape error:', error)
     } finally {
       setIsReScraping(false)
     }

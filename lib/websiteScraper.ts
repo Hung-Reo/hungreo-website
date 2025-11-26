@@ -335,3 +335,97 @@ export async function scrapeAndUpdate(): Promise<{
     }
   }
 }
+
+/**
+ * Scrape and update only specific pages
+ * @param pagePaths - Array of page paths to scrape (e.g., ['/contact', '/about'])
+ */
+export async function scrapeSelectedPages(pagePaths: string[]): Promise<{
+  pagesScraped: number
+  totalVectors: number
+  errors: string[]
+}> {
+  const errors: string[] = []
+  const pages: ScrapedPage[] = []
+  let browser
+
+  console.log(`[Selective Scraper] Starting to scrape ${pagePaths.length} pages:`, pagePaths)
+
+  try {
+    // Launch browser
+    console.log('[Selective Scraper] Launching browser...')
+    browser = await puppeteer.launch(await getBrowserOptions())
+    console.log('[Selective Scraper] Browser launched successfully')
+
+    // Scrape each selected page
+    for (const path of pagePaths) {
+      try {
+        const page = await scrapePageWithBrowser(browser, path)
+        pages.push(page)
+        console.log(`[Selective Scraper] ✅ Successfully scraped ${path}`)
+      } catch (error: any) {
+        console.error(`[Selective Scraper] ❌ Failed to scrape ${path}:`, error)
+        errors.push(`${path}: ${error.message}`)
+      }
+    }
+  } catch (error: any) {
+    console.error('[Selective Scraper] Failed to launch browser:', error)
+    errors.push(`Browser launch failed: ${error.message}`)
+    return { pagesScraped: 0, totalVectors: 0, errors }
+  } finally {
+    if (browser) {
+      console.log('[Selective Scraper] Closing browser...')
+      await browser.close().catch(() => {})
+    }
+  }
+
+  if (pages.length === 0) {
+    errors.push('No pages were successfully scraped')
+    return { pagesScraped: 0, totalVectors: 0, errors }
+  }
+
+  // Create embeddings and store in Pinecone
+  const index = await getPineconeIndex()
+  let totalVectors = 0
+
+  for (const page of pages) {
+    const fullContent = `${page.title}\n${page.description}\n${page.content}`
+    const chunks = chunkText(fullContent)
+
+    console.log(`[Selective Scraper] Creating ${chunks.length} chunks for ${page.url}`)
+
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i]
+      const embedding = await createEmbedding(chunk)
+
+      const vectorId = `website_${page.url.replace(/\//g, '_')}_chunk_${i}`
+
+      await index.upsert([
+        {
+          id: vectorId,
+          values: embedding,
+          metadata: {
+            title: page.title,
+            description: chunk,
+            type: 'website',
+            vectorType: 'website',
+            page: page.url,
+            chunkIndex: i,
+            totalChunks: chunks.length,
+            lastScraped: page.lastScraped,
+          },
+        },
+      ])
+
+      totalVectors++
+    }
+  }
+
+  console.log(`[Selective Scraper] Successfully scraped ${pages.length} pages with ${totalVectors} vectors`)
+
+  return {
+    pagesScraped: pages.length,
+    totalVectors,
+    errors,
+  }
+}
