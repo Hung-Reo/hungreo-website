@@ -3,8 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { VideoPlayer } from '@/components/features/VideoPlayer'
 import { TranscriptSection } from '@/components/features/TranscriptSection'
 import { RelatedVideos } from '@/components/features/RelatedVideos'
-import { getBaseUrl } from '@/lib/getBaseUrl'
-import type { VideoCategory } from '@/lib/videoManager'
+import { getVideo as getVideoFromDB, normalizeVideo, type VideoCategory } from '@/lib/videoManager'
 
 const CATEGORY_MAPPINGS: Record<string, { name: string; category: VideoCategory }> = {
   'leadership': { name: 'Leadership', category: 'Leadership' },
@@ -51,20 +50,13 @@ export const dynamic = 'force-dynamic'
 // Allow any slug format to be processed (important for legacy URLs)
 export const dynamicParams = true
 
+// Helper functions to get video data directly from database
+// This avoids server-to-server HTTP requests which can fail
 async function getVideo(videoId: string) {
   try {
-    const baseUrl = getBaseUrl()
-    // Use direct video endpoint instead of fetching all videos (fixes 404 for >50 videos)
-    const response = await fetch(`${baseUrl}/api/videos/${videoId}`, {
-      next: { revalidate: 60 },
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    const data = await response.json()
-    return data.video || null
+    const video = await getVideoFromDB(videoId)
+    if (!video) return null
+    return normalizeVideo(video)
   } catch (error) {
     console.error('Error fetching video:', error)
     return null
@@ -72,23 +64,8 @@ async function getVideo(videoId: string) {
 }
 
 async function getVideoWithTranscript(videoId: string) {
-  try {
-    // Use the same direct endpoint - it returns full video data
-    const baseUrl = getBaseUrl()
-    const response = await fetch(`${baseUrl}/api/videos/${videoId}`, {
-      next: { revalidate: 60 },
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    const data = await response.json()
-    return data.video || null
-  } catch (error) {
-    console.error('Error fetching video with transcript:', error)
-    return null
-  }
+  // Same as getVideo since we always return full data including transcript
+  return getVideo(videoId)
 }
 
 export async function generateMetadata({ params }: PageProps) {
