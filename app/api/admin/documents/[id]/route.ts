@@ -117,7 +117,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
               values: embedding,
               metadata: {
                 title: document.fileName,
-                description: chunk.substring(0, 500),
+                content: chunk, // Store FULL chunk content (not truncated)
+                description: chunk.substring(0, 500), // Keep for backward compatibility
                 type: 'document', // Vector type for categorization
                 vectorType: 'document', // Explicit field for filtering
                 fileType: document.fileType,

@@ -357,10 +357,17 @@ export async function updateKnowledgeBase(pages: ScrapedPage[]): Promise<number>
 
   for (const page of pages) {
     const fullContent = `${page.title}\n${page.description}\n${page.content}`
-    const chunks = chunkText(fullContent) // Uses default 200 words for better RAG accuracy
+
+    // Smart chunking: larger chunks for content-rich pages (blog posts, projects)
+    const isBlogPost = page.url.includes('/blog/')
+    const isProject = page.url.includes('/projects/')
+    const chunkSize = (isBlogPost || isProject) ? 500 : 200
+    const overlap = (isBlogPost || isProject) ? 100 : 50
+
+    const chunks = chunkText(fullContent, chunkSize, overlap)
 
     const fullWordCount = fullContent.split(/\s+/).length
-    console.log(`[Scraper] Creating ${chunks.length} chunks for ${page.url} (${fullWordCount} words total, ${page.content.split(/\s+/).length} content words)`)
+    console.log(`[Scraper] Creating ${chunks.length} chunks for ${page.url} (${fullWordCount} words total, chunk size: ${chunkSize} words)`)
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i]
@@ -500,10 +507,17 @@ export async function scrapeSelectedPages(
   for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
     const page = pages[pageIndex]
     const fullContent = `${page.title}\n${page.description}\n${page.content}`
-    // Allow smaller chunks for website pages
-    const chunks = chunkText(fullContent, 200, 50)
 
-    console.log(`[Selective Scraper] Creating ${chunks.length} chunks for ${page.url}`)
+    // Smart chunking: larger chunks for content-rich pages (blog posts, projects)
+    const isBlogPost = page.url.includes('/blog/')
+    const isProject = page.url.includes('/projects/')
+    const chunkSize = (isBlogPost || isProject) ? 500 : 200
+    const overlap = (isBlogPost || isProject) ? 100 : 50
+
+    const chunks = chunkText(fullContent, chunkSize, overlap)
+
+    const fullWordCount = fullContent.split(/\s+/).length
+    console.log(`[Selective Scraper] Creating ${chunks.length} chunks for ${page.url} (${fullWordCount} words, chunk size: ${chunkSize})`)
     await onProgress?.({
       message: `Embedding ${page.url} (${pageIndex + 1}/${pages.length}) with ${chunks.length} chunks`,
       current: pageIndex + 1,

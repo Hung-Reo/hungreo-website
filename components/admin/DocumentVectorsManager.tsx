@@ -5,6 +5,8 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { ArrowLeft, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Button } from '../ui/Button'
+import { ProgressModal } from '../ui/ProgressModal'
+import { useSSEProgress } from '@/hooks/useSSEProgress'
 
 interface DocumentVector {
   id: string
@@ -32,10 +34,25 @@ export function DocumentVectorsManager() {
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeletingDocuments, setIsDeletingDocuments] = useState(false)
   const [isReApproving, setIsReApproving] = useState(false)
   const [viewingDoc, setViewingDoc] = useState<DocumentVector | null>(null)
   const [vectorDetails, setVectorDetails] = useState<VectorDetail[]>([])
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+
+  // SSE progress tracking
+  const { job, connectionState, error: streamError } = useSSEProgress({
+    jobId: currentJobId,
+    onComplete: () => {
+      setSelectedDocs(new Set())
+      fetchDocuments()
+      setCurrentJobId(null)
+    },
+    onError: () => {
+      setCurrentJobId(null)
+    },
+  })
 
   useEffect(() => {
     fetchDocuments()
@@ -99,7 +116,6 @@ export function DocumentVectorsManager() {
   const handleReApproveSelected = async () => {
     if (selectedDocs.size === 0) return
 
-    const selectedDocsArray = Array.from(selectedDocs)
     const selectedDocuments = documents.filter((d) => selectedDocs.has(d.id))
     const outOfSyncDocs = selectedDocuments.filter((d) => d.status === 'out-of-sync')
 
@@ -121,42 +137,66 @@ export function DocumentVectorsManager() {
     try {
       setIsReApproving(true)
 
-      // Call the approval API for each document
-      let successCount = 0
-      let errorCount = 0
-      const errors: string[] = []
+      // For single document, use SSE
+      if (outOfSyncDocs.length === 1) {
+        const doc = outOfSyncDocs[0]
+        const response = await fetch('/api/admin/documents/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentId: doc.id }),
+        })
 
-      for (const doc of outOfSyncDocs) {
-        try {
-          const response = await fetch('/api/admin/documents/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ documentId: doc.id }),
-          })
+        const data = await response.json()
 
-          const data = await response.json()
-
-          if (data.success) {
-            successCount++
-          } else {
-            errorCount++
-            errors.push(`${doc.fileName}: ${data.error}`)
-          }
-        } catch (error: any) {
-          errorCount++
-          errors.push(`${doc.fileName}: ${error.message}`)
+        if (data.success && data.jobId) {
+          // Start SSE tracking
+          setCurrentJobId(data.jobId)
+        } else if (data.success) {
+          // Fallback if no jobId
+          alert(`Successfully re-approved ${doc.fileName}`)
+          setSelectedDocs(new Set())
+          await fetchDocuments()
+        } else {
+          alert(`Re-approval failed: ${data.error}`)
         }
-      }
-
-      if (successCount > 0) {
-        const message = `Successfully re-approved ${successCount} document(s).${
-          errorCount > 0 ? `\n\nFailed: ${errorCount} document(s)\n${errors.join('\n')}` : ''
-        }`
-        alert(message)
-        setSelectedDocs(new Set())
-        await fetchDocuments()
       } else {
-        alert(`Re-approval failed for all documents:\n\n${errors.join('\n')}`)
+        // For multiple documents, process sequentially (no SSE UI for now)
+        let successCount = 0
+        let errorCount = 0
+        const errors: string[] = []
+
+        for (const doc of outOfSyncDocs) {
+          try {
+            const response = await fetch('/api/admin/documents/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ documentId: doc.id }),
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+              successCount++
+            } else {
+              errorCount++
+              errors.push(`${doc.fileName}: ${data.error}`)
+            }
+          } catch (error: any) {
+            errorCount++
+            errors.push(`${doc.fileName}: ${error.message}`)
+          }
+        }
+
+        if (successCount > 0) {
+          const message = `Successfully re-approved ${successCount} document(s).${
+            errorCount > 0 ? `\n\nFailed: ${errorCount} document(s)\n${errors.join('\n')}` : ''
+          }`
+          alert(message)
+          setSelectedDocs(new Set())
+          await fetchDocuments()
+        } else {
+          alert(`Re-approval failed for all documents:\n\n${errors.join('\n')}`)
+        }
       }
     } catch (error) {
       alert('Re-approval failed. Please try again.')
@@ -209,6 +249,68 @@ export function DocumentVectorsManager() {
       alert('Delete failed. Please try again.')
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleDeleteDocuments = async () => {
+    if (selectedDocs.size === 0) return
+
+    const selectedDocsArray = Array.from(selectedDocs)
+    const selectedDocuments = documents.filter((d) => selectedDocs.has(d.id))
+    const totalVectors = selectedDocuments.reduce((sum, d) => sum + d.vectorCount, 0)
+
+    const fileNames = selectedDocuments.map((d) => d.fileName).join(', ')
+
+    if (
+      !window.confirm(
+        `⚠️ PERMANENTLY DELETE ${selectedDocs.size} document(s) from the system?\n\nFiles: ${fileNames}\n\nThis will delete:\n• ${totalVectors} vectors from Pinecone\n• All document data and files\n\n⚠️ THIS CANNOT BE UNDONE!`
+      )
+    ) {
+      return
+    }
+
+    try {
+      setIsDeletingDocuments(true)
+
+      // Call the DELETE API for each document
+      let successCount = 0
+      let errorCount = 0
+      const errors: string[] = []
+
+      for (const doc of selectedDocuments) {
+        try {
+          const response = await fetch(`/api/admin/documents/${doc.id}`, {
+            method: 'DELETE',
+          })
+
+          const data = await response.json()
+
+          if (data.success) {
+            successCount++
+          } else {
+            errorCount++
+            errors.push(`${doc.fileName}: ${data.error}`)
+          }
+        } catch (error: any) {
+          errorCount++
+          errors.push(`${doc.fileName}: ${error.message}`)
+        }
+      }
+
+      if (successCount > 0) {
+        const message = `Successfully deleted ${successCount} document(s) from the system.${
+          errorCount > 0 ? `\n\nFailed: ${errorCount} document(s)\n${errors.join('\n')}` : ''
+        }`
+        alert(message)
+        setSelectedDocs(new Set())
+        await fetchDocuments()
+      } else {
+        alert(`Deletion failed for all documents:\n\n${errors.join('\n')}`)
+      }
+    } catch (error) {
+      alert('Document deletion failed. Please try again.')
+    } finally {
+      setIsDeletingDocuments(false)
     }
   }
 
@@ -393,9 +495,17 @@ export function DocumentVectorsManager() {
                         variant="outline"
                         onClick={handleDeleteSelected}
                         disabled={isDeleting}
-                        className="text-red-600 hover:bg-red-50"
+                        className="text-orange-600 hover:bg-orange-50"
                       >
-                        {isDeleting ? 'Deleting...' : 'Delete Selected Vectors'}
+                        {isDeleting ? 'Deleting...' : 'Delete Vectors Only'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleDeleteDocuments}
+                        disabled={isDeletingDocuments}
+                        className="text-red-600 hover:bg-red-50 font-semibold"
+                      >
+                        {isDeletingDocuments ? 'Deleting...' : 'Delete Document(s)'}
                       </Button>
                     </div>
                   </div>
@@ -528,6 +638,21 @@ export function DocumentVectorsManager() {
           </div>
         </div>
       )}
+
+      {/* Progress Modal */}
+      <ProgressModal
+        isOpen={Boolean(currentJobId || isReApproving)}
+        status={job?.status || 'processing'}
+        title="Re-approving Document"
+        message={job?.progress.message || 'Starting document re-approval...'}
+        progress={job?.progress}
+        error={(job?.status === 'failed' && job?.error) || streamError || undefined}
+        logs={job?.logs}
+        connectionState={connectionState}
+        onClose={() => {
+          setCurrentJobId(null)
+        }}
+      />
     </div>
   )
 }

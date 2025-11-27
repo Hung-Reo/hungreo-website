@@ -4,8 +4,10 @@ import { getVideo, saveVideo, updateVideoCategory, deleteVideo, type VideoCatego
 import { getPineconeIndex } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
 import { chunkText } from '@/lib/documentProcessor'
+import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
 
 export const runtime = 'nodejs'
+export const maxDuration = 300 // 5 minutes for large videos
 
 /**
  * OPTIONS - Handle CORS preflight requests
@@ -44,6 +46,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 // PATCH update video category or generate embeddings
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  let jobId: string | null = null
+  let isGeneratingEmbeddings = false
+
   try {
     const session = await auth()
     if (!session?.user || (session.user as any).role !== 'admin') {
@@ -51,6 +56,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const { category, generateEmbeddings } = await req.json()
+    isGeneratingEmbeddings = generateEmbeddings
 
     const video = await getVideo(params.id)
     if (!video) {
@@ -64,45 +70,82 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     // Generate embeddings if requested
     if (generateEmbeddings) {
-      const index = await getPineconeIndex()
-      const pineconeIds: string[] = []
-
       // Combine title, description, and transcript (use English content)
       const content = `${video.en.title}\n${video.en.description}\n${video.en.transcript || ''}`
 
-      // Chunk the content (uses default 200 words for better RAG accuracy)
-      const chunks = chunkText(content)
+      // Chunk the content - use larger chunks for videos (transcripts are long)
+      const chunks = chunkText(content, 500, 100) // 500 words, 100 overlap for videos
+
+      console.log(`[Video Embedding] Creating ${chunks.length} chunks for video ${video.videoId}`)
+
+      // Create job tracker
+      jobId = `video-embed-${Date.now()}`
+      await createJob(jobId, 'video-embedding', chunks.length)
+      await appendLog(jobId, 'info', `Starting embedding for ${video.en.title}`)
+      await emitProgress(jobId, `Processing ${video.en.title}...`, 0, chunks.length)
+
+      const index = await getPineconeIndex()
+      const pineconeIds: string[] = []
 
       // Generate embeddings for each chunk
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i]
-        const embedding = await createEmbedding(chunk)
 
-        const vectorId = `video_${video.videoId}_chunk_${i}`
-        await index.upsert([
-          {
-            id: vectorId,
-            values: embedding,
-            metadata: {
-              title: video.en.title,
-              description: chunk, // Store FULL chunk content (no truncation)
-              type: 'video',
-              vectorType: 'video', // For filtering in Vector Manager
-              category: video.category,
-              videoId: video.videoId,
-              channelTitle: video.channelTitle,
-              chunkIndex: i,
-              totalChunks: chunks.length,
+        try {
+          await emitProgress(
+            jobId,
+            `Creating vector ${i + 1}/${chunks.length} for ${video.en.title}`,
+            i + 1,
+            chunks.length
+          )
+
+          const embedding = await createEmbedding(chunk)
+          const vectorId = `video_${video.videoId}_chunk_${i}`
+
+          await index.upsert([
+            {
+              id: vectorId,
+              values: embedding,
+              metadata: {
+                title: video.en.title,
+                content: chunk, // Store FULL chunk content (primary field)
+                description: chunk, // Keep for backward compatibility
+                type: 'video',
+                vectorType: 'video', // For filtering in Vector Manager
+                category: video.category,
+                videoId: video.videoId,
+                channelTitle: video.channelTitle,
+                chunkIndex: i,
+                totalChunks: chunks.length,
+              },
             },
-          },
-        ])
+          ])
 
-        pineconeIds.push(vectorId)
+          pineconeIds.push(vectorId)
+        } catch (error) {
+          console.error(`[Video Embedding] Failed to create vector ${i}:`, error)
+          await appendLog(jobId, 'error', `Failed to create vector ${i + 1}`)
+        }
       }
 
       // Update video with Pinecone IDs and save to KV
       video.pineconeIds = pineconeIds
       await saveVideo(video)
+
+      await appendLog(jobId, 'info', `Created ${pineconeIds.length} vectors successfully`)
+      await completeJob(jobId, {
+        videoId: video.videoId,
+        title: video.en.title,
+        vectorsCreated: pineconeIds.length,
+        chunks: chunks.length,
+      })
+
+      return NextResponse.json({
+        success: true,
+        jobId,
+        video,
+        vectorsCreated: pineconeIds.length,
+      })
     }
 
     // If only category was updated, also save
@@ -116,6 +159,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ success: true, video })
   } catch (error: any) {
     console.error('Update video error:', error)
+    if (isGeneratingEmbeddings && jobId) {
+      await failJob(jobId, error.message || 'Failed to generate embeddings')
+    }
     return NextResponse.json({ error: error.message || 'Failed to update video' }, { status: 500 })
   }
 }

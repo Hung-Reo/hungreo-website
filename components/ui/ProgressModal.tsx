@@ -44,10 +44,23 @@ export function ProgressModal({
         </div>
 
         <div className="p-6">
-          {/* Status Icon */}
-          <div className="mb-4 flex justify-center">
+          {/* Status Icon with Percentage */}
+          <div className="mb-4 flex flex-col items-center justify-center gap-3">
             {status === 'processing' && (
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+              <>
+                {/* Large Percentage Display */}
+                {progress && (
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-blue-600">
+                      {percentage}%
+                    </div>
+                    <div className="mt-1 text-sm text-slate-500">
+                      {progress.current} of {progress.total} completed
+                    </div>
+                  </div>
+                )}
+                <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+              </>
             )}
             {status === 'completed' && (
               <CheckCircle className="h-12 w-12 text-green-600" />
@@ -63,12 +76,6 @@ export function ProgressModal({
           {/* Progress Bar */}
           {status === 'processing' && progress && (
             <div className="mb-4">
-              <div className="mb-1 flex items-center justify-between text-sm">
-                <span className="text-slate-600">
-                  {progress.current} / {progress.total}
-                </span>
-                <span className="font-medium text-slate-900">{percentage}%</span>
-              </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
                 <div
                   className="h-full bg-blue-600 transition-all duration-300"

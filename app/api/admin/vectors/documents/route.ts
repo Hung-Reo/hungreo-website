@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
         .filter((vector) => vector.metadata?.documentId === detailedDocId)
         .map((vector) => ({
           id: vector.id,
-          content: vector.metadata?.description || '',
+          content: vector.metadata?.content || vector.metadata?.description || '', // Try 'content' first (documents), fallback to 'description' (old format)
           chunkIndex: (vector.metadata?.chunkIndex as number) || 0,
           fileName: vector.metadata?.fileName || '',
         }))
