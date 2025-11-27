@@ -46,8 +46,8 @@ function extractVideoId(slug: string): string {
   return parts[parts.length - 1]
 }
 
-// Revalidate every 60 seconds (ISR)
-export const revalidate = 60
+// Force dynamic rendering to avoid serving stale 404 pages
+export const dynamic = 'force-dynamic'
 // Allow any slug format to be processed (important for legacy URLs)
 export const dynamicParams = true
 
