@@ -44,8 +44,10 @@ export function VideoGrid({ videos, categorySlug }: VideoGridProps) {
   }
 
   // Create slug from video ID
-  function createVideoSlug(videoId: string, title: string): string {
-    const titleSlug = title
+  function createVideoSlug(videoId: string, title: string, fallbackTitle?: string): string {
+    // Use fallback title if the primary title is empty
+    const effectiveTitle = title.trim() || fallbackTitle || 'video'
+    const titleSlug = effectiveTitle
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
@@ -117,7 +119,7 @@ export function VideoGrid({ videos, categorySlug }: VideoGridProps) {
             return (
               <Link
                 key={video.id}
-                href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, content.title)}`}
+                href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, content.title, video.en.title)}`}
                 className="group block overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md"
               >
                 {/* Thumbnail */}
@@ -155,7 +157,7 @@ export function VideoGrid({ videos, categorySlug }: VideoGridProps) {
             return (
               <Link
                 key={video.id}
-                href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, content.title)}`}
+                href={`/tools/knowledge/${categorySlug}/${createVideoSlug(video.videoId, content.title, video.en.title)}`}
                 className="group flex gap-4 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:shadow-md"
               >
                 {/* Thumbnail */}

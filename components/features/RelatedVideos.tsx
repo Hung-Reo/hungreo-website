@@ -36,7 +36,9 @@ async function getRelatedVideos(category: VideoCategory, currentVideoId: string,
 
 // Create slug from video ID
 function createVideoSlug(videoId: string, title: string): string {
-  const titleSlug = title
+  // Ensure title is not empty to avoid creating slugs like "-videoId"
+  const effectiveTitle = title.trim() || 'video'
+  const titleSlug = effectiveTitle
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')

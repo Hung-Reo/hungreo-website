@@ -22,7 +22,15 @@ interface PageProps {
 }
 
 // Extract video ID from slug (format: "title-slug-videoId")
+// YouTube video IDs are typically 11 characters long and can contain letters, numbers, hyphens, and underscores
 function extractVideoId(slug: string): string {
+  // YouTube video IDs are 11 characters long
+  // Extract the last 11 characters as they should be the video ID
+  // This works even if the title part is empty (slug like "-videoId")
+  if (slug.length >= 11) {
+    return slug.slice(-11)
+  }
+  // Fallback: take the last part after splitting by dash
   const parts = slug.split('-')
   return parts[parts.length - 1]
 }
