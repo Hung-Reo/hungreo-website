@@ -8,7 +8,7 @@ import { Button } from '../ui/Button'
 import { Tooltip } from '../ui/Tooltip'
 import { DocumentReviewModal } from './DocumentReviewModal'
 import { ProgressModal } from '../ui/ProgressModal'
-import { useJobPolling } from '@/hooks/useJobPolling'
+import { useSSEProgress } from '@/hooks/useSSEProgress'
 import type { Document, DocumentStatus } from '@/lib/documentManager'
 
 interface DocumentStats {
@@ -33,20 +33,35 @@ export function DocumentsManager() {
     totalChunks?: number
     costEstimate?: number
   }) | null>(null)
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+  const [uploadJobId, setUploadJobId] = useState<string | null>(null)
+  const [approvalJobId, setApprovalJobId] = useState<string | null>(null)
 
-  // Job polling hook
-  const { job, isPolling, reset: resetJob } = useJobPolling({
-    jobId: currentJobId,
+  // SSE hook for document upload
+  const {
+    job: uploadJob,
+    connectionState: uploadConnectionState,
+    error: uploadError,
+  } = useSSEProgress({
+    jobId: uploadJobId,
+    onComplete: (result) => {
+      // Upload completed, now open review modal
+      setUploadJobId(null)
+      fetchDocuments()
+    },
+  })
+
+  // SSE hook for document approval
+  const {
+    job: approvalJob,
+    connectionState: approvalConnectionState,
+    error: approvalError,
+  } = useSSEProgress({
+    jobId: approvalJobId,
     onComplete: () => {
       alert('Document approved and vectors created successfully!')
       fetchDocuments()
       setReviewDocument(null)
-      setCurrentJobId(null)
-    },
-    onError: (error) => {
-      alert(`Approval failed: ${error}`)
-      setCurrentJobId(null)
+      setApprovalJobId(null)
     },
   })
 
@@ -89,8 +104,37 @@ export function DocumentsManager() {
 
       const data = await response.json()
 
-      if (data.success) {
-        // Open review modal with the uploaded document data
+      if (data.success && data.jobId) {
+        // Start SSE tracking for upload
+        setUploadJobId(data.jobId)
+        setIsUploading(false)
+
+        // Wait for upload to complete via SSE, then open review modal
+        // The onComplete callback will handle opening the modal
+        setTimeout(() => {
+          // After SSE completes, open review modal with the uploaded document data
+          setReviewDocument({
+            ...data.document,
+            id: data.document.id,
+            fileName: data.document.fileName,
+            fileType: data.document.fileType,
+            fileSize: data.document.fileSize,
+            status: data.document.status as DocumentStatus,
+            uploadedAt: Date.now(),
+            uploadedBy: 'admin',
+            extractedText: data.document.extractedText,
+            chunks: data.document.chunks,
+            totalChunks: data.document.totalChunks,
+            costEstimate: data.document.costEstimate,
+            metadata: {
+              pageCount: 0,
+              wordCount: data.document.wordCount,
+            },
+          })
+        }, 100)
+      } else if (data.success) {
+        // Fallback: no jobId (shouldn't happen with new code)
+        setIsUploading(false)
         setReviewDocument({
           ...data.document,
           id: data.document.id,
@@ -110,12 +154,12 @@ export function DocumentsManager() {
           },
         })
       } else {
+        setIsUploading(false)
         alert(`Upload failed: ${data.error}`)
       }
     } catch (error) {
-      alert('Upload failed. Please try again.')
-    } finally {
       setIsUploading(false)
+      alert('Upload failed. Please try again.')
     }
   }
 
@@ -213,9 +257,9 @@ export function DocumentsManager() {
       const data = await response.json()
 
       if (data.success) {
-        // Start polling if jobId is returned
+        // Start SSE tracking if jobId is returned
         if (data.jobId) {
-          setCurrentJobId(data.jobId)
+          setApprovalJobId(data.jobId)
         } else {
           // Fallback for immediate completion
           alert('Document approved and added to Pinecone successfully!')
@@ -478,18 +522,26 @@ export function DocumentsManager() {
           />
         )}
 
+        {/* Progress Modal for Document Upload */}
+        <ProgressModal
+          isOpen={Boolean(uploadJobId)}
+          status={uploadJob?.status || 'processing'}
+          title="Uploading Document"
+          message={uploadJob?.progress.message || 'Starting upload...'}
+          progress={uploadJob?.progress}
+          logs={uploadJob?.logs}
+          connectionState={uploadConnectionState}
+        />
+
         {/* Progress Modal for Document Approval */}
         <ProgressModal
-          isOpen={isPolling}
-          status={job?.status || 'processing'}
+          isOpen={Boolean(approvalJobId)}
+          status={approvalJob?.status || 'processing'}
           title="Creating Document Embeddings"
-          message={job?.progress.message || 'Processing...'}
-          progress={job?.progress}
-          error={job?.error}
-          onClose={() => {
-            resetJob()
-            setCurrentJobId(null)
-          }}
+          message={approvalJob?.progress.message || 'Processing...'}
+          progress={approvalJob?.progress}
+          logs={approvalJob?.logs}
+          connectionState={approvalConnectionState}
         />
       </div>
     </div>

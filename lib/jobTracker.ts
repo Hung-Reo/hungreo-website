@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv'
 
 export interface JobStatus {
   id: string
-  type: 'document-approval' | 'website-scrape' | 'selective-rescrape' | 'video-import' | 'video-embedding'
+  type: 'document-approval' | 'document-upload' | 'website-scrape' | 'selective-rescrape' | 'video-import' | 'video-embedding'
   status: 'processing' | 'completed' | 'failed'
   progress: {
     current: number

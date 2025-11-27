@@ -5,6 +5,7 @@ import { chunkText } from '@/lib/textUtils'
 import { saveDocument, uploadToBlob, type Document } from '@/lib/documentManager'
 import { validateFile } from '@/lib/inputValidator'
 import { fileUploadRateLimit, getClientIp } from '@/lib/rateLimit'
+import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
 
 export const runtime = 'nodejs'
 
@@ -13,6 +14,8 @@ export const runtime = 'nodejs'
 export const maxDuration = 60 // 60 seconds
 
 export async function POST(req: NextRequest) {
+  const jobId = `doc-upload-${Date.now()}`
+
   try {
     // Check authentication
     const session = await auth()
@@ -51,6 +54,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
+    // Create job tracker with 5 steps
+    await createJob(jobId, 'document-upload', 5)
+    await appendLog(jobId, 'info', `Starting upload for ${file.name}`)
+
+    // Step 1: File validation (5%)
+    await emitProgress(jobId, `Validating ${file.name}...`, 1, 5)
+
     // SECURITY: Enhanced file validation (MIME type, size, sanitization)
     const validation = validateFile(file, {
       maxSizeBytes: 20 * 1024 * 1024, // 20MB
@@ -64,18 +74,30 @@ export async function POST(req: NextRequest) {
         fileSize: file.size,
         mimeType: file.type,
       })
+      await failJob(jobId, validation.error || 'Invalid file')
       return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    // Process document (extract text)
+    await appendLog(jobId, 'info', 'File validation passed')
+
+    // Step 2: Process document (extract text) - 30%
+    await emitProgress(jobId, `Extracting text from ${file.name}...`, 2, 5)
+
     const extracted = await processDocument(file)
+    await appendLog(jobId, 'info', `Extracted ${extracted.metadata.wordCount} words from ${file.name}`)
 
-    // Chunk text for embeddings
+    // Step 3: Chunk text for embeddings - 10%
+    await emitProgress(jobId, 'Creating text chunks...', 3, 5)
+
     const chunks = chunkText(extracted.text)
+    await appendLog(jobId, 'info', `Created ${chunks.length} chunks`)
 
-    // Upload to Blob if file is large (>4.5MB)
+    // Step 4: Upload to Blob if needed - 20%
+    await emitProgress(jobId, 'Saving file...', 4, 5)
+
     let blobUrl: string | undefined
     if (file.size > 4.5 * 1024 * 1024) {
+      await appendLog(jobId, 'info', 'Uploading to blob storage (large file)')
       blobUrl = await uploadToBlob(file)
     }
 
@@ -98,8 +120,10 @@ export async function POST(req: NextRequest) {
       blobUrl,
     }
 
-    // Save to Vercel KV
+    // Step 5: Save to Vercel KV - 35%
+    await emitProgress(jobId, 'Finalizing document...', 5, 5)
     await saveDocument(document)
+    await appendLog(jobId, 'info', 'Document saved successfully')
 
     // Calculate cost estimate for embeddings
     // OpenAI text-embedding-3-small: $0.00002 per 1K tokens
@@ -107,8 +131,16 @@ export async function POST(req: NextRequest) {
     const estimatedTokens = chunks.length * 500
     const costEstimate = (estimatedTokens / 1000) * 0.00002
 
+    await completeJob(jobId, {
+      documentId: document.id,
+      fileName: document.fileName,
+      wordCount: document.metadata.wordCount,
+      chunks: chunks.length,
+    })
+
     return NextResponse.json({
       success: true,
+      jobId,
       document: {
         id: document.id,
         fileName: document.fileName,
@@ -125,6 +157,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (error: any) {
     console.error('Document upload error:', error)
+    await failJob(jobId, error.message || 'Failed to upload document')
     return NextResponse.json({ error: error.message || 'Failed to upload document' }, { status: 500 })
   }
 }
