@@ -18,6 +18,12 @@ export interface ScrapedPage {
   lastScraped: number
 }
 
+type ProgressCallback = (info: {
+  message: string
+  current?: number
+  total?: number
+}) => Promise<void> | void
+
 // Use production URL on Vercel, localhost for local development
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ||
                  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
@@ -429,7 +435,10 @@ export async function scrapeAndUpdate(): Promise<{
  * Scrape and update only specific pages
  * @param pagePaths - Array of page paths to scrape (e.g., ['/contact', '/about'])
  */
-export async function scrapeSelectedPages(pagePaths: string[]): Promise<{
+export async function scrapeSelectedPages(
+  pagePaths: string[],
+  onProgress?: ProgressCallback
+): Promise<{
   pagesScraped: number
   totalVectors: number
   errors: string[]
@@ -439,6 +448,11 @@ export async function scrapeSelectedPages(pagePaths: string[]): Promise<{
   let browser
 
   console.log(`[Selective Scraper] Starting to scrape ${pagePaths.length} pages:`, pagePaths)
+  await onProgress?.({
+    message: `Starting to scrape ${pagePaths.length} page(s)`,
+    current: 0,
+    total: pagePaths.length,
+  })
 
   try {
     // Launch browser
@@ -447,8 +461,14 @@ export async function scrapeSelectedPages(pagePaths: string[]): Promise<{
     console.log('[Selective Scraper] Browser launched successfully')
 
     // Scrape each selected page
-    for (const path of pagePaths) {
+    for (let i = 0; i < pagePaths.length; i++) {
+      const path = pagePaths[i]
       try {
+        await onProgress?.({
+          message: `Scraping ${path} (${i + 1}/${pagePaths.length})`,
+          current: i + 1,
+          total: pagePaths.length,
+        })
         const page = await scrapePageWithBrowser(browser, path)
         pages.push(page)
         console.log(`[Selective Scraper] ✅ Successfully scraped ${path}`)
@@ -477,11 +497,18 @@ export async function scrapeSelectedPages(pagePaths: string[]): Promise<{
   const index = await getPineconeIndex()
   let totalVectors = 0
 
-  for (const page of pages) {
+  for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+    const page = pages[pageIndex]
     const fullContent = `${page.title}\n${page.description}\n${page.content}`
-    const chunks = chunkText(fullContent)
+    // Allow smaller chunks for website pages
+    const chunks = chunkText(fullContent, 200, 50)
 
     console.log(`[Selective Scraper] Creating ${chunks.length} chunks for ${page.url}`)
+    await onProgress?.({
+      message: `Embedding ${page.url} (${pageIndex + 1}/${pages.length}) with ${chunks.length} chunks`,
+      current: pageIndex + 1,
+      total: pages.length,
+    })
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i]

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import useSWR from 'swr'
 import { Button } from '../ui/Button'
 import { ProgressModal } from '../ui/ProgressModal'
-import { useJobPolling } from '@/hooks/useJobPolling'
+import { useSSEProgress } from '@/hooks/useSSEProgress'
 import type { ChatStats } from '@/lib/chatLogger'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
@@ -25,16 +25,14 @@ export function AdminDashboard() {
 
   const stats = data?.success ? data.stats : null
 
-  // Add polling hook for progress tracking
-  const { job, isPolling, reset: resetJob } = useJobPolling({
+  // SSE progress tracking
+  const { job, connectionState, error: streamError } = useSSEProgress({
     jobId: currentJobId,
-    onComplete: (result) => {
-      // Don't show alert here - ProgressModal already shows success
+    onComplete: () => {
       mutate() // Refresh stats
       setCurrentJobId(null)
     },
-    onError: (error) => {
-      // Don't show alert here - ProgressModal already shows error
+    onError: () => {
       setCurrentJobId(null)
     },
   })
@@ -299,14 +297,15 @@ export function AdminDashboard() {
 
       {/* Progress Modal */}
       <ProgressModal
-        isOpen={isPolling}
+        isOpen={Boolean(currentJobId || isScraping)}
         status={job?.status || 'processing'}
         title="Scraping Website"
         message={job?.progress.message || 'Starting full website scrape...'}
         progress={job?.progress}
-        error={job?.error}
+        error={(job?.status === 'failed' && job?.error) || streamError || undefined}
+        logs={job?.logs}
+        connectionState={connectionState}
         onClose={() => {
-          resetJob()
           setCurrentJobId(null)
         }}
       />

@@ -10,6 +10,12 @@ interface ProgressModalProps {
     total: number
   }
   error?: string
+  logs?: Array<{
+    timestamp: number
+    level?: string
+    message: string
+  }>
+  connectionState?: 'idle' | 'connecting' | 'connected' | 'error' | 'closed'
   onClose?: () => void
 }
 
@@ -20,12 +26,15 @@ export function ProgressModal({
   message,
   progress,
   error,
+  logs,
+  connectionState,
   onClose,
 }: ProgressModalProps) {
   if (!isOpen) return null
 
   const canClose = status === 'completed' || status === 'failed'
   const percentage = progress ? Math.round((progress.current / progress.total) * 100) : 0
+  const visibleLogs = logs ? logs.slice(-5).reverse() : []
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -76,6 +85,28 @@ export function ProgressModal({
             </div>
           )}
 
+          {/* Live Logs */}
+          {visibleLogs.length > 0 && (
+            <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Live updates
+              </div>
+              <div className="space-y-2 text-xs text-slate-700">
+                {visibleLogs.map((log) => (
+                  <div key={log.timestamp} className="flex items-start gap-2">
+                    <span className="font-mono text-[10px] text-slate-400">
+                      {new Date(log.timestamp).toLocaleTimeString()}
+                    </span>
+                    <span className="flex-1">
+                      {log.level ? `[${log.level}] ` : ''}
+                      {log.message}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Close Button */}
           {canClose && onClose && (
             <button
@@ -90,6 +121,12 @@ export function ProgressModal({
           {status === 'processing' && (
             <p className="text-center text-sm text-slate-500">
               Please wait, this may take a moment...
+            </p>
+          )}
+
+          {connectionState && (
+            <p className="mt-2 text-center text-[11px] uppercase tracking-wide text-slate-400">
+              {connectionState}
             </p>
           )}
         </div>

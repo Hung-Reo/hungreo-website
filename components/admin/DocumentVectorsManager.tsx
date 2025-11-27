@@ -32,6 +32,7 @@ export function DocumentVectorsManager() {
   const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isReApproving, setIsReApproving] = useState(false)
   const [viewingDoc, setViewingDoc] = useState<DocumentVector | null>(null)
   const [vectorDetails, setVectorDetails] = useState<VectorDetail[]>([])
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
@@ -95,6 +96,75 @@ export function DocumentVectorsManager() {
     setSelectedDocs(newSelected)
   }
 
+  const handleReApproveSelected = async () => {
+    if (selectedDocs.size === 0) return
+
+    const selectedDocsArray = Array.from(selectedDocs)
+    const selectedDocuments = documents.filter((d) => selectedDocs.has(d.id))
+    const outOfSyncDocs = selectedDocuments.filter((d) => d.status === 'out-of-sync')
+
+    if (outOfSyncDocs.length === 0) {
+      alert('No out-of-sync documents selected. Please select documents that need re-approval.')
+      return
+    }
+
+    const fileNames = outOfSyncDocs.map((d) => d.fileName).join(', ')
+
+    if (
+      !window.confirm(
+        `Re-approve ${outOfSyncDocs.length} document(s) to regenerate vectors?\n\nFiles: ${fileNames}\n\nThis will create new vectors in Pinecone.`
+      )
+    ) {
+      return
+    }
+
+    try {
+      setIsReApproving(true)
+
+      // Call the approval API for each document
+      let successCount = 0
+      let errorCount = 0
+      const errors: string[] = []
+
+      for (const doc of outOfSyncDocs) {
+        try {
+          const response = await fetch('/api/admin/documents/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ documentId: doc.id }),
+          })
+
+          const data = await response.json()
+
+          if (data.success) {
+            successCount++
+          } else {
+            errorCount++
+            errors.push(`${doc.fileName}: ${data.error}`)
+          }
+        } catch (error: any) {
+          errorCount++
+          errors.push(`${doc.fileName}: ${error.message}`)
+        }
+      }
+
+      if (successCount > 0) {
+        const message = `Successfully re-approved ${successCount} document(s).${
+          errorCount > 0 ? `\n\nFailed: ${errorCount} document(s)\n${errors.join('\n')}` : ''
+        }`
+        alert(message)
+        setSelectedDocs(new Set())
+        await fetchDocuments()
+      } else {
+        alert(`Re-approval failed for all documents:\n\n${errors.join('\n')}`)
+      }
+    } catch (error) {
+      alert('Re-approval failed. Please try again.')
+    } finally {
+      setIsReApproving(false)
+    }
+  }
+
   const handleDeleteSelected = async () => {
     if (selectedDocs.size === 0) return
 
@@ -128,7 +198,7 @@ export function DocumentVectorsManager() {
 
       if (data.success) {
         alert(
-          `Successfully deleted ${data.deleted} vectors from ${selectedDocs.size} document(s).\n\nTo re-add vectors, go to Documents page and re-approve the documents.`
+          `Successfully deleted ${data.deleted} vectors from ${selectedDocs.size} document(s).\n\nTo re-add vectors, use the "Re-Approve Selected" button or go to Documents page.`
         )
         setSelectedDocs(new Set())
         await fetchDocuments()
@@ -162,6 +232,10 @@ export function DocumentVectorsManager() {
   const selectedVectorCount = documents
     .filter((d) => selectedDocs.has(d.id))
     .reduce((sum, d) => sum + d.vectorCount, 0)
+
+  const selectedOutOfSyncCount = documents
+    .filter((d) => selectedDocs.has(d.id) && d.status === 'out-of-sync')
+    .length
 
   const syncedCount = documents.filter((d) => d.status === 'synced').length
   const outOfSyncCount = documents.filter((d) => d.status === 'out-of-sync').length
@@ -298,15 +372,32 @@ export function DocumentVectorsManager() {
                     <div className="text-sm text-slate-600">
                       Selected: <strong>{selectedDocs.size}</strong> document(s) (
                       <strong>{selectedVectorCount}</strong> vectors)
+                      {selectedOutOfSyncCount > 0 && (
+                        <span className="ml-2 text-yellow-600">
+                          • {selectedOutOfSyncCount} out-of-sync
+                        </span>
+                      )}
                     </div>
-                    <Button
-                      variant="outline"
-                      onClick={handleDeleteSelected}
-                      disabled={isDeleting}
-                      className="text-red-600 hover:bg-red-50"
-                    >
-                      {isDeleting ? 'Deleting...' : 'Delete Selected Vectors'}
-                    </Button>
+                    <div className="flex gap-2">
+                      {selectedOutOfSyncCount > 0 && (
+                        <Button
+                          variant="outline"
+                          onClick={handleReApproveSelected}
+                          disabled={isReApproving}
+                          className="text-blue-600 hover:bg-blue-50"
+                        >
+                          {isReApproving ? 'Re-Approving...' : 'Re-Approve Selected'}
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        onClick={handleDeleteSelected}
+                        disabled={isDeleting}
+                        className="text-red-600 hover:bg-red-50"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Delete Selected Vectors'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

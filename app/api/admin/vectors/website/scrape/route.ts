@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { scrapeSelectedPages, expandSelectedPages } from '@/lib/websiteScraper'
 import { getPineconeIndex, listAllVectorIds } from '@/lib/pinecone'
-import { createJob, updateJobProgress, completeJob, failJob } from '@/lib/jobTracker'
+import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -41,9 +41,15 @@ export async function POST(req: NextRequest) {
       console.log('[Re-scrape] Deleting old vectors for expanded pages:', expandedPages)
       const index = await getPineconeIndex()
 
+      // Create job tracker with expanded page count
+      await createJob(jobId, 'selective-rescrape', expandedPages.length || 1)
+      await appendLog(jobId, 'info', `Starting re-scrape for ${expandedPages.length} page(s)`)
+      await emitProgress(jobId, 'Preparing to re-scrape pages...', 0, expandedPages.length || 1)
+
       // Get all website vector IDs using proper pagination
       const websiteVectorIds = await listAllVectorIds({ vectorType: 'website' })
       console.log(`[Re-scrape] Found ${websiteVectorIds.length} total website vectors`)
+      await appendLog(jobId, 'info', `Found ${websiteVectorIds.length} website vectors total`)
 
       // Fetch metadata to filter by page
       const FETCH_BATCH_SIZE = 1000
@@ -63,6 +69,7 @@ export async function POST(req: NextRequest) {
 
       if (vectorIdsToDelete.length > 0) {
         console.log(`[Re-scrape] Deleting ${vectorIdsToDelete.length} old vectors`)
+        await appendLog(jobId, 'info', `Deleting ${vectorIdsToDelete.length} old vectors`)
         const BATCH_SIZE = 100
         for (let i = 0; i < vectorIdsToDelete.length; i += BATCH_SIZE) {
           const batch = vectorIdsToDelete.slice(i, i + BATCH_SIZE)
@@ -70,15 +77,19 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Create job tracker with expanded page count
-      await createJob(jobId, 'selective-rescrape', expandedPages.length)
-
       // Scrape and embed expanded pages
       console.log('[Re-scrape] Scraping expanded pages:', expandedPages)
+      await appendLog(jobId, 'info', `Scraping ${expandedPages.length} page(s)...`)
 
-      await updateJobProgress(jobId, 1, `Scraping ${expandedPages.length} page(s)...`)
-
-      const result = await scrapeSelectedPages(expandedPages)
+      const result = await scrapeSelectedPages(expandedPages, async (info) => {
+        if (info.message) {
+          await appendLog(jobId, 'info', info.message)
+        }
+        const current = info.current ?? 0
+        // Parens to avoid ?? with || precedence issues
+        const total = (info.total ?? expandedPages.length) || 1
+        await emitProgress(jobId, info.message, current, total)
+      })
 
       await completeJob(jobId, {
         pagesScraped: result.pagesScraped,

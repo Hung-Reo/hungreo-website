@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { ProgressModal } from '../ui/ProgressModal'
-import { useJobPolling } from '@/hooks/useJobPolling'
+import { useSSEProgress } from '@/hooks/useSSEProgress'
 
 interface PageVectors {
   page: string
@@ -33,17 +33,15 @@ export function WebsiteVectorsManager() {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false)
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
 
-  // Add polling hook for progress tracking
-  const { job, isPolling, reset: resetJob } = useJobPolling({
+  // SSE progress tracking
+  const { job, connectionState, error: streamError } = useSSEProgress({
     jobId: currentJobId,
-    onComplete: (result) => {
-      // Don't show alert here - ProgressModal already shows success
+    onComplete: () => {
       setSelectedPages(new Set())
       fetchPages()
       setCurrentJobId(null)
     },
-    onError: (error) => {
-      // Don't show alert here - ProgressModal already shows error
+    onError: () => {
       setCurrentJobId(null)
     },
   })
@@ -439,14 +437,15 @@ export function WebsiteVectorsManager() {
 
       {/* Progress Modal */}
       <ProgressModal
-        isOpen={isPolling}
+        isOpen={Boolean(currentJobId || isReScraping)}
         status={job?.status || 'processing'}
         title="Re-scraping Website Pages"
         message={job?.progress.message || 'Starting re-scrape...'}
         progress={job?.progress}
-        error={job?.error}
+        error={(job?.status === 'failed' && job?.error) || streamError || undefined}
+        logs={job?.logs}
+        connectionState={connectionState}
         onClose={() => {
-          resetJob()
           setCurrentJobId(null)
         }}
       />
