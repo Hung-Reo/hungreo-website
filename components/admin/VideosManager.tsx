@@ -28,6 +28,7 @@ export function VideosManager() {
   const [importCategory, setImportCategory] = useState<VideoCategory>('Leadership')
   const [isImporting, setIsImporting] = useState(false)
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
+  const [isRebuilding, setIsRebuilding] = useState(false)
 
   useEffect(() => {
     fetchVideos()
@@ -93,6 +94,34 @@ export function VideosManager() {
       alert('Import failed. Please try again.')
     } finally {
       setIsImporting(false)
+    }
+  }
+
+  const handleRebuildStats = async () => {
+    if (!window.confirm('Rebuild category statistics? This will recalculate video counts from the database.')) return
+
+    try {
+      setIsRebuilding(true)
+      const response = await fetch('/api/admin/videos/rebuild-stats', {
+        method: 'POST',
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`✅ Stats rebuilt successfully!\n\nTotal: ${data.stats.totalVideos} videos\n${
+          Object.entries(data.stats.categories)
+            .map(([cat, count]) => `${cat}: ${count}`)
+            .join('\n')
+        }`)
+        fetchVideos() // Refresh to show updated stats
+      } else {
+        alert(`❌ Failed: ${data.error}`)
+      }
+    } catch (error) {
+      alert('❌ Failed to rebuild stats. Please try again.')
+    } finally {
+      setIsRebuilding(false)
     }
   }
 
@@ -206,9 +235,16 @@ export function VideosManager() {
           </nav>
         </div>
 
-        {/* Import Button */}
-        <div className="mb-6">
+        {/* Action Buttons */}
+        <div className="mb-6 flex gap-3">
           <Button onClick={() => setShowImportModal(true)}>+ Batch Import Videos</Button>
+          <Button
+            onClick={handleRebuildStats}
+            disabled={isRebuilding}
+            variant="outline"
+          >
+            {isRebuilding ? 'Rebuilding...' : '🔄 Rebuild Stats'}
+          </Button>
         </div>
 
         {/* Statistics */}
