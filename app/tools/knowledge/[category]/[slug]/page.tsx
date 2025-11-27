@@ -54,15 +54,17 @@ export const dynamicParams = true
 async function getVideo(videoId: string) {
   try {
     const baseUrl = getBaseUrl()
-    const response = await fetch(`${baseUrl}/api/videos`, { next: { revalidate: 60 } })
+    // Use direct video endpoint instead of fetching all videos (fixes 404 for >50 videos)
+    const response = await fetch(`${baseUrl}/api/videos/${videoId}`, {
+      next: { revalidate: 60 },
+    })
 
     if (!response.ok) {
       return null
     }
 
     const data = await response.json()
-    const video = data.videos?.find((v: any) => v.videoId === videoId)
-    return video || null
+    return data.video || null
   } catch (error) {
     console.error('Error fetching video:', error)
     return null
@@ -71,14 +73,10 @@ async function getVideo(videoId: string) {
 
 async function getVideoWithTranscript(videoId: string) {
   try {
-    // Fetch from admin API to get full video with transcript
+    // Use the same direct endpoint - it returns full video data
     const baseUrl = getBaseUrl()
-    const response = await fetch(`${baseUrl}/api/admin/videos`, {
+    const response = await fetch(`${baseUrl}/api/videos/${videoId}`, {
       next: { revalidate: 60 },
-      headers: {
-        // This is a workaround - in production you'd need proper auth
-        // For now, we'll add a public endpoint or fetch transcript separately
-      }
     })
 
     if (!response.ok) {
@@ -86,8 +84,7 @@ async function getVideoWithTranscript(videoId: string) {
     }
 
     const data = await response.json()
-    const video = data.videos?.find((v: any) => v.videoId === videoId)
-    return video || null
+    return data.video || null
   } catch (error) {
     console.error('Error fetching video with transcript:', error)
     return null
