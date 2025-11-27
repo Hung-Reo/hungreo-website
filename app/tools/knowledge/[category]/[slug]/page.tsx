@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { VideoPlayer } from '@/components/features/VideoPlayer'
 import { TranscriptSection } from '@/components/features/TranscriptSection'
 import { RelatedVideos } from '@/components/features/RelatedVideos'
@@ -21,6 +21,17 @@ interface PageProps {
   }
 }
 
+// Create slug from video ID and title
+function createVideoSlug(videoId: string, title: string): string {
+  const effectiveTitle = title.trim() || 'video'
+  const titleSlug = effectiveTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .substring(0, 50)
+  return `${titleSlug}-${videoId}`
+}
+
 // Extract video ID from slug (format: "title-slug-videoId")
 // YouTube video IDs are typically 11 characters long and can contain letters, numbers, hyphens, and underscores
 function extractVideoId(slug: string): string {
@@ -37,6 +48,8 @@ function extractVideoId(slug: string): string {
 
 // Revalidate every 60 seconds (ISR)
 export const revalidate = 60
+// Allow any slug format to be processed (important for legacy URLs)
+export const dynamicParams = true
 
 async function getVideo(videoId: string) {
   try {
@@ -118,6 +131,13 @@ export default async function VideoDetailPage({ params }: PageProps) {
   const displayTitle = video.en?.title || video.title || 'Untitled Video'
   const displayDescription = video.en?.description || video.description || ''
   const displayTranscript = fullVideo?.en?.transcript || fullVideo?.transcript
+
+  // Redirect to correct slug if current slug doesn't match expected format
+  // This handles legacy URLs like "-videoId" and redirects to proper "title-videoId" format
+  const correctSlug = createVideoSlug(video.videoId, displayTitle)
+  if (params.slug !== correctSlug) {
+    redirect(`/tools/knowledge/${params.category}/${correctSlug}`)
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
