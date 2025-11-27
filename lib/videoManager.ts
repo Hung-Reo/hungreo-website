@@ -247,50 +247,118 @@ export async function getAllVideos(limit: number = 50, offset: number = 0): Prom
 }
 
 /**
- * Update video category
+ * Update video category with atomic-like operations
  */
 export async function updateVideoCategory(videoId: string, newCategory: VideoCategory): Promise<void> {
-  try {
-    const video = await getVideo(videoId)
-    if (!video) {
-      throw new Error('Video not found')
+  const video = await getVideo(videoId)
+  if (!video) {
+    throw new Error('Video not found')
+  }
+
+  const oldCategory = video.category
+
+  // No change needed
+  if (oldCategory === newCategory) {
+    console.log(`[VideoManager] Video ${videoId} already in category ${newCategory}`)
+    return
+  }
+
+  console.log(`[VideoManager] Moving video ${videoId} from ${oldCategory} to ${newCategory}`)
+
+  // Step 1: Update video object
+  const updatedVideo = { ...video, category: newCategory }
+  await kv.set(`video:${videoId}`, updatedVideo)
+
+  // Step 2: Update category sets with Promise.allSettled
+  const categoryOperations = [
+    kv.srem(`videos:${oldCategory}`, videoId),
+    kv.sadd(`videos:${newCategory}`, videoId),
+  ]
+
+  const results = await Promise.allSettled(categoryOperations)
+  const failures = results.filter(r => r.status === 'rejected')
+
+  if (failures.length > 0) {
+    console.error('[VideoManager] Partial category update failure:', failures)
+
+    // Rollback video object update
+    try {
+      await kv.set(`video:${videoId}`, video)
+      console.log('[VideoManager] Rolled back video object update')
+    } catch (rollbackError) {
+      console.error('[VideoManager] Failed to rollback video update:', rollbackError)
     }
 
-    const oldCategory = video.category
+    throw new Error(`Failed to update category sets. ${failures.length}/2 operations failed. Changes rolled back. Run rebuild stats to fix any inconsistencies.`)
+  }
 
-    // Update video
-    const updatedVideo = { ...video, category: newCategory }
-    await kv.set(`video:${videoId}`, updatedVideo)
+  console.log(`[VideoManager] Successfully moved video ${videoId} to ${newCategory}`)
+}
 
-    // Update category lists
-    await kv.srem(`videos:${oldCategory}`, videoId)
-    await kv.sadd(`videos:${newCategory}`, videoId)
+/**
+ * Delete Pinecone vectors for a video
+ * Non-blocking - will not throw errors to prevent blocking video deletion
+ */
+async function deletePineconeVectors(pineconeIds?: string[]): Promise<void> {
+  if (!pineconeIds || pineconeIds.length === 0) {
+    console.log('[VideoManager] No Pinecone vectors to delete')
+    return
+  }
+
+  try {
+    const { getPineconeIndex } = await import('./pinecone')
+    const index = await getPineconeIndex()
+
+    await index.deleteMany(pineconeIds)
+    console.log(`[VideoManager] Deleted ${pineconeIds.length} vectors from Pinecone`)
   } catch (error) {
-    console.error('Failed to update video category:', error)
-    throw new Error('Failed to update video category')
+    // Log error but don't throw - allow video deletion to proceed
+    console.error('[VideoManager] Failed to delete Pinecone vectors:', error)
+    console.error('[VideoManager] Orphaned vector IDs:', pineconeIds)
   }
 }
 
 /**
- * Delete video
+ * Delete video with atomic-like operations and cleanup
  */
 export async function deleteVideo(videoId: string): Promise<void> {
-  try {
-    const video = await getVideo(videoId)
-    if (!video) {
-      throw new Error('Video not found')
-    }
-
-    // Remove from KV
-    await kv.del(`video:${videoId}`)
-    await kv.srem(`videos:${video.category}`, videoId)
-    await kv.zrem('videos:all', videoId)
-
-    // TODO: Also remove from Pinecone if exists
-  } catch (error) {
-    console.error('Failed to delete video:', error)
-    throw new Error('Failed to delete video')
+  const video = await getVideo(videoId)
+  if (!video) {
+    throw new Error('Video not found')
   }
+
+  console.log(`[VideoManager] Deleting video ${videoId} from category ${video.category}`)
+
+  // Step 1: Delete from Pinecone first (non-blocking)
+  await deletePineconeVectors(video.pineconeIds)
+
+  // Step 2: Delete from KV with Promise.allSettled to track failures
+  const kvOperations = [
+    kv.del(`video:${videoId}`),
+    kv.srem(`videos:${video.category}`, videoId),
+    kv.zrem('videos:all', videoId),
+  ]
+
+  const results = await Promise.allSettled(kvOperations)
+
+  // Check for failures
+  const failures = results.filter(r => r.status === 'rejected')
+
+  if (failures.length > 0) {
+    console.error('[VideoManager] Partial delete failure:', failures)
+
+    // Log which operations failed
+    const operationNames = ['video key', 'category set', 'all videos set']
+    failures.forEach((failure, index) => {
+      if (failure.status === 'rejected') {
+        console.error(`[VideoManager] Failed to delete from ${operationNames[index]}:`, failure.reason)
+      }
+    })
+
+    throw new Error(`Failed to delete video completely. ${failures.length}/${kvOperations.length} operations failed. Database may be inconsistent - run rebuild stats to fix.`)
+  }
+
+  console.log(`[VideoManager] Successfully deleted video ${videoId}`)
 }
 
 /**
