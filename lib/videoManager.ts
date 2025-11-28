@@ -362,7 +362,7 @@ export async function deleteVideo(videoId: string): Promise<void> {
 }
 
 /**
- * Get video statistics
+ * Get video statistics with automatic inconsistency detection
  */
 export async function getVideoStats() {
   try {
@@ -375,7 +375,7 @@ export async function getVideoStats() {
       kv.zcard('videos:all'),
     ])
 
-    return {
+    const stats = {
       leadership: leadership || 0,
       aiWorks: aiWorks || 0,
       health: health || 0,
@@ -383,6 +383,17 @@ export async function getVideoStats() {
       philosophy: philosophy || 0,
       total: total || 0,
     }
+
+    // Detect inconsistency: if category counts don't sum to total, Redis sets are out of sync
+    const categorySum = stats.leadership + stats.aiWorks + stats.health + stats.entertaining + stats.philosophy
+
+    if (categorySum !== stats.total && stats.total > 0) {
+      console.warn(`[VideoManager] Inconsistency detected: category sum (${categorySum}) != total (${stats.total})`)
+      console.warn('[VideoManager] Redis category sets are out of sync. Stats may be incorrect.')
+      console.warn('[VideoManager] Run rebuild-stats endpoint to fix: POST /api/admin/videos/rebuild-stats')
+    }
+
+    return stats
   } catch (error) {
     console.error('Failed to get video stats:', error)
     return {
