@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { VideoPlayer } from '@/components/features/VideoPlayer'
-import { TranscriptSection } from '@/components/features/TranscriptSection'
 import { RelatedVideos } from '@/components/features/RelatedVideos'
 import { getVideo as getVideoFromDB, normalizeVideo, type VideoCategory } from '@/lib/videoManager'
 
@@ -50,7 +49,7 @@ export const dynamic = 'force-dynamic'
 // Allow any slug format to be processed (important for legacy URLs)
 export const dynamicParams = true
 
-// Helper functions to get video data directly from database
+// Helper function to get video data directly from database
 // This avoids server-to-server HTTP requests which can fail
 async function getVideo(videoId: string) {
   try {
@@ -61,11 +60,6 @@ async function getVideo(videoId: string) {
     console.error('Error fetching video:', error)
     return null
   }
-}
-
-async function getVideoWithTranscript(videoId: string) {
-  // Same as getVideo since we always return full data including transcript
-  return getVideo(videoId)
 }
 
 export async function generateMetadata({ params }: PageProps) {
@@ -95,7 +89,6 @@ export default async function VideoDetailPage({ params }: PageProps) {
 
   const videoId = extractVideoId(params.slug)
   const video = await getVideo(videoId)
-  const fullVideo = await getVideoWithTranscript(videoId)
 
   if (!video) {
     notFound()
@@ -104,7 +97,6 @@ export default async function VideoDetailPage({ params }: PageProps) {
   // Use bilingual content with fallback to legacy fields
   const displayTitle = video.en?.title || video.title || 'Untitled Video'
   const displayDescription = video.en?.description || video.description || ''
-  const displayTranscript = fullVideo?.en?.transcript || fullVideo?.transcript
 
   // Redirect to correct slug if current slug doesn't match expected format
   // This handles legacy URLs like "-videoId" and redirects to proper "title-videoId" format
@@ -159,11 +151,6 @@ export default async function VideoDetailPage({ params }: PageProps) {
               </p>
             </div>
           </div>
-
-          {/* Transcript Section */}
-          {displayTranscript && (
-            <TranscriptSection transcript={displayTranscript} />
-          )}
         </div>
 
         {/* Sidebar */}
