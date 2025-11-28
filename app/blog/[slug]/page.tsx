@@ -170,7 +170,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
         {/* Featured image */}
         {post.featuredImage && (
-          <div className="mb-12 max-w-3xl mx-auto rounded-xl overflow-hidden shadow-lg">
+          <div className="mb-12 max-w-2xl mx-auto rounded-xl overflow-hidden shadow-lg">
             <img
               src={post.featuredImage}
               alt={post[lang].title}
