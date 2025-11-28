@@ -213,14 +213,14 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         )}
 
         {/* Key Learnings */}
-        {project.learnings && project.learnings.length > 0 && (
+        {project.learnings && project.learnings[lang] && project.learnings[lang].length > 0 && (
           <section className="mb-12 bg-amber-50 border border-amber-200 rounded-xl p-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <Lightbulb className="h-6 w-6 text-amber-600" />
               {t('projects.keyLearnings')}
             </h2>
             <ul className="space-y-3">
-              {project.learnings.map((learning, index) => (
+              {project.learnings[lang].map((learning, index) => (
                 <li key={index} className="flex items-start gap-3 text-slate-700">
                   <span className="text-amber-600 font-bold mt-1">•</span>
                   <span>{learning}</span>
