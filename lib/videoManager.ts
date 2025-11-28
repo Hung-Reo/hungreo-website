@@ -363,15 +363,32 @@ export async function deleteVideo(videoId: string): Promise<void> {
 
 /**
  * Auto-rebuild Redis category sets from actual video data
- * Called automatically when inconsistency detected
+ * Uses Redis lock to prevent concurrent rebuilds
  */
-async function autoRebuildCategorySets(): Promise<void> {
+async function autoRebuildCategorySets(): Promise<boolean> {
+  const LOCK_KEY = 'videos:rebuild-lock'
+  const LOCK_TTL = 30 // 30 seconds timeout
+
   try {
-    console.log('[VideoManager] 🔧 Auto-rebuilding category sets...')
+    // Try to acquire lock (NX = only set if not exists, EX = expiry in seconds)
+    const lockAcquired = await kv.set(LOCK_KEY, Date.now(), { nx: true, ex: LOCK_TTL })
+
+    if (!lockAcquired) {
+      console.log('[VideoManager] ⏭️ Rebuild already in progress, skipping...')
+      return false
+    }
+
+    console.log('[VideoManager] 🔧 Auto-rebuilding category sets (lock acquired)...')
 
     // Get all videos from actual data
     const allVideos = await getAllVideos(1000)
     console.log(`[VideoManager] Found ${allVideos.length} videos to rebuild`)
+
+    if (allVideos.length === 0) {
+      console.warn('[VideoManager] No videos found, skipping rebuild')
+      await kv.del(LOCK_KEY)
+      return false
+    }
 
     // Clear existing category sets
     const categories: VideoCategory[] = ['Leadership', 'AI Works', 'Health', 'Entertaining', 'Human Philosophy']
@@ -391,9 +408,15 @@ async function autoRebuildCategorySets(): Promise<void> {
     }
 
     console.log('[VideoManager] ✅ Auto-rebuild completed:', categoryStats)
+
+    // Release lock
+    await kv.del(LOCK_KEY)
+    return true
   } catch (error) {
     console.error('[VideoManager] ❌ Auto-rebuild failed:', error)
-    // Don't throw - allow stats to return even if rebuild fails
+    // Release lock on error
+    await kv.del(LOCK_KEY).catch(() => {})
+    return false
   }
 }
 
@@ -427,29 +450,33 @@ export async function getVideoStats() {
       console.warn(`[VideoManager] ⚠️ Inconsistency detected: category sum (${categorySum}) != total (${stats.total})`)
       console.warn('[VideoManager] 🔧 Triggering auto-rebuild...')
 
-      // Auto-rebuild synchronously to get correct stats immediately
-      await autoRebuildCategorySets()
+      // Auto-rebuild with lock protection
+      const rebuilt = await autoRebuildCategorySets()
 
-      // Fetch fresh stats after rebuild
-      const [newLeadership, newAiWorks, newHealth, newEntertaining, newPhilosophy, newTotal] = await Promise.all([
-        kv.scard('videos:Leadership'),
-        kv.scard('videos:AI Works'),
-        kv.scard('videos:Health'),
-        kv.scard('videos:Entertaining'),
-        kv.scard('videos:Human Philosophy'),
-        kv.zcard('videos:all'),
-      ])
+      if (rebuilt) {
+        // Fetch fresh stats after successful rebuild
+        const [newLeadership, newAiWorks, newHealth, newEntertaining, newPhilosophy, newTotal] = await Promise.all([
+          kv.scard('videos:Leadership'),
+          kv.scard('videos:AI Works'),
+          kv.scard('videos:Health'),
+          kv.scard('videos:Entertaining'),
+          kv.scard('videos:Human Philosophy'),
+          kv.zcard('videos:all'),
+        ])
 
-      stats = {
-        leadership: newLeadership || 0,
-        aiWorks: newAiWorks || 0,
-        health: newHealth || 0,
-        entertaining: newEntertaining || 0,
-        philosophy: newPhilosophy || 0,
-        total: newTotal || 0,
+        stats = {
+          leadership: newLeadership || 0,
+          aiWorks: newAiWorks || 0,
+          health: newHealth || 0,
+          entertaining: newEntertaining || 0,
+          philosophy: newPhilosophy || 0,
+          total: newTotal || 0,
+        }
+
+        console.log('[VideoManager] ✅ Returned fresh stats after auto-rebuild:', stats)
+      } else {
+        console.log('[VideoManager] ⏳ Rebuild in progress or failed, returning stale stats')
       }
-
-      console.log('[VideoManager] ✅ Returned fresh stats after auto-rebuild:', stats)
     }
 
     return stats
