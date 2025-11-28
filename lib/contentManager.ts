@@ -159,10 +159,7 @@ export interface Project {
 
   // Project metadata
   techStack: string[] // ["Next.js", "TypeScript", "Tailwind CSS"]
-  learnings: {
-    en: string[] // Key takeaways in English (2-5 items)
-    vi: string[] // Key takeaways in Vietnamese (2-5 items)
-  }
+  learnings: string[] // Key takeaways (2-5 items, applies to both EN and VI)
   githubUrl?: string // GitHub repo URL
   demoUrl?: string // Live demo URL
   featuredImage?: string // Main project image (Vercel Blob URL)
