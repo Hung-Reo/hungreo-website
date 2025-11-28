@@ -52,7 +52,7 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
         en: { title: '', description: '', content: '' },
         vi: { title: '', description: '', content: '' },
         techStack: [],
-        learnings: [],
+        learnings: { en: [], vi: [] },
         screenshots: [],
       })
     }
@@ -285,18 +285,30 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
 
   function addLearning() {
     if (!learningInput.trim() || !formData) return
+    const currentLearnings = formData.learnings || { en: [], vi: [] }
+    const langLearnings = currentLearnings[activeTab] || []
+
     setFormData({
       ...formData,
-      learnings: [...(formData.learnings || []), learningInput.trim()],
+      learnings: {
+        ...currentLearnings,
+        [activeTab]: [...langLearnings, learningInput.trim()],
+      },
     })
     setLearningInput('')
   }
 
   function removeLearning(index: number) {
     if (!formData) return
+    const currentLearnings = formData.learnings || { en: [], vi: [] }
+    const langLearnings = currentLearnings[activeTab] || []
+
     setFormData({
       ...formData,
-      learnings: formData.learnings?.filter((_, i) => i !== index),
+      learnings: {
+        ...currentLearnings,
+        [activeTab]: langLearnings.filter((_, i) => i !== index),
+      },
     })
   }
 
@@ -578,7 +590,7 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
           {/* Key Learnings */}
           <div className="p-6 border-t">
             <label className="text-sm font-medium text-slate-700 block mb-2">
-              Key Learnings
+              Key Learnings ({activeTab === 'en' ? 'English' : 'Tiếng Việt'})
             </label>
             <div className="flex gap-2 mb-3">
               <input
@@ -592,14 +604,14 @@ export default function ProjectEditorPage({ params }: { params: { id: string } }
                   }
                 }}
                 className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-                placeholder="Add a key learning or takeaway"
+                placeholder={activeTab === 'en' ? 'Add a key learning or takeaway' : 'Thêm bài học hoặc điểm quan trọng'}
               />
               <Button onClick={addLearning} type="button">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
             <div className="space-y-2">
-              {formData.learnings?.map((learning, index) => (
+              {(formData.learnings?.[activeTab] || []).map((learning, index) => (
                 <div
                   key={index}
                   className="p-3 bg-slate-50 rounded-lg flex items-start justify-between gap-2"
