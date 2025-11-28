@@ -171,11 +171,11 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
 
         {/* Featured image */}
         {project.featuredImage && (
-          <div className="mb-12 rounded-xl overflow-hidden shadow-lg">
+          <div className="mb-12 max-w-3xl mx-auto rounded-xl overflow-hidden shadow-lg">
             <img
               src={project.featuredImage}
               alt={project[lang].title}
-              className="w-full h-auto"
+              className="w-full aspect-video object-cover"
             />
           </div>
         )}
