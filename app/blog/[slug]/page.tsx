@@ -174,7 +174,7 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <img
               src={post.featuredImage}
               alt={post[lang].title}
-              className="w-full aspect-video object-cover"
+              className="w-full h-auto object-contain"
             />
           </div>
         )}

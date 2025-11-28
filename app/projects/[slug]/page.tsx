@@ -175,7 +175,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
             <img
               src={project.featuredImage}
               alt={project[lang].title}
-              className="w-full aspect-video object-cover"
+              className="w-full h-auto object-contain"
             />
           </div>
         )}
