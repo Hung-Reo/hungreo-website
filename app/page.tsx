@@ -70,7 +70,7 @@ export default function HomePage() {
         <p className="mt-4 text-xl text-slate-600 md:text-2xl">
           {t('home.hero.tagline')}
         </p>
-        <p className="mx-auto mt-6 max-w-2xl text-slate-600">
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 md:text-xl">
           {t('home.hero.description')}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
