@@ -44,7 +44,7 @@ function contentToHTML(content: string): string {
 }
 
 export default function ProjectPage({ params }: { params: { slug: string } }) {
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
   const router = useRouter()
   const [project, setProject] = useState<Project | null>(null)
   const [relatedProjects, setRelatedProjects] = useState<Project[]>([])
@@ -112,7 +112,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           className="inline-flex items-center gap-2 text-sm text-slate-600 hover:text-primary-600 transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
-          {lang === 'en' ? 'Back to Projects' : 'Quay lại Dự án'}
+          {t('projects.backToProjects')}
         </Link>
 
         {/* Header */}
@@ -148,7 +148,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                     className="flex items-center gap-2"
                   >
                     <Github className="h-5 w-5" />
-                    {lang === 'en' ? 'View Code' : 'Xem mã nguồn'}
+                    {t('projects.viewCode')}
                   </a>
                 </Button>
               )}
@@ -161,7 +161,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
                     className="flex items-center gap-2"
                   >
                     <ExternalLink className="h-5 w-5" />
-                    {lang === 'en' ? 'Live Demo' : 'Xem Demo'}
+                    {t('projects.liveDemo')}
                   </a>
                 </Button>
               )}
@@ -193,7 +193,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <Code className="h-6 w-6 text-primary-600" />
-              {lang === 'en' ? 'Screenshots' : 'Hình ảnh'}
+              {t('projects.screenshots')}
             </h2>
             <div className="grid gap-6 md:grid-cols-2">
               {project.screenshots.map((screenshot, index) => (
@@ -217,7 +217,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
           <section className="mb-12 bg-amber-50 border border-amber-200 rounded-xl p-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <Lightbulb className="h-6 w-6 text-amber-600" />
-              {lang === 'en' ? 'Key Learnings' : 'Bài học quan trọng'}
+              {t('projects.keyLearnings')}
             </h2>
             <ul className="space-y-3">
               {project.learnings.map((learning, index) => (
@@ -234,7 +234,7 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         {relatedProjects.length > 0 && (
           <section className="mt-16 pt-12 border-t">
             <h2 className="text-2xl font-bold text-slate-900 mb-6">
-              {lang === 'en' ? 'Related Projects' : 'Dự án liên quan'}
+              {t('projects.relatedProjects')}
             </h2>
             <div className="grid gap-6 md:grid-cols-3">
               {relatedProjects.map((relatedProject) => (

@@ -148,6 +148,10 @@ const translations = {
     'projects.backToProjects': '← Back to Projects',
     'projects.viewGithub': 'View on GitHub',
     'projects.liveDemo': 'Live Demo',
+    'projects.keyLearnings': 'Key Learnings',
+    'projects.relatedProjects': 'Related Projects',
+    'projects.screenshots': 'Screenshots',
+    'projects.viewCode': 'View Code',
 
     // Blog Page
     'blog.title': 'Blog',
@@ -369,6 +373,10 @@ const translations = {
     'projects.backToProjects': '← Quay lại Dự án',
     'projects.viewGithub': 'Xem trên GitHub',
     'projects.liveDemo': 'Demo trực tiếp',
+    'projects.keyLearnings': 'Bài học quan trọng',
+    'projects.relatedProjects': 'Dự án liên quan',
+    'projects.screenshots': 'Hình ảnh',
+    'projects.viewCode': 'Xem mã nguồn',
 
     // Blog Page
     'blog.title': 'Blog',
