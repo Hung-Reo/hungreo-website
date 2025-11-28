@@ -362,7 +362,43 @@ export async function deleteVideo(videoId: string): Promise<void> {
 }
 
 /**
- * Get video statistics with automatic inconsistency detection
+ * Auto-rebuild Redis category sets from actual video data
+ * Called automatically when inconsistency detected
+ */
+async function autoRebuildCategorySets(): Promise<void> {
+  try {
+    console.log('[VideoManager] 🔧 Auto-rebuilding category sets...')
+
+    // Get all videos from actual data
+    const allVideos = await getAllVideos(1000)
+    console.log(`[VideoManager] Found ${allVideos.length} videos to rebuild`)
+
+    // Clear existing category sets
+    const categories: VideoCategory[] = ['Leadership', 'AI Works', 'Health', 'Entertaining', 'Human Philosophy']
+    await Promise.all(categories.map(cat => kv.del(`videos:${cat}`)))
+
+    // Rebuild category sets
+    const categoryStats: Record<string, number> = {}
+    for (const video of allVideos) {
+      await kv.sadd(`videos:${video.category}`, video.id)
+      categoryStats[video.category] = (categoryStats[video.category] || 0) + 1
+    }
+
+    // Rebuild videos:all sorted set
+    await kv.del('videos:all')
+    for (const video of allVideos) {
+      await kv.zadd('videos:all', { score: video.addedAt, member: video.id })
+    }
+
+    console.log('[VideoManager] ✅ Auto-rebuild completed:', categoryStats)
+  } catch (error) {
+    console.error('[VideoManager] ❌ Auto-rebuild failed:', error)
+    // Don't throw - allow stats to return even if rebuild fails
+  }
+}
+
+/**
+ * Get video statistics with automatic inconsistency detection and auto-repair
  */
 export async function getVideoStats() {
   try {
@@ -375,7 +411,7 @@ export async function getVideoStats() {
       kv.zcard('videos:all'),
     ])
 
-    const stats = {
+    let stats = {
       leadership: leadership || 0,
       aiWorks: aiWorks || 0,
       health: health || 0,
@@ -388,9 +424,32 @@ export async function getVideoStats() {
     const categorySum = stats.leadership + stats.aiWorks + stats.health + stats.entertaining + stats.philosophy
 
     if (categorySum !== stats.total && stats.total > 0) {
-      console.warn(`[VideoManager] Inconsistency detected: category sum (${categorySum}) != total (${stats.total})`)
-      console.warn('[VideoManager] Redis category sets are out of sync. Stats may be incorrect.')
-      console.warn('[VideoManager] Run rebuild-stats endpoint to fix: POST /api/admin/videos/rebuild-stats')
+      console.warn(`[VideoManager] ⚠️ Inconsistency detected: category sum (${categorySum}) != total (${stats.total})`)
+      console.warn('[VideoManager] 🔧 Triggering auto-rebuild...')
+
+      // Auto-rebuild synchronously to get correct stats immediately
+      await autoRebuildCategorySets()
+
+      // Fetch fresh stats after rebuild
+      const [newLeadership, newAiWorks, newHealth, newEntertaining, newPhilosophy, newTotal] = await Promise.all([
+        kv.scard('videos:Leadership'),
+        kv.scard('videos:AI Works'),
+        kv.scard('videos:Health'),
+        kv.scard('videos:Entertaining'),
+        kv.scard('videos:Human Philosophy'),
+        kv.zcard('videos:all'),
+      ])
+
+      stats = {
+        leadership: newLeadership || 0,
+        aiWorks: newAiWorks || 0,
+        health: newHealth || 0,
+        entertaining: newEntertaining || 0,
+        philosophy: newPhilosophy || 0,
+        total: newTotal || 0,
+      }
+
+      console.log('[VideoManager] ✅ Returned fresh stats after auto-rebuild:', stats)
     }
 
     return stats
