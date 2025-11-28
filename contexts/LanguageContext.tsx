@@ -84,10 +84,12 @@ const translations = {
 
     // Home Page
     'home.hero.name': 'Hung Dinh',
-    'home.hero.tagline': 'Product Manager | AI Collaborator | Problem Solver',
-    'home.hero.description': 'Transitioning from Business Analyst to Product Manager, building AI-powered solutions and sharing lessons learned along the way.',
+    'home.hero.tagline': 'Business Analyst → AI Product Builder',
+    'home.hero.description': '20 years Business Analyst experience in Education, FMCG & Manufacturing. Now building AI-powered products combining analytical rigor with technical execution.',
     'home.hero.viewProjects': 'View Projects',
     'home.hero.aboutMe': 'About Me',
+    'home.hero.downloadCV': 'Download CV',
+    'home.hero.loadingCV': 'Loading...',
     'home.values.title1': 'Problem-First Mindset',
     'home.values.desc1': 'Understanding the problem deeply before jumping to solutions',
     'home.values.title2': 'Human + AI',
@@ -303,10 +305,12 @@ const translations = {
 
     // Home Page
     'home.hero.name': 'Đinh Quang Hưng',
-    'home.hero.tagline': 'Product Manager | Cộng tác viên AI | Giải quyết vấn đề',
-    'home.hero.description': 'Chuyển đổi từ Business Analyst sang Product Manager, xây dựng các giải pháp AI và chia sẻ kinh nghiệm học hỏi trên hành trình.',
+    'home.hero.tagline': 'Business Analyst → AI Product Builder',
+    'home.hero.description': '20 năm kinh nghiệm Business Analyst trong Giáo dục, FMCG & Sản xuất. Hiện xây dựng sản phẩm AI kết hợp phân tích chặt chẽ với thực thi kỹ thuật.',
     'home.hero.viewProjects': 'Xem dự án',
     'home.hero.aboutMe': 'Giới thiệu',
+    'home.hero.downloadCV': 'Tải CV',
+    'home.hero.loadingCV': 'Đang tải...',
     'home.values.title1': 'Tư duy vấn đề trước',
     'home.values.desc1': 'Hiểu sâu vấn đề trước khi đưa ra giải pháp',
     'home.values.title2': 'Con Người + AI',

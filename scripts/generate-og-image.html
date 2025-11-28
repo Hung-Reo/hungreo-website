@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate OG Image</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .canvas-wrapper {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    canvas {
+      display: block;
+      border: 1px solid #ddd;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .controls {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background: #0052a3;
+    }
+
+    .instructions {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-left: 4px solid #0066cc;
+      border-radius: 4px;
+    }
+
+    .instructions h3 {
+      margin-top: 0;
+      color: #0066cc;
+    }
+
+    .instructions ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 OG Image Generator - Hung Dinh Portfolio</h1>
+
+    <div class="canvas-wrapper">
+      <canvas id="ogCanvas" width="1200" height="630"></canvas>
+    </div>
+
+    <div class="controls">
+      <button onclick="downloadImage()">📥 Download og-default.jpg</button>
+      <button onclick="regenerate()">🔄 Regenerate</button>
+    </div>
+
+    <div class="instructions">
+      <h3>📝 Instructions:</h3>
+      <ol>
+        <li>Click <strong>"Download og-default.jpg"</strong> to save the image</li>
+        <li>Move the downloaded file to <code>/public/og-default.jpg</code> in your project</li>
+        <li>Deploy to Vercel</li>
+        <li>Test on <a href="https://www.linkedin.com/post-inspector/" target="_blank">LinkedIn Post Inspector</a></li>
+      </ol>
+
+      <p><strong>Tip:</strong> You can edit the design in the code below (line 100+) to customize colors, text, etc.</p>
+    </div>
+  </div>
+
+  <script>
+    function drawOGImage() {
+      const canvas = document.getElementById('ogCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+      gradient.addColorStop(0, '#1e40af'); // Blue
+      gradient.addColorStop(1, '#0ea5e9'); // Light blue
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 1200, 630);
+
+      // Add subtle pattern
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+      for (let i = 0; i < 20; i++) {
+        for (let j = 0; j < 12; j++) {
+          if ((i + j) % 2 === 0) {
+            ctx.fillRect(i * 60, j * 60, 30, 30);
+          }
+        }
+      }
+
+      // Main content box
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.roundRect(80, 120, 1040, 390, 20);
+      ctx.fill();
+
+      // Name
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 72px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('HUNG DINH', 600, 240);
+
+      // Subtitle
+      ctx.fillStyle = '#475569';
+      ctx.font = '36px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.fillText('Business Analyst → AI Product Builder', 600, 310);
+
+      // Divider line
+      ctx.strokeStyle = '#0ea5e9';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(250, 350);
+      ctx.lineTo(950, 350);
+      ctx.stroke();
+
+      // Key points
+      ctx.fillStyle = '#64748b';
+      ctx.font = '28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.textAlign = 'left';
+
+      const points = [
+        '✓ Startup-focused AI solutions',
+        '✓ Education technology expertise',
+        '✓ 10+ years BA to PM journey'
+      ];
+
+      let y = 410;
+      points.forEach(point => {
+        ctx.fillText(point, 250, y);
+        y += 45;
+      });
+
+      // Website URL
+      ctx.fillStyle = '#0ea5e9';
+      ctx.font = 'bold 24px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('hungreo.vercel.app', 600, 580);
+    }
+
+    // Helper for rounded rectangles (if not natively supported)
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        this.closePath();
+      };
+    }
+
+    function downloadImage() {
+      const canvas = document.getElementById('ogCanvas');
+      const link = document.createElement('a');
+      link.download = 'og-default.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      link.click();
+
+      alert('✅ Downloaded! Now move the file to /public/og-default.jpg in your project.');
+    }
+
+    function regenerate() {
+      const ctx = document.getElementById('ogCanvas').getContext('2d');
+      ctx.clearRect(0, 0, 1200, 630);
+      drawOGImage();
+    }
+
+    // Draw on load
+    window.onload = drawOGImage;
+  </script>
+</body>
+</html>

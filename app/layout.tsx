@@ -15,11 +15,11 @@ const inter = Inter({ subsets: ['latin', 'vietnamese'] })
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Hung Reo - Software Engineer & Product Manager',
-    template: '%s | Hung Reo',
+    default: 'Hung Dinh - Business Analyst → AI Product Builder',
+    template: '%s | Hung Dinh',
   },
-  description: 'Personal portfolio and blog showcasing software engineering projects, product management insights, and technical articles.',
-  keywords: ['Software Engineer', 'Product Manager', 'Portfolio', 'Blog', 'Web Development', 'React', 'Next.js', 'TypeScript'],
+  description: '20 years Business Analyst experience in Education, FMCG & Manufacturing. Building AI-powered products combining analytical rigor with technical execution.',
+  keywords: ['Business Analyst', 'AI Product Builder', 'Product Manager', 'AI Products', 'Education Technology', 'FMCG', 'Manufacturing', 'AI Agent', 'RAG', 'Next.js'],
   authors: [{ name: DEFAULT_METADATA.author }],
   creator: DEFAULT_METADATA.author,
   openGraph: {
@@ -27,22 +27,22 @@ export const metadata: Metadata = {
     locale: DEFAULT_METADATA.locale,
     url: BASE_URL,
     siteName: DEFAULT_METADATA.siteName,
-    title: 'Hung Reo - Software Engineer & Product Manager',
-    description: 'Personal portfolio and blog showcasing software engineering projects, product management insights, and technical articles.',
+    title: 'Hung Dinh - Business Analyst → AI Product Builder',
+    description: '20 years Business Analyst experience in Education, FMCG & Manufacturing. Building AI-powered products combining analytical rigor with technical execution.',
     images: [
       {
         url: `${BASE_URL}/og-default.jpg`,
         width: 1200,
         height: 630,
-        alt: 'Hung Reo Portfolio',
+        alt: 'Hung Dinh - Business Analyst → AI Product Builder',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     creator: DEFAULT_METADATA.twitter,
-    title: 'Hung Reo - Software Engineer & Product Manager',
-    description: 'Personal portfolio and blog showcasing software engineering projects and technical articles.',
+    title: 'Hung Dinh - Business Analyst → AI Product Builder',
+    description: '20 years Business Analyst in Education, FMCG & Manufacturing. Now building AI products.',
     images: [`${BASE_URL}/og-default.jpg`],
   },
   robots: {

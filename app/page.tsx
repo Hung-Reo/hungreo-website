@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import type { Project, BlogPost } from '@/lib/contentManager'
 import { Loader2, ArrowRight, Calendar, Clock } from 'lucide-react'
 import { FamilyValuesDisplay } from '@/components/FamilyValuesDisplay'
+import { CVDownloadButton } from '@/components/CVDownloadButton'
 
 export default function HomePage() {
   const { t, language } = useLanguage()
@@ -72,7 +73,8 @@ export default function HomePage() {
         <p className="mx-auto mt-6 max-w-2xl text-slate-600">
           {t('home.hero.description')}
         </p>
-        <div className="mt-8 flex justify-center gap-4">
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <CVDownloadButton />
           <Link
             href="/projects"
             className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-50"
