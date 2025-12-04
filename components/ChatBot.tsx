@@ -688,16 +688,32 @@ export function ChatBot() {
 
           {/* Input */}
           <form onSubmit={handleSubmit} className="border-t p-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
+            <div className="flex gap-2 items-end">
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask me anything..."
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSubmit(e as any)
+                  }
+                }}
+                placeholder="Ask me anything... (Shift+Enter for new line)"
+                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 resize-none overflow-hidden min-h-[40px] max-h-[200px]"
                 disabled={isLoading}
+                rows={1}
+                style={{
+                  height: 'auto',
+                  overflowY: input.split('\n').length > 5 ? 'auto' : 'hidden'
+                }}
+                ref={(textarea) => {
+                  if (textarea) {
+                    textarea.style.height = 'auto'
+                    textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px'
+                  }
+                }}
               />
-              <Button type="submit" disabled={isLoading || !input.trim()} size="sm">
+              <Button type="submit" disabled={isLoading || !input.trim()} size="sm" className="flex-shrink-0">
                 Send
               </Button>
             </div>
