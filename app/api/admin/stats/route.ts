@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getChatStats } from '@/lib/chatLogger'
 import { getContactRequestStats } from '@/lib/contactRequestLogger'
+import { getVisitorStats } from '@/lib/visitorTracker'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -31,14 +32,16 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch fresh data
-    const [chatStats, contactStats] = await Promise.all([
+    const [chatStats, contactStats, visitorStats] = await Promise.all([
       getChatStats(),
       getContactRequestStats(),
+      getVisitorStats(),
     ])
 
     const stats = {
       ...chatStats,
       contactRequests: contactStats,
+      visitors: visitorStats,
     }
 
     // Update cache

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import useSWR from 'swr'
 import { Button } from '../ui/Button'
 import { ProgressModal } from '../ui/ProgressModal'
+import { VisitorStatsModal } from './VisitorStatsModal'
 import { useSSEProgress } from '@/hooks/useSSEProgress'
 import type { ChatStats } from '@/lib/chatLogger'
 
@@ -14,6 +15,7 @@ const fetcher = (url: string) => fetch(url).then(r => r.json())
 export function AdminDashboard() {
   const [isScraping, setIsScraping] = useState(false)
   const [currentJobId, setCurrentJobId] = useState<string | null>(null)
+  const [showVisitorModal, setShowVisitorModal] = useState(false)
 
   // 🚀 SWR replaces useState + useEffect for instant cached loading
   const { data, error, isLoading, mutate } = useSWR('/api/admin/stats', fetcher, {
@@ -184,6 +186,14 @@ export function AdminDashboard() {
                 icon="⚠️"
                 color="bg-red-50 text-red-600"
               />
+              <StatCard
+                title="Unique Visitors"
+                value={stats.visitors?.thisMonth || 0}
+                icon="👥"
+                color="bg-teal-50 text-teal-600"
+                subtitle="this month"
+                onClick={() => setShowVisitorModal(true)}
+              />
               <Link href="/admin/contact-requests">
                 <StatCard
                   title="Contact Requests"
@@ -309,6 +319,12 @@ export function AdminDashboard() {
           setCurrentJobId(null)
         }}
       />
+
+      <VisitorStatsModal
+        isOpen={showVisitorModal}
+        onClose={() => setShowVisitorModal(false)}
+        stats={stats?.visitors || null}
+      />
     </div>
   )
 }
@@ -319,27 +335,45 @@ function StatCard({
   icon,
   color,
   subtitle,
+  onClick,
 }: {
   title: string
   value: number
   icon: string
   color: string
   subtitle?: string
+  onClick?: () => void
 }) {
-  return (
-    <div className="rounded-lg bg-white p-6 shadow hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-slate-900">
-            {value}
-            {subtitle && <span className="text-sm font-normal text-slate-500 ml-1">{subtitle}</span>}
-          </p>
-        </div>
-        <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${color}`}>
-          <span className="text-2xl">{icon}</span>
-        </div>
+  const content = (
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-slate-600">{title}</p>
+        <p className="mt-2 text-3xl font-bold text-slate-900">
+          {value}
+          {subtitle && <span className="text-sm font-normal text-slate-500 ml-1">{subtitle}</span>}
+        </p>
       </div>
+      <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${color}`}>
+        <span className="text-2xl">{icon}</span>
+      </div>
+    </div>
+  )
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded-lg bg-white p-6 text-left shadow transition-shadow hover:shadow-md"
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <div className="rounded-lg bg-white p-6 shadow transition-shadow hover:shadow-md">
+      {content}
     </div>
   )
 }

@@ -2,12 +2,35 @@
 
 import Link from 'next/link'
 import { Shield } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export function Footer() {
   const { t, language } = useLanguage()
   const currentYear = new Date().getFullYear()
   const lang = language === 'en' ? 'en' : 'vi'
+  const [visitorCount, setVisitorCount] = useState(0)
+  const [monthNumber, setMonthNumber] = useState<number | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    fetch('/api/public/visitor-count')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isMounted) return
+        if (typeof data?.count === 'number') setVisitorCount(data.count)
+        if (typeof data?.monthNumber === 'number') setMonthNumber(data.monthNumber)
+      })
+      .catch(() => {})
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const displayMonthNumber = monthNumber ?? (new Date().getMonth() + 1)
+  const monthLabel = t(`months.short.${displayMonthNumber}`)
 
   return (
     <footer className="border-t bg-slate-50">
@@ -16,6 +39,11 @@ export function Footer() {
           <div className="flex flex-col items-center gap-2 md:items-start">
             <p className="text-sm text-slate-600">
               {t('footer.copyright').replace('{year}', currentYear.toString())}
+              <span className="ml-2 text-slate-400">•</span>
+              <span className="ml-2 text-slate-400">
+                {visitorCount}{' '}
+                {lang === 'en' ? `accessed/${monthLabel}` : `lượt truy cập/${monthLabel}`}
+              </span>
             </p>
             {/* Claude Code Credit */}
             <p className="text-xs text-slate-400">

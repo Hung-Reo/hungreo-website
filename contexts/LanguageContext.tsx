@@ -33,12 +33,24 @@ const translations = {
 
     // Footer
     'footer.copyright': '© {year} Hung Dinh. All rights reserved.',
-    'footer.security': 'Secured with HTTPS | GDPR Compliant | No Tracking',
+    'footer.security': 'Secured with HTTPS | GDPR Compliant | Privacy-First Analytics',
     'footer.learnMore': 'Learn More',
     'footer.email': 'Email',
     'footer.linkedin': 'LinkedIn',
     'footer.github': 'GitHub',
     'footer.securityPage': 'Security',
+    'months.short.1': 'Jan',
+    'months.short.2': 'Feb',
+    'months.short.3': 'Mar',
+    'months.short.4': 'Apr',
+    'months.short.5': 'May',
+    'months.short.6': 'Jun',
+    'months.short.7': 'Jul',
+    'months.short.8': 'Aug',
+    'months.short.9': 'Sep',
+    'months.short.10': 'Oct',
+    'months.short.11': 'Nov',
+    'months.short.12': 'Dec',
 
     // Knowledge/Videos Page
     'knowledge.title': 'AI Tools - Video Library',
@@ -258,12 +270,24 @@ const translations = {
 
     // Footer
     'footer.copyright': '© {year} Hung Dinh. Bảo lưu mọi quyền.',
-    'footer.security': 'Bảo mật HTTPS | Tuân thủ GDPR | Không theo dõi',
+    'footer.security': 'Bảo mật HTTPS | Tuân thủ GDPR | Phân tích riêng tư',
     'footer.learnMore': 'Tìm hiểu thêm',
     'footer.email': 'Email',
     'footer.linkedin': 'LinkedIn',
     'footer.github': 'GitHub',
     'footer.securityPage': 'Bảo mật',
+    'months.short.1': 'Th1',
+    'months.short.2': 'Th2',
+    'months.short.3': 'Th3',
+    'months.short.4': 'Th4',
+    'months.short.5': 'Th5',
+    'months.short.6': 'Th6',
+    'months.short.7': 'Th7',
+    'months.short.8': 'Th8',
+    'months.short.9': 'Th9',
+    'months.short.10': 'Th10',
+    'months.short.11': 'Th11',
+    'months.short.12': 'Th12',
 
     // Knowledge/Videos Page
     'knowledge.title': 'Công cụ AI - Thư viện Video',

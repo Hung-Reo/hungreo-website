@@ -6,6 +6,7 @@ import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ChatBot } from '@/components/ChatBot'
+import { VisitorTracker } from '@/components/VisitorTracker'
 import { SessionProvider } from '@/components/providers/SessionProvider'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { BASE_URL, DEFAULT_METADATA } from '@/lib/metadata'
@@ -79,6 +80,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <Footer />
               <ChatBot />
+              <VisitorTracker />
             </div>
           </SessionProvider>
         </LanguageProvider>
