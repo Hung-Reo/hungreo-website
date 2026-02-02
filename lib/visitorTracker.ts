@@ -178,3 +178,35 @@ export async function getVisitorStats(): Promise<VisitorStats> {
     }
   }
 }
+
+export async function resetVisitorStats(scope: 'today' | 'week' | 'month' = 'month'): Promise<void> {
+  try {
+    const { yearMonth, dateKey } = getYearMonthKey()
+    const weekStart = getVNWeekStartDateString()
+    const keysToDelete: string[] = []
+
+    if (scope === 'today') {
+      keysToDelete.push(`visitors:daily:${dateKey}`)
+    }
+
+    if (scope === 'week') {
+      keysToDelete.push(`visitors:weekly:${weekStart}`)
+    }
+
+    if (scope === 'month') {
+      keysToDelete.push(
+        `visitors:${yearMonth}:unique`,
+        `visitors:${yearMonth}:pages`,
+        `visitors:${yearMonth}:devices`,
+        `visitors:weekly:${weekStart}`,
+        `visitors:daily:${dateKey}`
+      )
+    }
+
+    if (keysToDelete.length > 0) {
+      await kv.del(...keysToDelete)
+    }
+  } catch (error) {
+    console.error('Failed to reset visitor stats:', error)
+  }
+}
