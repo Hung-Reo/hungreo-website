@@ -73,6 +73,12 @@ function generateVisitorHash(date: string, userAgent: string, screenWidth: numbe
   return hashString(data).substring(0, 16)
 }
 
+function isBotUserAgent(userAgent: string): boolean {
+  if (!userAgent) return true
+  const botPattern = /bot|crawler|spider|crawling|headless|lighthouse|pingdom|uptimerobot|facebookexternalhit|slackbot|discordbot|embedly|quora link preview|whatsapp|telegrambot|googlebot|bingbot|yandex|baiduspider|duckduckbot|facebot|ia_archiver/i
+  return botPattern.test(userAgent)
+}
+
 function getYearMonthKey(date = new Date()): { yearMonth: string; dateKey: string; monthNumber: number } {
   const { year, month, day } = getVNDateParts(date)
   return {
@@ -103,17 +109,20 @@ async function getDeviceBreakdown(yearMonth: string): Promise<{ desktop: number;
 export async function trackPageView(page: string, userAgent: string, screenWidth: number): Promise<void> {
   try {
     if (!page) return
+    if (isBotUserAgent(userAgent)) return
 
     const { yearMonth, dateKey } = getYearMonthKey()
     const weekStart = getVNWeekStartDateString()
-    const visitorHash = generateVisitorHash(dateKey, userAgent, screenWidth)
+    const dailyHash = generateVisitorHash(dateKey, userAgent, screenWidth)
+    const weeklyHash = generateVisitorHash(weekStart, userAgent, screenWidth)
+    const monthlyHash = generateVisitorHash(yearMonth, userAgent, screenWidth)
     const device = screenWidth >= 1024 ? 'desktop' : 'mobile'
     const sanitizedPage = sanitizePathname(page)
 
     await Promise.all([
-      kv.sadd(`visitors:daily:${dateKey}`, visitorHash),
-      kv.sadd(`visitors:weekly:${weekStart}`, visitorHash),
-      kv.sadd(`visitors:${yearMonth}:unique`, visitorHash),
+      kv.sadd(`visitors:daily:${dateKey}`, dailyHash),
+      kv.sadd(`visitors:weekly:${weekStart}`, weeklyHash),
+      kv.sadd(`visitors:${yearMonth}:unique`, monthlyHash),
       kv.hincrby(`visitors:${yearMonth}:pages`, sanitizedPage, 1),
       kv.hincrby(`visitors:${yearMonth}:devices`, device, 1),
     ])
