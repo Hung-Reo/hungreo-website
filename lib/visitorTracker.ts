@@ -68,8 +68,8 @@ function hashString(str: string): string {
   return Math.abs(hash).toString(16)
 }
 
-function generateVisitorHash(date: string, userAgent: string, screenWidth: number): string {
-  const data = `${date}|${userAgent}|${screenWidth}`
+function generateVisitorHash(date: string, userAgent: string, deviceType: string): string {
+  const data = `${date}|${userAgent}|${deviceType}`
   return hashString(data).substring(0, 16)
 }
 
@@ -113,10 +113,10 @@ export async function trackPageView(page: string, userAgent: string, screenWidth
 
     const { yearMonth, dateKey } = getYearMonthKey()
     const weekStart = getVNWeekStartDateString()
-    const dailyHash = generateVisitorHash(dateKey, userAgent, screenWidth)
-    const weeklyHash = generateVisitorHash(weekStart, userAgent, screenWidth)
-    const monthlyHash = generateVisitorHash(yearMonth, userAgent, screenWidth)
     const device = screenWidth >= 1024 ? 'desktop' : 'mobile'
+    const dailyHash = generateVisitorHash(dateKey, userAgent, device)
+    const weeklyHash = generateVisitorHash(weekStart, userAgent, device)
+    const monthlyHash = generateVisitorHash(yearMonth, userAgent, device)
     const sanitizedPage = sanitizePathname(page)
 
     await Promise.all([
