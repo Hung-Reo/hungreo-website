@@ -3,7 +3,7 @@ import { generatePageMetadata } from '@/lib/metadata'
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Blog',
-  description: 'Technical articles, insights, and tutorials on software engineering, web development, product management, and technology trends.',
+  description: 'Thoughts on business, people, Supply Chain, and what comes next — from 20 years at Unilever.',
   path: '/blog',
 })
 

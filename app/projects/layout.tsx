@@ -3,7 +3,7 @@ import { generatePageMetadata } from '@/lib/metadata'
 
 export const metadata: Metadata = generatePageMetadata({
   title: 'Projects',
-  description: 'Explore my portfolio of software engineering projects, web applications, and technical experiments using React, Next.js, TypeScript, and modern web technologies.',
+  description: 'Initiatives, reflections, and work that matters — from Minh Tran, Digital & Operations Leader.',
   path: '/projects',
 })
 

@@ -88,7 +88,7 @@
   }
 
   .turtle-button-sprite:focus {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid #26A69A;
     outline-offset: 2px;
     border-radius: 50%;
   }
@@ -195,7 +195,7 @@
   /* Responsive - Mobile fixes */
   @media (max-width: 768px) {
     .turtle-track {
-      left: 130px; /* Start further right - after "Hung Dinh" */
+      left: 130px; /* Start further right - after site name */
       width: 100px; /* Shorter track to prevent overflow */
       top: 12px;
     }

@@ -5,7 +5,6 @@ import { Toaster } from 'sonner'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { ChatBot } from '@/components/ChatBot'
 import { VisitorTracker } from '@/components/VisitorTracker'
 import { SessionProvider } from '@/components/providers/SessionProvider'
 import { LanguageProvider } from '@/contexts/LanguageContext'
@@ -16,11 +15,11 @@ const inter = Inter({ subsets: ['latin', 'vietnamese'] })
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Hung Dinh - Business Analyst → AI Product Builder',
-    template: '%s | Hung Dinh',
+    default: 'Minh Tran - Khu Vườn Nhỏ | Portfolio',
+    template: '%s | Minh Tran',
   },
-  description: '20 years Business Analyst experience in Education, FMCG & Manufacturing. Building AI-powered products combining analytical rigor with technical execution.',
-  keywords: ['Business Analyst', 'AI Product Builder', 'Product Manager', 'AI Products', 'Education Technology', 'FMCG', 'Manufacturing', 'AI Agent', 'RAG', 'Next.js'],
+  description: '20 năm Unilever — Head of Digital & Technology Consulting, Supply Chain Greater Asia. Khu vườn nhỏ nơi tôi viết những điều thật về hành trình đó.',
+  keywords: ['Digital Transformation', 'Supply Chain', 'Operations', 'COO', 'Unilever', 'Business Leader', 'Vietnam', 'Portfolio', 'Minh Tran'],
   authors: [{ name: DEFAULT_METADATA.author }],
   creator: DEFAULT_METADATA.author,
   openGraph: {
@@ -28,22 +27,22 @@ export const metadata: Metadata = {
     locale: DEFAULT_METADATA.locale,
     url: BASE_URL,
     siteName: DEFAULT_METADATA.siteName,
-    title: 'Hung Dinh - Business Analyst → AI Product Builder',
-    description: '20 years Business Analyst experience in Education, FMCG & Manufacturing. Building AI-powered products combining analytical rigor with technical execution.',
+    title: 'Minh Tran - Khu Vườn Nhỏ',
+    description: '20 năm Unilever — Head of Digital & Technology Consulting, Supply Chain Greater Asia. Khu vườn nhỏ nơi tôi viết những điều thật về hành trình đó.',
     images: [
       {
         url: `${BASE_URL}/og-default.jpg`,
         width: 1200,
         height: 630,
-        alt: 'Hung Dinh - Business Analyst → AI Product Builder',
+        alt: 'Minh Tran - Digital & Operations Leader',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     creator: DEFAULT_METADATA.twitter,
-    title: 'Hung Dinh - Business Analyst → AI Product Builder',
-    description: '20 years Business Analyst in Education, FMCG & Manufacturing. Now building AI products.',
+    title: 'Minh Tran - Khu Vườn Nhỏ',
+    description: '20 năm Unilever, Supply Chain Greater Asia. Khu vườn nhỏ — nơi viết thật.',
     images: [`${BASE_URL}/og-default.jpg`],
   },
   robots: {
@@ -79,7 +78,6 @@ export default function RootLayout({
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />
-              <ChatBot />
               <VisitorTracker />
             </div>
           </SessionProvider>
