@@ -20,8 +20,12 @@ export async function GET() {
       )
     }
 
+    // Strip internal/admin-only fields before returning to public clients
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { updatedBy, embeddings, id, version, ...publicContent } = content
+
     // IMPORTANT: Disable caching to ensure fresh content after admin updates
-    return NextResponse.json(content, {
+    return NextResponse.json(publicContent, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
         'Pragma': 'no-cache',

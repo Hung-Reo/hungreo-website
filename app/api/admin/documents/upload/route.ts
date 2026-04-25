@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { processDocument } from '@/lib/documentProcessor'
 import { chunkText } from '@/lib/textUtils'
 import { saveDocument, uploadToBlob, type Document } from '@/lib/documentManager'
-import { validateFile } from '@/lib/inputValidator'
+import { validateUpload } from '@/lib/uploadValidator'
 import { fileUploadRateLimit, getClientIp } from '@/lib/rateLimit'
 import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
 
@@ -62,12 +62,9 @@ export async function POST(req: NextRequest) {
     await emitProgress(jobId, `Validating ${file.name}...`, 1, 5)
 
     // SECURITY: Enhanced file validation (MIME type, size, sanitization)
-    const validation = validateFile(file, {
-      maxSizeBytes: 20 * 1024 * 1024, // 20MB
-      allowedTypes: ['pdf', 'txt', 'docx', 'doc'],
-    })
+    const validation = validateUpload(file, 'document')
 
-    if (!validation.isValid) {
+    if (!validation.valid) {
       console.warn(`[Upload] Invalid file from IP: ${ip}`, {
         error: validation.error,
         fileName: file.name,
@@ -102,7 +99,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create document object with sanitized filename
-    const sanitizedFileName = validation.sanitized || file.name
+    const sanitizedFileName = validation.sanitizedName
     const document: Document = {
       id: `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       fileName: sanitizedFileName,

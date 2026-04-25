@@ -8,6 +8,7 @@ import {
   translateCVData,
 } from '@/lib/cvParser'
 import { v4 as uuidv4 } from 'uuid'
+import { validateUpload } from '@/lib/uploadValidator'
 
 /**
  * POST /api/admin/content/about/upload-cv
@@ -31,15 +32,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
-    // 3. Validate file type
-    const fileName = file.name
-    if (!fileName.endsWith('.pdf') && !fileName.endsWith('.docx')) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Only PDF and DOCX are supported.' },
-        { status: 400 }
-      )
+    // 3. Validate file type, MIME type, and size
+    const validation = validateUpload(file, 'cv')
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
+    const fileName = validation.sanitizedName
     console.log(`[CV Upload] File: ${fileName}, Size: ${file.size} bytes`)
 
     // 4. Upload to Vercel Blob Storage

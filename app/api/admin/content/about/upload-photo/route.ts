@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { put } from '@vercel/blob'
+import { validateUpload } from '@/lib/uploadValidator'
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -17,26 +18,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
-    if (!validTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.' },
-        { status: 400 }
-      )
-    }
-
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: 'File too large. Maximum size is 5MB.' },
-        { status: 400 }
-      )
+    // Validate file type, MIME type, and size
+    const validation = validateUpload(file, 'image')
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
     // Upload to Vercel Blob
-    const blob = await put(`profile/${Date.now()}-${file.name}`, file, {
+    const blob = await put(`profile/${Date.now()}-${validation.sanitizedName}`, file, {
       access: 'public',
     })
 
