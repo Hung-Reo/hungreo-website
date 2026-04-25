@@ -7,15 +7,7 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.vercel.app',
       },
-      {
-        protocol: 'https',
-        hostname: 'i.ytimg.com',
-      },
     ],
-  },
-  // Externalize @sparticuz/chromium to prevent bundling issues
-  experimental: {
-    serverComponentsExternalPackages: ['@sparticuz/chromium'],
   },
 }
 
