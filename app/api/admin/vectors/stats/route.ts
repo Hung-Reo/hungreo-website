@@ -22,12 +22,12 @@ export async function GET() {
     // Note: Pinecone has a limit on query results, so we'll use describeIndexStats
     const stats = await index.describeIndexStats()
 
-    // For detailed breakdown, we need to query vectors by namespace or use metadata filtering
-    // Since we're using a single namespace, let's query sample vectors to determine types
+    // Use actual index dimension (not hardcoded) to support any embedding model
+    const dimension = stats.dimension ?? 3072
 
     // Query a sample of vectors to analyze metadata
     const sampleQuery = await index.query({
-      vector: new Array(1536).fill(0), // Dummy vector for metadata query
+      vector: new Array(dimension).fill(0), // Dummy vector sized to actual index dims
       topK: 10000, // Get as many as possible
       includeMetadata: true,
     })

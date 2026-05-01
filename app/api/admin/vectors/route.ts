@@ -41,9 +41,12 @@ export async function GET(req: NextRequest) {
 
     const index = await getPineconeIndex()
 
+    // Get actual dimension from index (supports any embedding model)
+    const { dimension = 3072 } = await index.describeIndexStats()
+
     // Query vectors with metadata filtering
     const queryResponse = await index.query({
-      vector: new Array(1536).fill(0), // Dummy vector
+      vector: new Array(dimension).fill(0), // Dummy vector sized to actual index dims
       topK: 10000,
       includeMetadata: true,
       filter: {
@@ -118,9 +121,12 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
+    // Get actual dimension from index (supports any embedding model)
+    const { dimension: delDimension = 3072 } = await index.describeIndexStats()
+
     // First, query to get all vector IDs of this type
     const queryResponse = await index.query({
-      vector: new Array(1536).fill(0),
+      vector: new Array(delDimension).fill(0), // Dummy vector sized to actual index dims
       topK: 10000,
       includeMetadata: true,
       filter: {

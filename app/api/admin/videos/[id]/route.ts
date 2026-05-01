@@ -237,8 +237,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     } else {
       // Strategy 2: Query and delete by videoId (for older videos without pineconeIds)
       // Query to find all vectors with this videoId
+      const { dimension: vidDimension = 3072 } = await index.describeIndexStats()
       const queryResponse = await index.query({
-        vector: new Array(1536).fill(0), // Dummy vector
+        vector: new Array(vidDimension).fill(0), // Dummy vector sized to actual index dims
         topK: 10000,
         includeMetadata: true,
         filter: {
