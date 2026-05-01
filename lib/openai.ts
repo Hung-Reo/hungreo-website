@@ -20,7 +20,7 @@ export async function createEmbedding(text: string) {
   const openai = getOpenAIClient()
 
   const response = await openai.embeddings.create({
-    model: 'text-embedding-3-small',
+    model: process.env.OPENAI_EMBEDDING_MODEL ?? 'text-embedding-3-large',
     input: text,
   })
 

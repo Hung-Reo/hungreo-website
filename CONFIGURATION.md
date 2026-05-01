@@ -71,7 +71,8 @@ These are **required** for core chatbot functionality:
 - **Setup**:
   1. Create a free Pinecone account
   2. Create an index with:
-     - **Dimensions**: 1536 (for text-embedding-3-small)
+     - **Dimensions**: 3072 (for text-embedding-3-large)
+     - Note: text-embedding-3-small (1536 dims) deprecated Oct 23, 2026
      - **Metric**: cosine
   3. Copy your API key and index name
 
@@ -393,7 +394,7 @@ Test your configuration:
 
 2. **Pinecone not configured**
    - Check: `PINECONE_API_KEY` and `PINECONE_INDEX_NAME` set
-   - Verify: Index dimensions = 1536
+   - Verify: Index dimensions = 3072 (text-embedding-3-large)
    - Test: Try creating embedding in Pinecone dashboard
 
 3. **Resend API blocking execution** (if configured)

@@ -21,11 +21,14 @@ Before deploying, ensure you have:
 ### 2. Pinecone Vector Database (Required)
 - **Purpose**: Vector storage for RAG
 - **Get it**: https://www.pinecone.io/
-- **Setup**: Create index with 1536 dimensions, cosine metric
+- **Setup**: Create index with **3072 dimensions**, cosine metric
 - **Cost**: FREE (100K vectors)
+- **Note**: Migrated to `text-embedding-3-large` (3072 dims) — OpenAI deprecated `text-embedding-3-small` on Oct 23, 2026
 - **Env vars**:
   - `PINECONE_API_KEY=pcsk_...`
-  - `PINECONE_INDEX_NAME=hungreo-website`
+  - `PINECONE_INDEX_NAME=hungreo-website-v2
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large-v2`
+  - `OPENAI_EMBEDDING_MODEL=text-embedding-3-large`
 
 ### 3. YouTube Data API v3 (Required)
 - **Purpose**: Fetch video metadata
@@ -107,7 +110,8 @@ OPENAI_API_KEY=sk-proj-your-key-here
 
 # Pinecone
 PINECONE_API_KEY=pcsk-your-key-here
-PINECONE_INDEX_NAME=hungreo-website
+PINECONE_INDEX_NAME=hungreo-website-v2
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large
 
 # YouTube
 YOUTUBE_API_KEY=AIzaSy-your-key-here
@@ -350,7 +354,8 @@ OPENAI_API_KEY=sk-proj-...
 
 # Pinecone
 PINECONE_API_KEY=pcsk_...
-PINECONE_INDEX_NAME=hungreo-website
+PINECONE_INDEX_NAME=hungreo-website-v2
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large
 
 # YouTube
 YOUTUBE_API_KEY=AIzaSy...

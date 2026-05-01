@@ -20,16 +20,17 @@ You need to obtain API keys from the following services:
 
 **Cost**: ~$0.50-2/month for typical usage
 - GPT-4o-mini: $0.150 per 1M input tokens, $0.600 per 1M output tokens
-- text-embedding-3-small: $0.020 per 1M tokens
+- text-embedding-3-large: $0.130 per 1M tokens (upgraded from text-embedding-3-small — deprecated Oct 2026)
 
 ## Step 2: Get Pinecone API Key
 
 1. Go to [Pinecone](https://www.pinecone.io/)
 2. Sign up for free account
 3. Create a new index:
-   - Name: `hungreo-website` (or your choice)
-   - Dimensions: **1536** (for OpenAI text-embedding-3-small)
+   - Name: `hungreo-website-v2` (or your choice)
+   - Dimensions: **3072** (for OpenAI text-embedding-3-large)
    - Metric: **cosine**
+   - Note: text-embedding-3-small (1536 dims) bị deprecated Oct 23, 2026
    - Cloud: **AWS** (free tier)
    - Region: Choose closest to you
 4. Go to **API Keys** section
@@ -70,7 +71,8 @@ OPENAI_API_KEY=sk-your-actual-openai-key-here
 
 # Pinecone Vector Database
 PINECONE_API_KEY=your-actual-pinecone-key-here
-PINECONE_INDEX_NAME=hungreo-website
+PINECONE_INDEX_NAME=hungreo-website-v2
+OPENAI_EMBEDDING_MODEL=text-embedding-3-large
 
 # YouTube Data API v3
 YOUTUBE_API_KEY=AIzaSy-your-actual-youtube-key-here
@@ -201,7 +203,7 @@ git push origin main
 - Restart the development server: `npm run dev`
 
 ### Pinecone connection issues
-- Verify index dimensions are set to **1536**
+- Verify index dimensions are set to **3072** (text-embedding-3-large)
 - Check index name matches `PINECONE_INDEX_NAME` in `.env.local`
 - Ensure index is in "Ready" state in Pinecone dashboard
 
