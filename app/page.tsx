@@ -61,36 +61,53 @@ export default function HomePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      {/* Hero Section */}
-      <section className="py-12 text-center">
-        <h1 className="text-5xl font-bold text-slate-900 md:text-6xl">
-          {t('home.hero.name')}
-        </h1>
-        <p className="mt-4 text-xl text-slate-600 md:text-2xl">
-          {t('home.hero.tagline')}
-        </p>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 md:text-xl">
-          {t('home.hero.description')}
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <CVDownloadButton />
-          <Link
-            href="/projects"
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-50"
-          >
-            {t('home.hero.viewProjects')}
-          </Link>
-          <Link
-            href="/about"
-            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
-          >
-            {t('home.hero.aboutMe')}
-          </Link>
+    <main className="w-full">
+      {/* Hero Background Image — Name, Tagline & Description overlaid */}
+      <section 
+        className="relative flex min-h-[70vh] w-full flex-col items-center justify-center overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('/hero-bg.jpg')" }}
+      >
+        {/* Subtle gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-black/10 to-white/80"></div>
+
+        {/* All text content — directly on the image */}
+        <div className="relative z-10 text-center px-4">
+          <h1 className="text-5xl font-bold text-white md:text-7xl" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.4)' }}>
+            {t('home.hero.name')}
+          </h1>
+          <p className="mt-4 text-xl font-semibold text-white/95 md:text-2xl" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.4)' }}>
+            {t('home.hero.tagline')}
+          </p>
+          <p className="mx-auto mt-6 max-w-2xl text-base text-white/90 md:text-lg leading-relaxed" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.3)' }}>
+            {t('home.hero.description')}
+          </p>
         </div>
       </section>
 
-      {/* Core Values */}
+      {/* CTA Buttons — white section below the image */}
+      <section className="bg-white py-8 text-center">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap justify-center gap-4">
+            <CVDownloadButton />
+            <Link
+              href="/projects"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-slate-50"
+            >
+              {t('home.hero.viewProjects')}
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+            >
+              {t('home.hero.aboutMe')}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Container */}
+      <div className="container mx-auto px-4 py-12">
+        {/* Core Values */}
       <section className="py-8">
         <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-lg border bg-white p-6">
@@ -303,5 +320,6 @@ export default function HomePage() {
         )}
       </section>
     </div>
+    </main>
   )
 }
