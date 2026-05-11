@@ -79,44 +79,7 @@ export default function ProjectsPage() {
           </p>
         </div>
 
-        {/* Tech Stack Filter */}
-        {allTechStack.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-sm font-medium text-slate-700 mb-3">
-              {lang === 'en' ? 'Filter by Tech Stack:' : 'Lọc theo công nghệ:'}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedTech(null)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  selectedTech === null
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {lang === 'en' ? 'All' : 'Tất cả'} ({projects.length})
-              </button>
-              {allTechStack.map((tech) => {
-                const count = projects.filter((p) =>
-                  p.techStack?.includes(tech)
-                ).length
-                return (
-                  <button
-                    key={tech}
-                    onClick={() => setSelectedTech(tech)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedTech === tech
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    }`}
-                  >
-                    {tech} ({count})
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
+
 
         {/* No Results */}
         {filteredProjects.length === 0 && (
@@ -176,6 +139,45 @@ export default function ProjectsPage() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Tech Stack Filter */}
+        {allTechStack.length > 0 && (
+          <div className="mt-16 pt-8 border-t border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-900 mb-6 text-center">
+              {lang === 'en' ? 'Filter by Tech Stack' : 'Lọc theo công nghệ'}
+            </h3>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                onClick={() => setSelectedTech(null)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  selectedTech === null
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                {lang === 'en' ? 'All' : 'Tất cả'} ({projects.length})
+              </button>
+              {allTechStack.map((tech) => {
+                const count = projects.filter((p) =>
+                  p.techStack?.includes(tech)
+                ).length
+                return (
+                  <button
+                    key={tech}
+                    onClick={() => setSelectedTech(tech)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                      selectedTech === tech
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tech} ({count})
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         )}
       </div>
     </div>
