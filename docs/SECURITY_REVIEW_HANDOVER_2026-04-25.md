@@ -2,7 +2,7 @@
 
 Scope: local repo `/Users/hungdinh/Development/hungreo-Website`, GitHub public repo `Hung-Reo/hungreo-website`, and public production probe for `https://hungreo.vercel.app`.
 
-Status: review-only completed. No security fixes have been applied in code yet.
+Status: Review 3 completed on 2026-05-02. Current tree includes small security cleanup fixes; git history still needs to be treated as previously exposed until affected credentials are rotated.
 
 ## Critical / Short-Term Fixes
 
@@ -429,3 +429,116 @@ npm run lint
 4. Fix or remove interactive `npm run lint`.
 5. Deploy to production.
 6. Re-run production verification commands.
+
+## Review 3 - 2026-05-02
+
+Reviewer: Codex after Vercel env password/key rotation and production deployment.
+
+### What improved
+
+1. Production public cookie issue appears fixed.
+- `https://hungreo.vercel.app/`, `/api/public/visitor-count`, and `/api/content/about` no longer returned `Set-Cookie` in the re-check.
+- Production responses include `Content-Security-Policy`, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, and `Permissions-Policy`.
+
+2. Production public About API metadata leak appears fixed.
+- `/api/content/about` no longer returns `updatedBy`, `embeddings`, `id`, or `version`.
+- `/api/cv` still publicly returns CV filename, public Blob URL, and upload timestamp. This is acceptable only if public CV download is intentional.
+
+3. Current tracked docs were cleaned up.
+- Replaced secret-looking examples in `.env.example` and setup docs with placeholders.
+- A tracked-files secret-pattern check for long Pinecone/Gemini/Blob/Upstash/bcrypt-style values no longer returned matches.
+- This does not clean git history. Any real values previously committed must remain rotated/disabled.
+
+4. Project upload validation was brought in line with shared validation.
+- `app/api/admin/content/projects/upload/route.ts` now uses `validateUpload(file, 'cv')`, which checks extension, MIME type, size, and sanitized filename before Blob upload.
+
+### Remaining issues after Review 3
+
+#### R3-1. Production dependency audit still fails
+
+Severity: High
+
+Finding:
+- `npm audit --omit=dev --json` reports 9 production vulnerabilities: 0 critical, 2 high, 5 moderate, 2 low.
+- High items are currently `next` and `glob`.
+- `next` is installed at `14.2.35`; npm audit currently recommends a semver-major move to `next@16.2.4`.
+- `glob@10.3.10` is pulled via tooling dependencies such as `eslint-config-next` and `tailwindcss/sucrase`.
+
+Action:
+- Keep `security.yml` audit non-blocking until the upgrade plan is chosen.
+- Recommended next technical spike: test Next 15/16 upgrade in a branch, or document temporary risk acceptance if staying on Next 14.
+
+#### R3-2. Security workflow still does not block dependency failures
+
+Severity: High / process
+
+Finding:
+- `.github/workflows/security.yml` still has `continue-on-error: true` on `npm audit --omit=dev`.
+
+Action:
+- Remove it once high vulnerabilities are fixed or set a deliberate threshold:
+```yaml
+run: npm audit --omit=dev --audit-level=high
+```
+
+#### R3-3. `npm run lint` remains interactive
+
+Severity: Medium / CI reliability
+
+Finding:
+- `CI=1 npm run lint` still prompts for Next ESLint setup and exits non-zero.
+
+Action:
+- Add a committed ESLint config compatible with the project, or replace the lint script with a non-interactive command.
+
+#### R3-4. CSP is present but still permissive
+
+Severity: Medium / hardening
+
+Finding:
+- CSP still includes `'unsafe-inline'` and `'unsafe-eval'`.
+
+Action:
+- Accept for now as a compatibility baseline.
+- Later harden by removing `'unsafe-eval'` first, then considering nonce/hash-based script policy.
+
+#### R3-5. Git history exposure remains a policy issue
+
+Severity: High
+
+Finding:
+- Current tree has been cleaned, but previously committed values can still exist in public git history.
+
+Action:
+- Confirm rotation/disablement for Pinecone, Gemini/Google API, Upstash/KV, Blob, NextAuth, admin password hash, OpenAI, Resend, YouTube, and any n8n credentials that ever appeared in docs.
+- Enable GitHub secret scanning + push protection if not already enabled.
+
+### Review 3 command results
+
+```bash
+npm test
+# Passed 8/8
+
+npm run build
+# Passed
+
+CI=1 npm run lint
+# Failed; interactive Next ESLint setup prompt
+
+npm audit --omit=dev --json
+# Failed: 9 vulnerabilities, 0 critical, 2 high, 5 moderate, 2 low
+
+curl -sSI https://hungreo.vercel.app/
+# No Set-Cookie observed; CSP and security headers present
+
+curl -sS https://hungreo.vercel.app/api/content/about | jq 'has("updatedBy"), has("embeddings"), has("id"), has("version")'
+# false false false false
+```
+
+### Recommended next action order after Review 3
+
+1. Confirm/finish credential rotation for any values that appeared in historical docs.
+2. Decide the Next upgrade path to clear high audit findings.
+3. Remove `continue-on-error: true` from `security.yml` once high audit findings are clean.
+4. Fix non-interactive lint.
+5. Decide whether public `/api/cv` should stay public; if yes, document it as intentional.

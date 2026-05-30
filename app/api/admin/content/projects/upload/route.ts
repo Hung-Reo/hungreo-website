@@ -6,6 +6,7 @@ import {
   detectLanguage,
   parseProject,
 } from '@/lib/projectParser'
+import { validateUpload } from '@/lib/uploadValidator'
 
 /**
  * POST /api/admin/content/projects/upload
@@ -27,22 +28,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
-    // Validate file type
-    const fileName = file.name
-    if (!fileName.endsWith('.pdf') && !fileName.endsWith('.docx')) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Only PDF and DOCX are supported.' },
-        { status: 400 }
-      )
+    // Validate file extension, MIME type, size, and sanitize filename
+    const validation = validateUpload(file, 'cv')
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json(
-        { error: 'File too large. Maximum size is 10MB.' },
-        { status: 400 }
-      )
-    }
+    const fileName = validation.sanitizedName
 
     console.log(`[Project Upload] File: ${fileName}, Size: ${file.size} bytes`)
 

@@ -148,7 +148,7 @@ Only added free-tier Pinecone dev index.
    # Check .env.local has:
    PINECONE_INDEX_NAME=hungreo-website-dev
    KV_REST_API_URL=https://intent-peacock-38586.upstash.io
-   BLOB_READ_WRITE_TOKEN=vercel_blob_rw_DOX8eFze... (shared)
+   BLOB_READ_WRITE_TOKEN=vercel_blob_rw_YOUR_TOKEN_HERE... (shared)
    ```
 
 3. **Start Development**

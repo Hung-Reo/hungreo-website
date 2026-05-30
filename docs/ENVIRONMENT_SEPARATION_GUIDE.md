@@ -40,7 +40,7 @@ This document outlines the strategy for separating production and localhost deve
 - Direct impact on user experience
 
 **Current State:**
-- API Key: `pcsk_2Jp3bp_8rdgyVGxJ7whhKCNdurg2pzkJ1WcbZxnzN2dSQmTZYSb7rGMJqQ4d8PyYE96ss5`
+- API Key: `pcsk_YOUR_KEY_HERE`
 - Index: `hungreo-website` (shared)
 - Dimensions: 1536 (text-embedding-3-small)
 - Metric: Cosine similarity
@@ -76,7 +76,7 @@ This document outlines the strategy for separating production and localhost deve
 - Recommendation: Use `test-` or `dev-` prefix for test files
 
 **Current State:**
-- Token: `vercel_blob_rw_DOX8eFze0xmUnVT6_OhCgLFYi3Sw4heV9vlWnkKPStORKTu` (shared)
+- Token: `vercel_blob_rw_YOUR_TOKEN_HERE` (shared)
 - Used for: Images, CVs, documents >4.5MB
 
 **Files Using Blob:**

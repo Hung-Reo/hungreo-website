@@ -92,8 +92,8 @@ After creating the blob store:
 1. Go to **Settings** → **Environment Variables**
 2. Find `BLOB_READ_WRITE_TOKEN`
 3. Check that it has different values for:
-   - **Production:** `vercel_blob_rw_DOX8eFze...` (existing)
-   - **Development:** `vercel_blob_rw_XXXXXXXX...` (new)
+   - **Production:** `vercel_blob_rw_YOUR_TOKEN_HERE...` (existing)
+   - **Development:** `vercel_blob_rw_YOUR_TOKEN_HERE...` (new)
 
 **Option B: Via Vercel CLI**
 
@@ -112,10 +112,10 @@ Check your `.env.local`:
 
 ```bash
 # Should have the NEW development blob token
-BLOB_READ_WRITE_TOKEN=vercel_blob_rw_XXXXXXXX...
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_YOUR_TOKEN_HERE...
 ```
 
-**NOT the production token!** Production token starts with: `vercel_blob_rw_DOX8eFze...`
+**NOT the production token!** Production token starts with: `vercel_blob_rw_YOUR_TOKEN_HERE...`
 
 ---
 
@@ -124,7 +124,7 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_rw_XXXXXXXX...
 Verify `.env.production` still has production token:
 
 ```bash
-BLOB_READ_WRITE_TOKEN=vercel_blob_rw_DOX8eFze0xmUnVT6_OhCgLFYi3Sw4heV9vlWnkKPStORKTu
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_YOUR_TOKEN_HERE
 ```
 
 This ensures production deployments use production storage.
@@ -220,7 +220,7 @@ npm run dev
 1. Go to Vercel dashboard → Settings → Environment Variables
 2. Find `BLOB_READ_WRITE_TOKEN`
 3. Ensure it exists for **Production** environment
-4. Value should be: `vercel_blob_rw_DOX8eFze0xmUnVT6...`
+4. Value should be: `vercel_blob_rw_YOUR_TOKEN_HERE...`
 5. Redeploy production if needed
 
 ---
@@ -262,7 +262,7 @@ This makes it obvious which files are safe to delete.
 ## Production Safety
 
 **Production blob remains unchanged:**
-- Token: `vercel_blob_rw_DOX8eFze...`
+- Token: `vercel_blob_rw_YOUR_TOKEN_HERE...`
 - Used only when deployed to Vercel
 - `.env.production` has production token
 
@@ -284,7 +284,7 @@ If automatic connection doesn't work:
 5. Copy the generated token
 6. Add to `.env.local`:
    ```bash
-   BLOB_READ_WRITE_TOKEN=vercel_blob_rw_YOUR_NEW_TOKEN
+   BLOB_READ_WRITE_TOKEN=vercel_blob_rw_YOUR_TOKEN_HERE
    ```
 
 ---

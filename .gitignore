@@ -84,3 +84,7 @@ temp/
 
 # Claude Code local settings
 .claude/
+.clawpatch/
+
+# local scripts (not for production)
+scripts/test-email.ts

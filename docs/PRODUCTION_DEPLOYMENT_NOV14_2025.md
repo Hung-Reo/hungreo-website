@@ -187,7 +187,7 @@ NEXTAUTH_URL=https://hungreo.vercel.app
 
 # Admin
 ADMIN_EMAIL=hungreo2005@gmail.com
-ADMIN_PASSWORD_HASH=$2b$10$WLZEs88v3y.CYKgpRPjBee4EkD/Q7/tRR2VASqAbeS4oMUScFU4Cy
+ADMIN_PASSWORD_HASH=your-bcrypt-hash-here
 
 # Vercel KV (Auto-provided by Vercel)
 KV_REST_API_URL=...

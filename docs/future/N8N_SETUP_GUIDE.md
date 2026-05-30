@@ -9,7 +9,7 @@
 ## ✅ PREREQUISITES COMPLETED
 
 - [x] Google Drive folders created
-- [x] Gemini API key obtained: `AIzaSyDNLSXa9BR80k48rPuU7TwhDt8pONptp60`
+- [x] Gemini API key obtained: `AIzaSy-your-key-here`
 - [x] API tested successfully with gemini-2.5-flash model
 - [x] Workflow JSON created
 
@@ -47,7 +47,7 @@ n8n start
 2. Click "Environment" tab
 3. Add these variables:
 
-GEMINI_API_KEY=AIzaSyDNLSXa9BR80k48rPuU7TwhDt8pONptp60
+GEMINI_API_KEY=AIzaSy-your-key-here
 PINECONE_INDEX_NAME=your-existing-index-name
 GDRIVE_FOLDER_BLOGS=1unRpoP0RlPRqYZTWGFEDgZwe2POZCFoJ
 GDRIVE_FOLDER_DOCS=1VJSe21kbUEJDOtjMfYtu5xTOhI5YADXz
@@ -60,7 +60,7 @@ GDRIVE_FOLDER_PROJECTS=1lUuek6fF2wdeGF_2Y8q2XudO2ZshLvdo
 #### 2.2 On Localhost:
 ```bash
 # Add to your .env file in n8n directory
-echo "GEMINI_API_KEY=AIzaSyDNLSXa9BR80k48rPuU7TwhDt8pONptp60" >> .env
+echo "GEMINI_API_KEY=AIzaSy-your-key-here" >> .env
 echo "PINECONE_INDEX_NAME=your-index-name" >> .env
 echo "GDRIVE_FOLDER_BLOGS=1unRpoP0RlPRqYZTWGFEDgZwe2POZCFoJ" >> .env
 echo "GDRIVE_FOLDER_DOCS=1VJSe21kbUEJDOtjMfYtu5xTOhI5YADXz" >> .env

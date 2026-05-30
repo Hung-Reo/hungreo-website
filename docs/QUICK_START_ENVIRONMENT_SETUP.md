@@ -178,7 +178,7 @@ npm run dev
 Go to: http://localhost:3000/admin
 
 Email: `hungreo2005@gmail.com`
-Password: `Admin@2025!Secure`
+Password: `your-admin-password`
 
 ### 3. Test Document Upload
 1. Go to Documents section

@@ -75,7 +75,7 @@ PINECONE_INDEX_NAME=hungreo-website-v2
 OPENAI_EMBEDDING_MODEL=text-embedding-3-large
 
 # YouTube Data API v3
-YOUTUBE_API_KEY=AIzaSy-your-actual-youtube-key-here
+YOUTUBE_API_KEY=AIzaSy-your-key-here
 ```
 
 3. Save the file
