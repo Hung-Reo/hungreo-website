@@ -14,6 +14,15 @@ import type { BlogPost } from '@/lib/contentManager'
  * GET - Fetch all blog posts with stats
  */
 export async function GET(req: NextRequest) {
+  const session = await auth()
+
+  if (!session?.user || (session.user as any).role !== 'admin') {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+
   const allPosts = await getAllBlogPosts()
 
   // Filter out invalid posts (without title - corrupted data)

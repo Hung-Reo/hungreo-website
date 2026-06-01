@@ -58,21 +58,17 @@ export async function POST(req: NextRequest) {
     await appendLog(jobId, 'info', `Starting approval for ${document.fileName}`)
     await emitProgress(jobId, `Processing ${document.fileName}...`, 0, chunks.length)
 
-    // Delete existing vectors if any (for re-approval case)
+    // Staged replacement for safe re-approval: write the new vectors under a
+    // fresh version namespace so they never overwrite the currently-approved
+    // vectors in place. The old vectors (previousPineconeIds) stay fully intact
+    // until the complete new set exists and the document has been saved — only
+    // then are they swapped out. Retrieval matches on metadata.documentId, not
+    // on the vector ID, so the versioned IDs are transparent to search.
     const index = await getPineconeIndex()
-    if (document.pineconeIds && document.pineconeIds.length > 0) {
-      console.log(`[Approval] Deleting ${document.pineconeIds.length} existing vectors`)
-      await appendLog(jobId, 'info', `Deleting ${document.pineconeIds.length} existing vectors`)
-      try {
-        await index.deleteMany(document.pineconeIds)
-      } catch (error) {
-        console.error('[Approval] Failed to delete existing vectors:', error)
-        await appendLog(jobId, 'warn', 'Failed to delete some existing vectors')
-        // Continue anyway - we'll create new vectors
-      }
-    }
+    const previousPineconeIds = document.pineconeIds ?? []
+    const version = Date.now()
 
-    // Create embeddings and store in Pinecone
+    // Create embeddings and store in Pinecone (under the new version namespace)
     const pineconeIds: string[] = []
 
     for (let i = 0; i < chunks.length; i++) {
@@ -87,7 +83,7 @@ export async function POST(req: NextRequest) {
         )
 
         const embedding = await createEmbedding(chunk)
-        const vectorId = `doc_${documentId}_chunk_${i}`
+        const vectorId = `doc_${documentId}_v${version}_chunk_${i}`
 
         await index.upsert([
           {
@@ -117,15 +113,37 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    if (pineconeIds.length === 0) {
-      await failJob(jobId, 'Failed to create any vectors')
+    // The new set must be complete before we swap. If any chunk failed, roll
+    // back by deleting the partial new vectors we just created and abort. The
+    // previously-approved vectors and the document record are left untouched,
+    // so the existing approval stays valid and the user can simply retry.
+    if (pineconeIds.length !== chunks.length) {
+      await appendLog(
+        jobId,
+        'error',
+        `Only ${pineconeIds.length}/${chunks.length} vectors created; rolling back partial set`
+      )
+      if (pineconeIds.length > 0) {
+        try {
+          await index.deleteMany(pineconeIds)
+        } catch (cleanupError) {
+          console.error('[Approval] Failed to clean up partial vectors:', cleanupError)
+          await appendLog(jobId, 'warn', 'Failed to clean up some partial vectors')
+        }
+      }
+      await failJob(
+        jobId,
+        `Failed to create all vectors (${pineconeIds.length}/${chunks.length}). Existing vectors left intact. Please retry.`
+      )
       return NextResponse.json(
-        { error: 'Failed to create any vectors. Please try again.' },
+        { error: `Failed to create all vectors (${pineconeIds.length}/${chunks.length}). Please try again.` },
         { status: 500 }
       )
     }
 
-    // Update document with approval status and pinecone IDs
+    // Complete new set is live. Persist the document (pointing at the new
+    // vectors) BEFORE removing the old ones, so a save failure never leaves the
+    // record referencing deleted vectors — the old set still backs it on retry.
     const updatedDocument = {
       ...document,
       status: 'approved' as const,
@@ -133,6 +151,21 @@ export async function POST(req: NextRequest) {
       pineconeIds,
     }
     await saveDocument(updatedDocument)
+
+    // Now retire the previous version's vectors. Best-effort: the document
+    // already points at the new set, so a failure here only leaves orphans
+    // (cleanable later), never data loss.
+    if (previousPineconeIds.length > 0) {
+      console.log(`[Approval] Deleting ${previousPineconeIds.length} vectors from previous version`)
+      await appendLog(jobId, 'info', `Deleting ${previousPineconeIds.length} old vectors`)
+      try {
+        await index.deleteMany(previousPineconeIds)
+      } catch (error) {
+        console.error('[Approval] Failed to delete previous vectors:', error)
+        await appendLog(jobId, 'warn', 'Failed to delete some previous vectors (orphans can be cleaned later)')
+        // Non-fatal: document already references the new set
+      }
+    }
 
     console.log(`[Approval] Successfully approved ${document.fileName} with ${pineconeIds.length} vectors`)
     await appendLog(jobId, 'info', `Created ${pineconeIds.length} vectors successfully`)

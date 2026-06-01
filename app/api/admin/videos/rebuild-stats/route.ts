@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { kv } from '@vercel/kv'
-import { getAllVideos } from '@/lib/videoManager'
+import { getAllVideosComplete } from '@/lib/videoManager'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -20,8 +20,9 @@ export async function POST() {
 
     console.log('[RebuildStats] Starting category sets rebuild...')
 
-    // Get all videos from KV
-    const allVideos = await getAllVideos(1000) // Get up to 1000 videos
+    // Get all videos from KV (paginated so we never drop videos beyond the
+    // first page before deleting the category sets)
+    const allVideos = await getAllVideosComplete()
     console.log(`[RebuildStats] Found ${allVideos.length} total videos`)
 
     // Clear existing category sets

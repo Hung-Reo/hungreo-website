@@ -11,12 +11,17 @@ export const GET = NextAuthGET
 
 // Wrap POST handler with rate limiting for login attempts
 export async function POST(req: NextRequest) {
-  // Only apply rate limiting to signin endpoint
+  // Apply rate limiting to credential-validating endpoints. NextAuth v5
+  // validates username/password at /callback/credentials (where signIn()
+  // actually POSTs), NOT /signin — so that path must be covered or brute-force
+  // attempts bypass the limiter entirely.
   const url = new URL(req.url)
-  const isSignIn =
-    url.pathname.includes('/signin') || url.searchParams.has('signin')
+  const isLoginAttempt =
+    url.pathname.includes('/callback/credentials') ||
+    url.pathname.includes('/signin') ||
+    url.searchParams.has('signin')
 
-  if (isSignIn) {
+  if (isLoginAttempt) {
     const ip = getClientIp(req)
     console.log(`[Auth] Login attempt from IP: ${ip}`)
 

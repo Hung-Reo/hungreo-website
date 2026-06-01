@@ -38,8 +38,10 @@ const STATIC_PAGES = [
 
 /**
  * Get all dynamic pages (blog posts and projects)
+ * Returns ok=false if discovery failed, so callers can avoid treating a partial
+ * page list as authoritative (which would wrongly delete vectors as stale).
  */
-async function getDynamicPages(): Promise<string[]> {
+async function getDynamicPages(): Promise<{ pages: string[]; ok: boolean }> {
   const dynamicPages: string[] = []
 
   try {
@@ -58,11 +60,11 @@ async function getDynamicPages(): Promise<string[]> {
     })
 
     console.log(`[Scraper] Found ${publishedProjects.length} projects and ${publishedPosts.length} blog posts`)
+    return { pages: dynamicPages, ok: true }
   } catch (error) {
     console.error('[Scraper] Failed to fetch dynamic pages:', error)
+    return { pages: dynamicPages, ok: false }
   }
-
-  return dynamicPages
 }
 
 /**
@@ -284,13 +286,18 @@ async function scrapePageWithBrowser(browser: any, path: string): Promise<Scrape
  * Scrape all website pages using a single browser instance
  * Includes both static pages and dynamic content (blog posts, projects)
  */
-export async function scrapeAllPages(): Promise<ScrapedPage[]> {
+export async function scrapeAllPages(): Promise<{
+  pages: ScrapedPage[]
+  expectedPaths: string[]
+  complete: boolean
+}> {
   const pages: ScrapedPage[] = []
   let browser
 
   // Get all pages to scrape (static + dynamic)
-  const dynamicPages = await getDynamicPages()
+  const { pages: dynamicPages, ok: discoveryOk } = await getDynamicPages()
   const allPages = [...STATIC_PAGES, ...dynamicPages]
+  let scrapeFailed = false
 
   console.log(`[Scraper] Starting to scrape ${allPages.length} pages (${STATIC_PAGES.length} static + ${dynamicPages.length} dynamic)`)
 
@@ -307,10 +314,12 @@ export async function scrapeAllPages(): Promise<ScrapedPage[]> {
         pages.push(page)
         console.log(`[Scraper] ✅ Successfully scraped ${path}`)
       } catch (error) {
+        scrapeFailed = true
         console.error(`[Scraper] ❌ Skipping ${path} due to error:`, error)
       }
     }
   } catch (error) {
+    scrapeFailed = true
     console.error('[Scraper] Failed to launch browser:', error)
   } finally {
     // Always close browser at the end
@@ -323,36 +332,37 @@ export async function scrapeAllPages(): Promise<ScrapedPage[]> {
 
   console.log(`[Scraper] Scraped ${pages.length}/${allPages.length} pages successfully`)
 
-  return pages
+  // A refresh is only "complete" (safe to delete stale vectors) when dynamic
+  // discovery succeeded and every expected page scraped without error.
+  const complete = discoveryOk && !scrapeFailed && pages.length === allPages.length
+
+  return { pages, expectedPaths: allPages, complete }
 }
 
 /**
  * Update Pinecone with scraped content
  */
-export async function updateKnowledgeBase(pages: ScrapedPage[]): Promise<number> {
+export async function updateKnowledgeBase(
+  pages: ScrapedPage[],
+  allowStaleDeletion: boolean = true
+): Promise<number> {
   const index = await getPineconeIndex()
   let totalVectors = 0
+  const newVectorIds = new Set<string>()
 
   console.log('[Scraper] Updating Pinecone knowledge base')
 
-  // First, delete existing website vectors using proper pagination (no topK limit)
+  // Snapshot existing website vectors BEFORE upserting. We delete the stale
+  // ones only after the new set is built, so a failure mid-rebuild (e.g. an
+  // embedding error) can never leave the knowledge base wiped. Vector IDs are
+  // deterministic, so new upserts overwrite the current chunks in place.
+  let existingVectorIds: string[] = []
   try {
     console.log('[Scraper] Listing all existing website vectors...')
-    const vectorIdsToDelete = await listAllVectorIds({ vectorType: 'website' })
-
-    if (vectorIdsToDelete.length > 0) {
-      console.log(`[Scraper] Deleting ${vectorIdsToDelete.length} existing website vectors...`)
-      const BATCH_SIZE = 100
-      for (let i = 0; i < vectorIdsToDelete.length; i += BATCH_SIZE) {
-        const batch = vectorIdsToDelete.slice(i, i + BATCH_SIZE)
-        await index.deleteMany(batch)
-      }
-      console.log('[Scraper] Deleted existing website vectors')
-    } else {
-      console.log('[Scraper] No existing website vectors to delete')
-    }
+    existingVectorIds = await listAllVectorIds({ vectorType: 'website' })
+    console.log(`[Scraper] Found ${existingVectorIds.length} existing website vectors`)
   } catch (error) {
-    console.error('[Scraper] Failed to delete existing website vectors:', error)
+    console.error('[Scraper] Failed to list existing website vectors:', error)
   }
 
   for (const page of pages) {
@@ -392,11 +402,36 @@ export async function updateKnowledgeBase(pages: ScrapedPage[]): Promise<number>
         },
       ])
 
+      newVectorIds.add(vectorId)
       totalVectors++
     }
   }
 
   console.log(`[Scraper] Created ${totalVectors} vectors in Pinecone`)
+
+  // Delete the stale leftover vectors (old chunks not overwritten this run,
+  // e.g. removed pages or shorter content) — but ONLY when this was a complete
+  // refresh. On a partial scrape, vectors for pages that failed to scrape would
+  // look "stale" yet have no replacement, so we skip deletion to avoid wiping
+  // good data; they get cleaned up on the next successful full refresh.
+  if (!allowStaleDeletion) {
+    console.log('[Scraper] Partial refresh — skipping stale vector deletion to avoid data loss')
+    return totalVectors
+  }
+
+  const staleIds = existingVectorIds.filter(id => !newVectorIds.has(id))
+  if (staleIds.length > 0) {
+    try {
+      console.log(`[Scraper] Deleting ${staleIds.length} stale website vectors...`)
+      const BATCH_SIZE = 100
+      for (let i = 0; i < staleIds.length; i += BATCH_SIZE) {
+        await index.deleteMany(staleIds.slice(i, i + BATCH_SIZE))
+      }
+      console.log('[Scraper] Deleted stale website vectors')
+    } catch (error) {
+      console.error('[Scraper] Failed to delete stale website vectors:', error)
+    }
+  }
 
   return totalVectors
 }
@@ -413,15 +448,24 @@ export async function scrapeAndUpdate(): Promise<{
 
   try {
     // Scrape all pages
-    const pages = await scrapeAllPages()
+    const { pages, expectedPaths, complete } = await scrapeAllPages()
 
     if (pages.length === 0) {
       errors.push('No pages were successfully scraped')
       return { pagesScraped: 0, vectorsCreated: 0, errors }
     }
 
-    // Update knowledge base
-    const vectorsCreated = await updateKnowledgeBase(pages)
+    if (!complete) {
+      // Partial scrape: keep old vectors intact (no stale deletion) to avoid
+      // replacing good data with an incomplete refresh.
+      errors.push(
+        `Partial scrape: only ${pages.length}/${expectedPaths.length} pages succeeded. ` +
+        `Stale vectors left in place; re-run a full refresh to fully sync.`
+      )
+    }
+
+    // Update knowledge base — only allow stale deletion on a complete refresh
+    const vectorsCreated = await updateKnowledgeBase(pages, complete)
 
     return {
       pagesScraped: pages.length,
@@ -449,6 +493,8 @@ export async function scrapeSelectedPages(
   pagesScraped: number
   totalVectors: number
   errors: string[]
+  scrapedPages: string[]
+  upsertedIds: string[]
 }> {
   const errors: string[] = []
   const pages: ScrapedPage[] = []
@@ -487,7 +533,7 @@ export async function scrapeSelectedPages(
   } catch (error: any) {
     console.error('[Selective Scraper] Failed to launch browser:', error)
     errors.push(`Browser launch failed: ${error.message}`)
-    return { pagesScraped: 0, totalVectors: 0, errors }
+    return { pagesScraped: 0, totalVectors: 0, errors, scrapedPages: [], upsertedIds: [] }
   } finally {
     if (browser) {
       console.log('[Selective Scraper] Closing browser...')
@@ -497,12 +543,13 @@ export async function scrapeSelectedPages(
 
   if (pages.length === 0) {
     errors.push('No pages were successfully scraped')
-    return { pagesScraped: 0, totalVectors: 0, errors }
+    return { pagesScraped: 0, totalVectors: 0, errors, scrapedPages: [], upsertedIds: [] }
   }
 
   // Create embeddings and store in Pinecone
   const index = await getPineconeIndex()
   let totalVectors = 0
+  const upsertedIds: string[] = []
 
   for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
     const page = pages[pageIndex]
@@ -547,6 +594,7 @@ export async function scrapeSelectedPages(
         },
       ])
 
+      upsertedIds.push(vectorId)
       totalVectors++
     }
   }
@@ -557,5 +605,7 @@ export async function scrapeSelectedPages(
     pagesScraped: pages.length,
     totalVectors,
     errors,
+    scrapedPages: pages.map(p => p.url),
+    upsertedIds,
   }
 }

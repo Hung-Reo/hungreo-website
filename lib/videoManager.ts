@@ -362,6 +362,36 @@ export async function deleteVideo(videoId: string): Promise<void> {
 }
 
 /**
+ * Get every video by paginating through videos:all until exhausted.
+ * Used before destructive index rebuilds so videos beyond the first page
+ * are never dropped from the indexes.
+ */
+export async function getAllVideosComplete(): Promise<Video[]> {
+  const PAGE_SIZE = 500
+  const all: Video[] = []
+  let offset = 0
+
+  // Paginate on the raw ID count from the zset, NOT the loaded video count.
+  // getAllVideos drops IDs whose video:<id> record is missing, so a single
+  // corrupt record would shorten a page and stop the loop early, silently
+  // dropping every video after that offset. Reading IDs directly avoids that.
+  while (true) {
+    const ids = await kv.zrange('videos:all', offset, offset + PAGE_SIZE - 1, { rev: true })
+    if (!ids || ids.length === 0) break
+
+    for (const id of ids) {
+      const video = await getVideo(id as string)
+      if (video) all.push(video)
+    }
+
+    if (ids.length < PAGE_SIZE) break
+    offset += PAGE_SIZE
+  }
+
+  return all
+}
+
+/**
  * Auto-rebuild Redis category sets from actual video data
  * Uses Redis lock to prevent concurrent rebuilds
  */
@@ -380,8 +410,9 @@ async function autoRebuildCategorySets(): Promise<boolean> {
 
     console.log('[VideoManager] 🔧 Auto-rebuilding category sets (lock acquired)...')
 
-    // Get all videos from actual data
-    const allVideos = await getAllVideos(1000)
+    // Get all videos from actual data (paginated so we never drop videos
+    // beyond the first page before deleting the indexes)
+    const allVideos = await getAllVideosComplete()
     console.log(`[VideoManager] Found ${allVideos.length} videos to rebuild`)
 
     if (allVideos.length === 0) {

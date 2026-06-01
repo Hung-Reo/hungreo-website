@@ -234,12 +234,19 @@ export async function deleteDocument(docId: string): Promise<void> {
       return
     }
 
+    // Remove approved-document vectors from Pinecone first so deleting the KV
+    // record never leaves orphaned vectors behind. Done before the KV writes so
+    // a Pinecone failure aborts the whole delete and it can be safely retried.
+    if (doc.pineconeIds && doc.pineconeIds.length > 0) {
+      const { getPineconeIndex } = await import('./pinecone')
+      const index = await getPineconeIndex()
+      await index.deleteMany(doc.pineconeIds)
+    }
+
     // Remove from KV
     await kv.del(`doc:${docId}`)
     await kv.srem(`docs:${doc.status}`, docId)
     await kv.zrem('docs:all', docId)
-
-    // TODO: Also remove from Pinecone when approved
   } catch (error) {
     console.error('Failed to delete document:', error)
     throw new Error('Failed to delete document')

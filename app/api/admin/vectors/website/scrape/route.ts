@@ -37,8 +37,6 @@ export async function POST(req: NextRequest) {
     const jobId = `rescrape-${Date.now()}`
 
     try {
-      // Delete old vectors for all expanded pages first
-      console.log('[Re-scrape] Deleting old vectors for expanded pages:', expandedPages)
       const index = await getPineconeIndex()
 
       // Create job tracker with expanded page count
@@ -46,14 +44,19 @@ export async function POST(req: NextRequest) {
       await appendLog(jobId, 'info', `Starting re-scrape for ${expandedPages.length} page(s)`)
       await emitProgress(jobId, 'Preparing to re-scrape pages...', 0, expandedPages.length || 1)
 
-      // Get all website vector IDs using proper pagination
+      // Snapshot existing vectors for the expanded pages BEFORE scraping, but do
+      // NOT delete yet. Vector IDs are deterministic, so the re-scrape upserts
+      // overwrite the current chunks in place; we only delete leftover stale
+      // vectors afterwards, and only for pages that actually scraped. This way a
+      // failed scrape never wipes a page's existing vectors.
+      console.log('[Re-scrape] Snapshotting existing vectors for expanded pages:', expandedPages)
       const websiteVectorIds = await listAllVectorIds({ vectorType: 'website' })
       console.log(`[Re-scrape] Found ${websiteVectorIds.length} total website vectors`)
       await appendLog(jobId, 'info', `Found ${websiteVectorIds.length} website vectors total`)
 
-      // Fetch metadata to filter by page
+      // Fetch metadata to map existing vector IDs to their page
       const FETCH_BATCH_SIZE = 1000
-      const vectorIdsToDelete: string[] = []
+      const existingByPage: Array<{ id: string; page: string }> = []
 
       for (let i = 0; i < websiteVectorIds.length; i += FETCH_BATCH_SIZE) {
         const batch = websiteVectorIds.slice(i, i + FETCH_BATCH_SIZE)
@@ -62,22 +65,12 @@ export async function POST(req: NextRequest) {
         for (const [id, vector] of Object.entries(fetchResponse.records)) {
           const page = vector.metadata?.page as string
           if (expandedPages.includes(page)) {
-            vectorIdsToDelete.push(id)
+            existingByPage.push({ id, page })
           }
         }
       }
 
-      if (vectorIdsToDelete.length > 0) {
-        console.log(`[Re-scrape] Deleting ${vectorIdsToDelete.length} old vectors`)
-        await appendLog(jobId, 'info', `Deleting ${vectorIdsToDelete.length} old vectors`)
-        const BATCH_SIZE = 100
-        for (let i = 0; i < vectorIdsToDelete.length; i += BATCH_SIZE) {
-          const batch = vectorIdsToDelete.slice(i, i + BATCH_SIZE)
-          await index.deleteMany(batch)
-        }
-      }
-
-      // Scrape and embed expanded pages
+      // Scrape and embed expanded pages (upserts new vectors with deterministic IDs)
       console.log('[Re-scrape] Scraping expanded pages:', expandedPages)
       await appendLog(jobId, 'info', `Scraping ${expandedPages.length} page(s)...`)
 
@@ -90,6 +83,24 @@ export async function POST(req: NextRequest) {
         const total = (info.total ?? expandedPages.length) || 1
         await emitProgress(jobId, info.message, current, total)
       })
+
+      // Now delete only stale leftover vectors: belong to a page that scraped
+      // successfully but were not overwritten by the new upserts. Pages that
+      // failed to scrape keep their existing vectors untouched.
+      const scrapedSet = new Set(result.scrapedPages)
+      const upsertedSet = new Set(result.upsertedIds)
+      const vectorIdsToDelete = existingByPage
+        .filter(v => scrapedSet.has(v.page) && !upsertedSet.has(v.id))
+        .map(v => v.id)
+
+      if (vectorIdsToDelete.length > 0) {
+        console.log(`[Re-scrape] Deleting ${vectorIdsToDelete.length} stale vectors`)
+        await appendLog(jobId, 'info', `Deleting ${vectorIdsToDelete.length} stale vectors`)
+        const BATCH_SIZE = 100
+        for (let i = 0; i < vectorIdsToDelete.length; i += BATCH_SIZE) {
+          await index.deleteMany(vectorIdsToDelete.slice(i, i + BATCH_SIZE))
+        }
+      }
 
       await completeJob(jobId, {
         pagesScraped: result.pagesScraped,

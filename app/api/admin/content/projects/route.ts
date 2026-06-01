@@ -14,6 +14,15 @@ import {
  * Query params: status = 'all' | 'published' | 'draft'
  */
 export async function GET(req: NextRequest) {
+  const session = await auth()
+
+  if (!session?.user || (session.user as any).role !== 'admin') {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status') || 'all'
 

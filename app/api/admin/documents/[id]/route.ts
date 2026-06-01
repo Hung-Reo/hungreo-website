@@ -216,7 +216,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
           }
         } catch (error) {
           console.error('[Delete] Failed to delete orphan vectors:', error)
-          // Continue with document deletion even if vector cleanup fails
+          // Abort: deleting the KV record now would orphan the vectors
+          // permanently (there are no pineconeIds to clean them up later).
+          // Surface the failure so the delete can be safely retried.
+          return NextResponse.json(
+            { error: 'Failed to delete document vectors. Please retry.' },
+            { status: 500 }
+          )
         }
       }
     }

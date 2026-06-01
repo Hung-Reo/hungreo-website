@@ -6,6 +6,15 @@ import { getAllBlogPosts, deleteBlogPost } from '@/lib/contentManager'
  * GET - List all corrupt blog posts (posts without titles)
  */
 export async function GET() {
+  const session = await auth()
+
+  if (!session?.user || (session.user as any).role !== 'admin') {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+
   try {
     const allPosts = await getAllBlogPosts()
 
