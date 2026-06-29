@@ -109,7 +109,7 @@ PINECONE_INDEX_NAME=hungreo-website-dev
 ```bash
 # Should be:
 KV_REST_API_URL=https://intent-peacock-38586.upstash.io
-KV_REST_API_TOKEN=AZa6AAIncDIyZWUxMjU1ZWM2YzI0OTBmOTg4N2JhNmFmZGRmZDZiMnAyMzg1ODY
+KV_REST_API_TOKEN=<dev-upstash-token-from-dashboard>
 ```
 
 ---

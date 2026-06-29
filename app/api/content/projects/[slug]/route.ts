@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getProjectBySlug } from '@/lib/contentManager'
+import { getProjectBySlug, serializePublicProject } from '@/lib/contentManager'
 
 // Force dynamic rendering to prevent caching
 export const dynamic = 'force-dynamic'
@@ -30,7 +30,7 @@ export async function GET(
   }
 
   // IMPORTANT: Disable caching to ensure fresh content after admin updates
-  return NextResponse.json(project, {
+  return NextResponse.json(serializePublicProject(project), {
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
       'Pragma': 'no-cache',

@@ -35,11 +35,11 @@
 - [ ] `ADMIN_PASSWORD_HASH` (⚠️ **NO `\$` escape** in Vercel - use plain bcrypt hash)
 - [ ] `RESEND_API_KEY` (⚠️ **Full access key required** for backup email)
 - [ ] `NEXTAUTH_URL=https://hungreo-website.vercel.app`
-- [ ] `NEXTAUTH_SECRET` (same as local: `wr0NT4pBN8yTwe+/rCM7yCtGurPWUZIbPQYmhLnVykg=`)
+- [ ] `NEXTAUTH_SECRET` (generate a fresh production secret with `openssl rand -base64 32`; do not reuse leaked/local values)
 - [ ] `UPSTASH_REDIS_REST_URL` (production: `https://large-heron-11467.upstash.io`)
-- [ ] `UPSTASH_REDIS_REST_TOKEN` (production token)
+- [ ] `UPSTASH_REDIS_REST_TOKEN` (production token from Upstash/Vercel; rotate and revoke any previously exposed token)
 - [ ] `KV_REST_API_URL` (same as UPSTASH_REDIS_REST_URL)
-- [ ] `KV_REST_API_TOKEN` (same as UPSTASH_REDIS_REST_TOKEN)
+- [ ] `KV_REST_API_TOKEN` (same as UPSTASH_REDIS_REST_TOKEN; rotate and revoke any previously exposed token)
 
 **Optional (if not set, features disabled):**
 - [ ] `OPENAI_API_KEY`

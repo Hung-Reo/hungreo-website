@@ -208,6 +208,47 @@ export interface BlogPost {
   }
 }
 
+export type PublicProject = Omit<Project, 'createdBy' | 'source'>
+export type PublicBlogPost = Omit<BlogPost, 'createdBy' | 'source'>
+
+export function serializePublicProject(project: Project): PublicProject {
+  return {
+    id: project.id,
+    slug: project.slug,
+    status: project.status,
+    featured: project.featured,
+    createdAt: project.createdAt,
+    updatedAt: project.updatedAt,
+    publishedAt: project.publishedAt,
+    en: project.en,
+    vi: project.vi,
+    techStack: project.techStack,
+    learnings: project.learnings,
+    githubUrl: project.githubUrl,
+    demoUrl: project.demoUrl,
+    featuredImage: project.featuredImage,
+    screenshots: project.screenshots,
+  }
+}
+
+export function serializePublicBlogPost(post: BlogPost): PublicBlogPost {
+  return {
+    id: post.id,
+    slug: post.slug,
+    status: post.status,
+    featured: post.featured,
+    createdAt: post.createdAt,
+    updatedAt: post.updatedAt,
+    publishedAt: post.publishedAt,
+    en: post.en,
+    vi: post.vi,
+    category: post.category,
+    tags: post.tags,
+    featuredImage: post.featuredImage,
+    readTime: post.readTime,
+  }
+}
+
 export interface ContactMethod {
   id: string // UUID
   type: 'email' | 'phone' | 'linkedin' | 'github' | 'twitter' | 'website' | 'address' | 'custom'

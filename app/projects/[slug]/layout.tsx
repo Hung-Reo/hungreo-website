@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getProjectBySlug } from '@/lib/contentManager'
-import { generateProjectMetadata, generateProjectJsonLd } from '@/lib/metadata'
+import { generateProjectMetadata, generateProjectJsonLd, serializeJsonLd } from '@/lib/metadata'
 
 type Props = {
   params: { slug: string }
@@ -34,7 +34,7 @@ export default async function ProjectLayout({ params, children }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       {children}
     </>

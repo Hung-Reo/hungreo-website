@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getBlogPostBySlug } from '@/lib/contentManager'
-import { generateBlogPostMetadata, generateBlogPostJsonLd } from '@/lib/metadata'
+import { generateBlogPostMetadata, generateBlogPostJsonLd, serializeJsonLd } from '@/lib/metadata'
 
 type Props = {
   params: { slug: string }
@@ -34,7 +34,7 @@ export default async function BlogPostLayout({ params, children }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
       />
       {children}
     </>
