@@ -1,0 +1,15 @@
+# Local secrets and machine-specific files must never be uploaded by Vercel CLI.
+.env
+.env.*
+!.env.example
+
+# Local/build artifacts
+.git
+.next
+.vercel
+node_modules
+coverage
+data
+.cache
+*.tsbuildinfo
+.DS_Store
