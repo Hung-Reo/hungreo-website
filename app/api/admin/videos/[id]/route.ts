@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { getVideo, saveVideo, updateVideoCategory, deleteVideo, type VideoCategory } from '@/lib/videoManager'
+import { getVideo, saveVideo, updateVideoCategory, deleteVideo, getVideoTranscript, type VideoCategory } from '@/lib/videoManager'
 import { getPineconeIndex } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
 import { chunkText } from '@/lib/documentProcessor'
@@ -55,7 +55,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { category, generateEmbeddings } = await req.json()
+    const { category, generateEmbeddings, refetchTranscript } = await req.json()
     isGeneratingEmbeddings = generateEmbeddings
 
     const video = await getVideo(params.id)
@@ -66,6 +66,36 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     // Update category if provided
     if (category) {
       await updateVideoCategory(params.id, category as VideoCategory)
+    }
+
+    // Re-fetch transcript from YouTube if requested
+    if (refetchTranscript) {
+      const transcript = await getVideoTranscript(video.videoId)
+
+      if (!transcript) {
+        return NextResponse.json(
+          {
+            error:
+              'Could not fetch transcript from YouTube. The video may have no captions, or YouTube blocked the request.',
+          },
+          { status: 502 }
+        )
+      }
+
+      video.en.transcript = transcript
+      await saveVideo(video)
+      console.log(
+        `[Video] Re-fetched transcript for ${video.videoId}: ${transcript.split(/\s+/).length} words`
+      )
+
+      // If embeddings are not also requested, return the updated video now
+      if (!generateEmbeddings) {
+        return NextResponse.json({
+          success: true,
+          video,
+          transcriptWords: transcript.split(/\s+/).length,
+        })
+      }
     }
 
     // Generate embeddings if requested

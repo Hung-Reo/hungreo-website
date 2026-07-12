@@ -29,6 +29,7 @@ export function VideosManager() {
   const [isImporting, setIsImporting] = useState(false)
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
   const [isRebuilding, setIsRebuilding] = useState(false)
+  const [refetchingId, setRefetchingId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchVideos()
@@ -157,6 +158,32 @@ export function VideosManager() {
     } catch (error) {
       alert('❌ Failed to generate embeddings. Please try again.')
       fetchVideos() // Revert loading state
+    }
+  }
+
+  const handleRefetchTranscript = async (videoId: string) => {
+    if (!window.confirm('Re-fetch transcript from YouTube and regenerate embeddings for this video?')) return
+
+    try {
+      setRefetchingId(videoId)
+      const response = await fetch(`/api/admin/videos/${videoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refetchTranscript: true, generateEmbeddings: true }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        alert(`✅ Transcript re-fetched and ${data.vectorsCreated} vectors created!`)
+        fetchVideos()
+      } else {
+        alert(`❌ Failed: ${data.error}`)
+      }
+    } catch (error) {
+      alert('❌ Failed to re-fetch transcript. Please try again.')
+    } finally {
+      setRefetchingId(null)
     }
   }
 
@@ -319,6 +346,8 @@ export function VideosManager() {
                   video={video}
                   onSelect={() => setSelectedVideo(video)}
                   onGenerateEmbeddings={handleGenerateEmbeddings}
+                  onRefetchTranscript={handleRefetchTranscript}
+                  isRefetching={refetchingId === video.id}
                   onDelete={handleDelete}
                 />
               ))}
@@ -381,17 +410,22 @@ function VideoRow({
   video,
   onSelect,
   onGenerateEmbeddings,
+  onRefetchTranscript,
+  isRefetching,
   onDelete,
 }: {
   video: Video
   onSelect: () => void
   onGenerateEmbeddings: (id: string) => void
+  onRefetchTranscript: (id: string) => void
+  isRefetching: boolean
   onDelete: (id: string) => void
 }) {
   // Use bilingual title (fallback to legacy title for backward compatibility)
   const displayTitle = video.en?.title || video.title || 'Untitled Video'
   const isGenerating = video.pineconeIds && video.pineconeIds.includes('__GENERATING__')
   const hasRealEmbeddings = video.pineconeIds && video.pineconeIds.length > 0 && !isGenerating
+  const hasTranscript = !!(video.en?.transcript || video.transcript)
 
   return (
     <div className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50">
@@ -405,6 +439,26 @@ function VideoRow({
         </button>
       </div>
       <div className="flex items-center gap-2">
+        {/* Warn when transcript is missing — the bot can't answer about this video */}
+        {!hasTranscript && !isRefetching && (
+          <>
+            <span
+              className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700"
+              title="No transcript stored. The chatbot only knows the title and description of this video."
+            >
+              ⚠ No transcript
+            </span>
+            <Button size="sm" variant="outline" onClick={() => onRefetchTranscript(video.id)}>
+              Re-fetch Transcript
+            </Button>
+          </>
+        )}
+
+        {isRefetching && (
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 animate-pulse">
+            ⏳ Re-fetching...
+          </span>
+        )}
         {/* Show button only if no embeddings and not generating */}
         {!hasRealEmbeddings && !isGenerating && (
           <Button size="sm" onClick={() => onGenerateEmbeddings(video.id)}>
