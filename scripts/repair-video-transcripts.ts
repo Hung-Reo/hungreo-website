@@ -9,28 +9,68 @@
  * videos: re-fetch transcript → delete thin vectors → re-chunk → re-embed.
  *
  * Usage:
- *   npx tsx scripts/repair-video-transcripts.ts --dry-run   # fetch only, no writes
- *   npx tsx scripts/repair-video-transcripts.ts             # full repair
+ *   npx tsx scripts/repair-video-transcripts.ts
+ *   npx tsx scripts/repair-video-transcripts.ts --video-id=<youtube-id>
+ *   npx tsx scripts/repair-video-transcripts.ts --apply \
+ *     --environment=production --video-id=<youtube-id>
  *
  * Scans all videos and repairs any with an empty EN transcript.
  */
 import { config } from 'dotenv'
 import { resolve } from 'path'
+import {
+  parseRepairArguments,
+  validateTranscript,
+} from '../lib/videoVectorLifecycle'
 config({ path: resolve(process.cwd(), '.env.local') })
 
-const DRY_RUN = process.argv.includes('--dry-run')
+const repairArguments = parseRepairArguments(process.argv.slice(2))
+const DRY_RUN = !repairArguments.apply
 
 async function main() {
-  const { getAllVideosComplete, getVideo, saveVideo, getVideoTranscript } = await import('../lib/videoManager')
-  const { getPineconeIndex } = await import('../lib/pinecone')
-  const { createEmbedding } = await import('../lib/openai')
-  const { chunkText } = await import('../lib/documentProcessor')
+  const { getAllVideosComplete, getVideo, saveVideo, getVideoTranscriptResult } = await import('../lib/videoManager')
+  const { replaceVideoEmbeddings } = await import('../lib/videoEmbeddingManager')
 
   console.log(DRY_RUN ? '=== DRY RUN (no writes) ===' : '=== LIVE MODE ===')
+  if (!DRY_RUN) {
+    const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
+    if (!process.env.PINECONE_INDEX_NAME || !kvUrl) {
+      throw new Error('Pinecone/KV target configuration is incomplete')
+    }
+    console.log(`Target environment: ${repairArguments.environment}`)
+    console.log(`Target video: ${repairArguments.videoId}`)
+    console.log(`Target Pinecone index: ${process.env.PINECONE_INDEX_NAME}`)
+    console.log(`Target KV host: ${new URL(kvUrl).hostname}`)
+  }
 
   const allVideos = await getAllVideosComplete()
-  const broken = allVideos.filter(v => !(v.en.transcript || '').trim())
+  const missingTranscript = allVideos.filter(v => !(v.en.transcript || '').trim())
+  const broken = repairArguments.videoId
+    ? missingTranscript.filter(
+        (video) =>
+          video.id === repairArguments.videoId ||
+          video.videoId === repairArguments.videoId
+      )
+    : missingTranscript
   console.log(`Videos total: ${allVideos.length}, missing transcript: ${broken.length}`)
+
+  if (DRY_RUN && !repairArguments.videoId) {
+    console.table(
+      broken.map((video) => ({
+        id: video.videoId,
+        title: video.en.title,
+        status: video.transcriptStatus || 'unknown',
+      }))
+    )
+    console.log('Audit only. Add --video-id=<youtube-id> to test transcript fetching.')
+    return
+  }
+
+  if (repairArguments.videoId && broken.length === 0) {
+    throw new Error(
+      `Target video ${repairArguments.videoId} was not found or already has a transcript`
+    )
+  }
 
   const results: Array<{ id: string; status: string; words?: number; vectors?: number }> = []
 
@@ -46,13 +86,34 @@ async function main() {
       }
       console.log(`  Title: ${video.en.title}`)
 
-      const transcript = await getVideoTranscript(id)
-      const words = transcript.split(/\s+/).filter(Boolean).length
-      if (!transcript) {
-        console.error('  FAIL: transcript still empty (no captions or YouTube blocked)')
-        results.push({ id, status: 'no-transcript' })
+      let transcriptResult = await getVideoTranscriptResult(video.videoId)
+      const retryDelaysMs = [2_000, 5_000]
+      for (
+        let retry = 0;
+        !transcriptResult.ok &&
+        transcriptResult.retryable &&
+        retry < retryDelaysMs.length;
+        retry++
+      ) {
+        console.warn(
+          `  ${transcriptResult.code}; retrying in ${retryDelaysMs[retry] / 1000}s...`
+        )
+        await new Promise((resolveDelay) =>
+          setTimeout(resolveDelay, retryDelaysMs[retry])
+        )
+        transcriptResult = await getVideoTranscriptResult(video.videoId)
+      }
+
+      if (!transcriptResult.ok) {
+        console.error(
+          `  FAIL [${transcriptResult.code}]: ${transcriptResult.message}`
+        )
+        results.push({ id, status: transcriptResult.code.toLowerCase() })
         continue
       }
+      const transcript = transcriptResult.transcript
+      const validated = validateTranscript(transcript)
+      const words = validated.words
       console.log(`  Transcript fetched: ${words} words`)
 
       if (DRY_RUN) {
@@ -60,52 +121,32 @@ async function main() {
         continue
       }
 
-      const index = await getPineconeIndex()
+      const replacement = await replaceVideoEmbeddings({
+        video,
+        transcript: validated.transcript,
+        saveVideoRecord: saveVideo,
+        onProgress: (completed, total) => {
+          process.stdout.write(`  vector ${completed}/${total}\r`)
+        },
+        onCleanupError: (_error, ids) => {
+          console.error(
+            `\n  WARN: ${ids.length} stale vectors could not be deleted; run vector audit`
+          )
+        },
+      })
+      console.log(`\n  Upserted ${replacement.vectorIds.length} staged vectors`)
+      console.log(
+        `  Saved to KV: transcript (${words} words) + ${replacement.vectorIds.length} pineconeIds`
+      )
 
-      // Delete the old thin vectors before re-embedding
-      if (video.pineconeIds && video.pineconeIds.length > 0) {
-        await index.deleteMany(video.pineconeIds)
-        console.log(`  Deleted ${video.pineconeIds.length} old vectors`)
-      }
-
-      // Same formula and metadata as PATCH /api/admin/videos/[id]
-      const content = `${video.en.title}\n${video.en.description}\n${transcript}`
-      const chunks = chunkText(content, 500, 100)
-      console.log(`  Creating ${chunks.length} chunks...`)
-
-      const pineconeIds: string[] = []
-      for (let i = 0; i < chunks.length; i++) {
-        const embedding = await createEmbedding(chunks[i])
-        const vectorId = `video_${video.videoId}_chunk_${i}`
-        await index.upsert([
-          {
-            id: vectorId,
-            values: embedding,
-            metadata: {
-              title: video.en.title,
-              content: chunks[i],
-              description: chunks[i],
-              type: 'video',
-              vectorType: 'video',
-              category: video.category,
-              videoId: video.videoId,
-              channelTitle: video.channelTitle,
-              chunkIndex: i,
-              totalChunks: chunks.length,
-            },
-          },
-        ])
-        pineconeIds.push(vectorId)
-        process.stdout.write(`  vector ${i + 1}/${chunks.length}\r`)
-      }
-      console.log(`\n  Upserted ${pineconeIds.length} vectors`)
-
-      video.en.transcript = transcript
-      video.pineconeIds = pineconeIds
-      await saveVideo(video)
-      console.log(`  Saved to KV: transcript (${words} words) + ${pineconeIds.length} pineconeIds`)
-
-      results.push({ id, status: 'repaired', words, vectors: pineconeIds.length })
+      results.push({
+        id,
+        status: replacement.cleanupSucceeded
+          ? 'repaired'
+          : 'repaired-with-cleanup-warning',
+        words,
+        vectors: replacement.vectorIds.length,
+      })
     } catch (e: any) {
       console.error(`  ERROR:`, e.message)
       results.push({ id, status: 'error: ' + e.message.slice(0, 60) })

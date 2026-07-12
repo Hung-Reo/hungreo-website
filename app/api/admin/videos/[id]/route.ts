@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { getVideo, saveVideo, updateVideoCategory, deleteVideo, getVideoTranscript, type VideoCategory } from '@/lib/videoManager'
-import { getPineconeIndex } from '@/lib/pinecone'
-import { createEmbedding } from '@/lib/openai'
-import { chunkText } from '@/lib/documentProcessor'
+import {
+  getVideo,
+  saveVideo,
+  updateVideoCategory,
+  deleteVideo,
+  getVideoTranscriptResult,
+  transcriptStatusFromFailure,
+  type VideoCategory,
+} from '@/lib/videoManager'
+import {
+  prepareVideoEmbeddingContent,
+  replaceVideoEmbeddings,
+} from '@/lib/videoEmbeddingManager'
 import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 minutes for large videos
+const VIDEO_CATEGORIES: VideoCategory[] = [
+  'Leadership',
+  'AI Works',
+  'Health',
+  'Entertaining',
+  'Human Philosophy',
+]
 
 /**
  * OPTIONS - Handle CORS preflight requests
@@ -56,6 +72,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const { category, generateEmbeddings, refetchTranscript } = await req.json()
+    if (
+      (category !== undefined && !VIDEO_CATEGORIES.includes(category)) ||
+      (generateEmbeddings !== undefined &&
+        typeof generateEmbeddings !== 'boolean') ||
+      (refetchTranscript !== undefined && typeof refetchTranscript !== 'boolean')
+    ) {
+      return NextResponse.json({ error: 'Invalid update payload' }, { status: 400 })
+    }
     isGeneratingEmbeddings = generateEmbeddings
 
     const video = await getVideo(params.id)
@@ -66,115 +90,105 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     // Update category if provided
     if (category) {
       await updateVideoCategory(params.id, category as VideoCategory)
+      video.category = category as VideoCategory
     }
 
     // Re-fetch transcript from YouTube if requested
     if (refetchTranscript) {
-      const transcript = await getVideoTranscript(video.videoId)
+      const transcriptResult = await getVideoTranscriptResult(video.videoId)
 
-      if (!transcript) {
+      if (!transcriptResult.ok) {
+        video.transcriptStatus = transcriptStatusFromFailure(
+          transcriptResult.code
+        )
+        video.transcriptErrorCode = transcriptResult.code
+        await saveVideo(video)
         return NextResponse.json(
           {
-            error:
-              'Could not fetch transcript from YouTube. The video may have no captions, or YouTube blocked the request.',
+            error: transcriptResult.message,
+            code: transcriptResult.code,
+            retryable: transcriptResult.retryable,
           },
           { status: 502 }
         )
       }
+      const transcript = transcriptResult.transcript
 
-      video.en.transcript = transcript
-      await saveVideo(video)
       console.log(
         `[Video] Re-fetched transcript for ${video.videoId}: ${transcript.split(/\s+/).length} words`
       )
 
       // If embeddings are not also requested, return the updated video now
       if (!generateEmbeddings) {
+        video.en.transcript = transcript
+        video.transcriptStatus = 'ready'
+        video.transcriptErrorCode = undefined
+        await saveVideo(video)
         return NextResponse.json({
           success: true,
           video,
           transcriptWords: transcript.split(/\s+/).length,
         })
       }
+
+      // Keep the fetched transcript in memory. replaceVideoEmbeddings() will
+      // persist it only after the complete staged vector set exists.
+      video.en.transcript = transcript
     }
 
     // Generate embeddings if requested
     if (generateEmbeddings) {
-      // Combine title, description, and transcript (use English content)
-      const content = `${video.en.title}\n${video.en.description}\n${video.en.transcript || ''}`
-
-      // Chunk the content - use larger chunks for videos (transcripts are long)
-      const chunks = chunkText(content, 500, 100) // 500 words, 100 overlap for videos
-
-      console.log(`[Video Embedding] Creating ${chunks.length} chunks for video ${video.videoId}`)
+      const prepared = prepareVideoEmbeddingContent(video)
+      console.log(`[Video Embedding] Creating ${prepared.chunks.length} chunks for video ${video.videoId}`)
 
       // Create job tracker
       jobId = `video-embed-${Date.now()}`
-      await createJob(jobId, 'video-embedding', chunks.length)
+      await createJob(jobId, 'video-embedding', prepared.chunks.length)
       await appendLog(jobId, 'info', `Starting embedding for ${video.en.title}`)
-      await emitProgress(jobId, `Processing ${video.en.title}...`, 0, chunks.length)
+      await emitProgress(jobId, `Processing ${video.en.title}...`, 0, prepared.chunks.length)
 
-      const index = await getPineconeIndex()
-      const pineconeIds: string[] = []
-
-      // Generate embeddings for each chunk
-      for (let i = 0; i < chunks.length; i++) {
-        const chunk = chunks[i]
-
-        try {
+      const replacement = await replaceVideoEmbeddings({
+        video,
+        saveVideoRecord: saveVideo,
+        onProgress: async (completed, total) => {
           await emitProgress(
-            jobId,
-            `Creating vector ${i + 1}/${chunks.length} for ${video.en.title}`,
-            i + 1,
-            chunks.length
+            jobId!,
+            `Creating vector ${completed}/${total} for ${video.en.title}`,
+            completed,
+            total
           )
+        },
+        onCleanupError: async (_error, ids) => {
+          await appendLog(
+            jobId!,
+            'warn',
+            `Failed to clean up ${ids.length} stale vectors; run vector audit`
+          )
+        },
+      })
 
-          const embedding = await createEmbedding(chunk)
-          const vectorId = `video_${video.videoId}_chunk_${i}`
-
-          await index.upsert([
-            {
-              id: vectorId,
-              values: embedding,
-              metadata: {
-                title: video.en.title,
-                content: chunk, // Store FULL chunk content (primary field)
-                description: chunk, // Keep for backward compatibility
-                type: 'video',
-                vectorType: 'video', // For filtering in Vector Manager
-                category: video.category,
-                videoId: video.videoId,
-                channelTitle: video.channelTitle,
-                chunkIndex: i,
-                totalChunks: chunks.length,
-              },
-            },
-          ])
-
-          pineconeIds.push(vectorId)
-        } catch (error) {
-          console.error(`[Video Embedding] Failed to create vector ${i}:`, error)
-          await appendLog(jobId, 'error', `Failed to create vector ${i + 1}`)
-        }
-      }
-
-      // Update video with Pinecone IDs and save to KV
-      video.pineconeIds = pineconeIds
-      await saveVideo(video)
-
-      await appendLog(jobId, 'info', `Created ${pineconeIds.length} vectors successfully`)
+      await appendLog(jobId, 'info', `Created ${replacement.vectorIds.length} vectors successfully`)
       await completeJob(jobId, {
         videoId: video.videoId,
         title: video.en.title,
-        vectorsCreated: pineconeIds.length,
-        chunks: chunks.length,
+        vectorsCreated: replacement.vectorIds.length,
+        chunks: replacement.chunks,
+        staleVectorsDeleted: replacement.cleanupSucceeded
+          ? replacement.staleIds.length
+          : 0,
       })
 
       return NextResponse.json({
         success: true,
         jobId,
-        video,
-        vectorsCreated: pineconeIds.length,
+        video: replacement.video,
+        vectorsCreated: replacement.vectorIds.length,
+        staleVectorsDeleted: replacement.cleanupSucceeded
+          ? replacement.staleIds.length
+          : 0,
+        cleanupWarning: replacement.cleanupSucceeded
+          ? undefined
+          : 'New vectors are active, but some stale vectors could not be deleted.',
       })
     }
 
@@ -258,39 +272,12 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Video not found' }, { status: 404 })
     }
 
-    const index = await getPineconeIndex()
+    const { deletedVectorIds } = await deleteVideo(params.id)
 
-    // Strategy 1: Delete using saved pineconeIds (for newer videos)
-    if (video.pineconeIds && video.pineconeIds.length > 0) {
-      await index.deleteMany(video.pineconeIds)
-      console.log(`[Delete] Removed ${video.pineconeIds.length} vectors using pineconeIds`)
-    } else {
-      // Strategy 2: Query and delete by videoId (for older videos without pineconeIds)
-      // Query to find all vectors with this videoId
-      const { dimension: vidDimension = 3072 } = await index.describeIndexStats()
-      const queryResponse = await index.query({
-        vector: new Array(vidDimension).fill(0), // Dummy vector sized to actual index dims
-        topK: 10000,
-        includeMetadata: true,
-        filter: {
-          videoId: { $eq: video.videoId },
-        },
-      })
-
-      const vectorIds = queryResponse.matches?.map((match) => match.id) || []
-
-      if (vectorIds.length > 0) {
-        await index.deleteMany(vectorIds)
-        console.log(`[Delete] Removed ${vectorIds.length} vectors by querying videoId: ${video.videoId}`)
-      } else {
-        console.log(`[Delete] No vectors found for videoId: ${video.videoId}`)
-      }
-    }
-
-    // Delete from Redis
-    await deleteVideo(params.id)
-
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      vectorsDeletionRequested: deletedVectorIds.length,
+    })
   } catch (error: any) {
     console.error('Delete video error:', error)
     return NextResponse.json({ error: 'Failed to delete video' }, { status: 500 })

@@ -30,6 +30,41 @@ export interface TranslationStatus {
   translationMethod?: 'manual' | 'auto' | 'hybrid'
 }
 
+export type TranscriptStatus =
+  | 'pending'
+  | 'ready'
+  | 'no_captions'
+  | 'blocked'
+  | 'failed'
+
+export type TranscriptFailureCode =
+  | 'NO_CAPTIONS'
+  | 'RATE_LIMITED'
+  | 'BLOCKED'
+  | 'UPSTREAM_ERROR'
+
+export type TranscriptFetchResult =
+  | {
+      ok: true
+      transcript: string
+      language?: string
+      source: 'caption-track' | 'legacy-panel'
+    }
+  | {
+      ok: false
+      code: TranscriptFailureCode
+      retryable: boolean
+      message: string
+    }
+
+export function transcriptStatusFromFailure(
+  code: TranscriptFailureCode
+): TranscriptStatus {
+  if (code === 'NO_CAPTIONS') return 'no_captions'
+  if (code === 'RATE_LIMITED' || code === 'BLOCKED') return 'blocked'
+  return 'failed'
+}
+
 /**
  * Video interface with bilingual support
  */
@@ -52,6 +87,8 @@ export interface Video {
   addedAt: number
   addedBy: string
   pineconeIds?: string[]
+  transcriptStatus?: TranscriptStatus
+  transcriptErrorCode?: string
   translationStatus?: TranslationStatus
 
   // Legacy fields (for backward compatibility during migration)
@@ -162,30 +199,60 @@ function pickCaptionTrack(tracks: any[] | undefined): any | null {
 /**
  * Download a caption track directly via its timedtext URL (json3 format).
  */
-async function fetchTranscriptFromCaptionTrack(info: any, videoId: string): Promise<string> {
+async function fetchTranscriptFromCaptionTrack(
+  info: any,
+  videoId: string
+): Promise<TranscriptFetchResult> {
   const track = pickCaptionTrack(info.captions?.caption_tracks)
 
   if (!track?.base_url) {
     console.log(`[VideoManager] No caption tracks available for ${videoId}`)
-    return ''
+    return {
+      ok: false,
+      code: 'NO_CAPTIONS',
+      retryable: false,
+      message: 'No caption tracks are available for this video.',
+    }
   }
 
   const url = track.base_url + (track.base_url.includes('?') ? '&' : '?') + 'fmt=json3'
-  const res = await fetch(url)
+  const res = await fetch(url, { signal: AbortSignal.timeout(15_000) })
 
   if (!res.ok) {
     console.warn(`[VideoManager] timedtext request failed for ${videoId}: HTTP ${res.status}`)
-    return ''
+    const rateLimited = res.status === 429
+    const blocked = res.status === 403
+    return {
+      ok: false,
+      code: rateLimited ? 'RATE_LIMITED' : blocked ? 'BLOCKED' : 'UPSTREAM_ERROR',
+      retryable: rateLimited || blocked || res.status >= 500,
+      message: `YouTube caption request failed with HTTP ${res.status}.`,
+    }
   }
 
   // YouTube soft-blocks unauthorized sessions with an HTTP 200 + empty body
   const body = await res.text()
   if (!body) {
     console.warn(`[VideoManager] timedtext returned empty body for ${videoId} (session likely blocked)`)
-    return ''
+    return {
+      ok: false,
+      code: 'BLOCKED',
+      retryable: true,
+      message: 'YouTube returned an empty caption response.',
+    }
   }
 
-  const data = JSON.parse(body)
+  let data: any
+  try {
+    data = JSON.parse(body)
+  } catch {
+    return {
+      ok: false,
+      code: 'UPSTREAM_ERROR',
+      retryable: true,
+      message: 'YouTube returned an invalid caption response.',
+    }
+  }
   const fullText = (data.events || [])
     .flatMap((event: any) => (event.segs || []).map((seg: any) => seg.utf8 || ''))
     .join('')
@@ -198,13 +265,29 @@ async function fetchTranscriptFromCaptionTrack(info: any, videoId: string): Prom
     )
   }
 
-  return fullText
+  if (!fullText) {
+    return {
+      ok: false,
+      code: 'UPSTREAM_ERROR',
+      retryable: true,
+      message: 'YouTube returned a caption track with no usable text.',
+    }
+  }
+
+  return {
+    ok: true,
+    transcript: fullText,
+    language: track.language_code,
+    source: 'caption-track',
+  }
 }
 
 /**
  * Get video transcript using youtubei.js
  */
-export async function getVideoTranscript(videoId: string): Promise<string> {
+export async function getVideoTranscriptResult(
+  videoId: string
+): Promise<TranscriptFetchResult> {
   try {
     // generate_session_locally is required: without it YouTube soft-blocks
     // caption downloads (HTTP 200 with an empty body)
@@ -214,29 +297,56 @@ export async function getVideoTranscript(videoId: string): Promise<string> {
     // Primary: download the caption track directly. YouTube's get_transcript
     // endpoint (used by info.getTranscript below) started returning HTTP 400
     // around early 2026, which silently dropped transcripts for new videos.
-    try {
-      const fromTrack = await fetchTranscriptFromCaptionTrack(info, videoId)
-      if (fromTrack) return fromTrack
-    } catch (error: any) {
-      console.warn(`[VideoManager] Caption track fetch failed for ${videoId}:`, error.message)
-    }
+    const fromTrack = await fetchTranscriptFromCaptionTrack(info, videoId)
+    if (fromTrack.ok) return fromTrack
 
     // Fallback: legacy transcript panel endpoint
-    const transcriptData = await info.getTranscript()
+    try {
+      const transcriptData = await info.getTranscript()
 
-    if (transcriptData?.transcript?.content?.body?.initial_segments) {
-      const segments = transcriptData.transcript.content.body.initial_segments
-      const fullText = segments.map((seg: any) => seg.snippet.text).join(' ')
-      console.log(`[VideoManager] Fetched transcript for ${videoId}: ${segments.length} segments, ${fullText.split(/\s+/).length} words`)
-      return fullText
+      if (transcriptData?.transcript?.content?.body?.initial_segments) {
+        const segments = transcriptData.transcript.content.body.initial_segments
+        const fullText = segments.map((seg: any) => seg.snippet.text).join(' ')
+        console.log(`[VideoManager] Fetched transcript for ${videoId}: ${segments.length} segments, ${fullText.split(/\s+/).length} words`)
+        return {
+          ok: true,
+          transcript: fullText,
+          source: 'legacy-panel',
+        }
+      }
+    } catch (error: any) {
+      console.warn(
+        `[VideoManager] Legacy transcript fallback failed for ${videoId}:`,
+        error.message
+      )
     }
 
-    console.warn(`[VideoManager] ⚠️ No transcript available for ${videoId} — video will be saved without transcript`)
-    return ''
+    console.warn(
+      `[VideoManager] ⚠️ Transcript unavailable for ${videoId}: ${fromTrack.code}`
+    )
+    return fromTrack
   } catch (error: any) {
     console.error(`[VideoManager] ⚠️ Failed to get transcript for ${videoId} — video will be saved without transcript:`, error.message)
-    return ''
+    const message = String(error?.message || '')
+    const rateLimited = /\b429\b|rate.?limit/i.test(message)
+    const blocked = /\b403\b|forbidden|blocked/i.test(message)
+    return {
+      ok: false,
+      code: rateLimited ? 'RATE_LIMITED' : blocked ? 'BLOCKED' : 'UPSTREAM_ERROR',
+      retryable: true,
+      message: rateLimited
+        ? 'YouTube rate-limited the transcript request.'
+        : blocked
+          ? 'YouTube blocked the transcript request.'
+          : 'YouTube transcript request failed.',
+    }
   }
+}
+
+/** Backward-compatible string API for existing callers. */
+export async function getVideoTranscript(videoId: string): Promise<string> {
+  const result = await getVideoTranscriptResult(videoId)
+  return result.ok ? result.transcript : ''
 }
 
 /**
@@ -369,32 +479,9 @@ export async function updateVideoCategory(videoId: string, newCategory: VideoCat
 }
 
 /**
- * Delete Pinecone vectors for a video
- * Non-blocking - will not throw errors to prevent blocking video deletion
- */
-async function deletePineconeVectors(pineconeIds?: string[]): Promise<void> {
-  if (!pineconeIds || pineconeIds.length === 0) {
-    console.log('[VideoManager] No Pinecone vectors to delete')
-    return
-  }
-
-  try {
-    const { getPineconeIndex } = await import('./pinecone')
-    const index = await getPineconeIndex()
-
-    await index.deleteMany(pineconeIds)
-    console.log(`[VideoManager] Deleted ${pineconeIds.length} vectors from Pinecone`)
-  } catch (error) {
-    // Log error but don't throw - allow video deletion to proceed
-    console.error('[VideoManager] Failed to delete Pinecone vectors:', error)
-    console.error('[VideoManager] Orphaned vector IDs:', pineconeIds)
-  }
-}
-
-/**
  * Delete video with atomic-like operations and cleanup
  */
-export async function deleteVideo(videoId: string): Promise<void> {
+export async function deleteVideo(videoId: string): Promise<{ deletedVectorIds: string[] }> {
   const video = await getVideo(videoId)
   if (!video) {
     throw new Error('Video not found')
@@ -402,8 +489,17 @@ export async function deleteVideo(videoId: string): Promise<void> {
 
   console.log(`[VideoManager] Deleting video ${videoId} from category ${video.category}`)
 
-  // Step 1: Delete from Pinecone first (non-blocking)
-  await deletePineconeVectors(video.pineconeIds)
+  // Step 1: Delete every Pinecone vector for this video. This is blocking on
+  // purpose: if cleanup fails, keep the KV record so the admin can retry
+  // instead of creating permanent, untraceable orphan vectors.
+  const { deleteVideoVectors } = await import('./pinecone')
+  const deletedVectorIds = await deleteVideoVectors(
+    video.videoId,
+    video.pineconeIds || []
+  )
+  console.log(
+    `[VideoManager] Requested deletion of ${deletedVectorIds.length} Pinecone vectors`
+  )
 
   // Step 2: Delete from KV with Promise.allSettled to track failures
   const kvOperations = [
@@ -432,6 +528,7 @@ export async function deleteVideo(videoId: string): Promise<void> {
   }
 
   console.log(`[VideoManager] Successfully deleted video ${videoId}`)
+  return { deletedVectorIds }
 }
 
 /**
@@ -637,13 +734,12 @@ export async function batchImportVideos(
       // Get metadata
       const metadata = await getVideoMetadata(videoId)
 
-      // Get transcript (optional)
-      let transcript = ''
-      try {
-        transcript = await getVideoTranscript(videoId)
-      } catch (error) {
-        // Continue without transcript
-      }
+      // Get transcript (optional), but persist an actionable ingestion state
+      // instead of collapsing every upstream failure into an empty string.
+      const transcriptResult = await getVideoTranscriptResult(videoId)
+      const transcript = transcriptResult.ok
+        ? transcriptResult.transcript
+        : ''
 
       // Create video object with bilingual structure
       const video: Video = {
@@ -670,6 +766,12 @@ export async function batchImportVideos(
         },
         addedAt: Date.now(),
         addedBy: userEmail,
+        transcriptStatus: transcriptResult.ok
+          ? 'ready'
+          : transcriptStatusFromFailure(transcriptResult.code),
+        transcriptErrorCode: transcriptResult.ok
+          ? undefined
+          : transcriptResult.code,
         translationStatus: {
           viTranslated: false,
         },

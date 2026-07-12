@@ -198,7 +198,7 @@ export function VideosManager() {
       const data = await response.json()
 
       if (data.success) {
-        alert('Video deleted successfully!')
+        alert(`Video deleted successfully! ${data.vectorsDeletionRequested ?? 0} vector(s) queued for deletion. Pinecone stats may take a few seconds to refresh.`)
         fetchVideos()
         setSelectedVideo(null)
       } else {
@@ -426,6 +426,14 @@ function VideoRow({
   const isGenerating = video.pineconeIds && video.pineconeIds.includes('__GENERATING__')
   const hasRealEmbeddings = video.pineconeIds && video.pineconeIds.length > 0 && !isGenerating
   const hasTranscript = !!(video.en?.transcript || video.transcript)
+  const transcriptStatusLabel =
+    video.transcriptStatus === 'no_captions'
+      ? 'No captions'
+      : video.transcriptStatus === 'blocked'
+        ? 'Transcript blocked'
+        : video.transcriptStatus === 'failed'
+          ? 'Transcript failed'
+          : 'No transcript'
 
   return (
     <div className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50">
@@ -446,7 +454,7 @@ function VideoRow({
               className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700"
               title="No transcript stored. The chatbot only knows the title and description of this video."
             >
-              ⚠ No transcript
+              ⚠ {transcriptStatusLabel}
             </span>
             <Button size="sm" variant="outline" onClick={() => onRefetchTranscript(video.id)}>
               Re-fetch Transcript
@@ -460,7 +468,7 @@ function VideoRow({
           </span>
         )}
         {/* Show button only if no embeddings and not generating */}
-        {!hasRealEmbeddings && !isGenerating && (
+        {hasTranscript && !hasRealEmbeddings && !isGenerating && (
           <Button size="sm" onClick={() => onGenerateEmbeddings(video.id)}>
             Generate Embeddings
           </Button>

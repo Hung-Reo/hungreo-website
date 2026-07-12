@@ -34,11 +34,13 @@ Thêm flag `refetchTranscript`: lấy lại transcript từ YouTube, lưu KV, c�
 
 ### 4. `scripts/repair-video-transcripts.ts` (mới)
 
-Script backfill: quét toàn bộ video, video nào transcript rỗng → re-fetch → xoá vectors mỏng cũ → re-chunk (500 từ/chunk, overlap 100) → re-embed → lưu KV. Idempotent, có `--dry-run`.
+Script backfill mặc định chỉ dry-run. Khi ghi dữ liệu phải chỉ đích danh một video và environment. Vector mới được stage dưới generation ID riêng; chỉ khi tất cả chunks thành công mới switch KV, sau đó mới xoá vectors cũ.
 
 ```bash
-npx tsx scripts/repair-video-transcripts.ts --dry-run   # kiểm tra trước
-npx tsx scripts/repair-video-transcripts.ts             # chạy thật
+npx tsx scripts/repair-video-transcripts.ts                     # list missing only
+npx tsx scripts/repair-video-transcripts.ts --video-id=<youtube-id> # fetch dry-run
+npx tsx scripts/repair-video-transcripts.ts --apply \
+  --environment=production --video-id=<youtube-id>
 ```
 
 ## Kết quả repair (production, 2026-07-12)
@@ -60,18 +62,20 @@ npx tsx scripts/repair-video-transcripts.ts             # chạy thật
 1. **Không bao giờ nuốt lỗi im lặng ở bước ingest dữ liệu** — transcript fail phải hiện cảnh báo cho admin ngay tại UI.
 2. **Dependency vào API không chính thức (Innertube) sẽ gãy định kỳ** — cần đường fallback + monitoring (badge cảnh báo giúp phát hiện sớm lần sau).
 3. **Chạy nhiều request YouTube liên tục sẽ bị soft-block tạm thời** (HTTP 200 body rỗng) — script repair nên retry sau cooldown.
-4. ✅ **Đã verify trên Vercel (2026-07-12): YouTube CHẶN IP datacenter của Vercel.** Test thực tế với video `0-_js3fzvys`: nút Re-fetch trên production trả lỗi "Could not fetch transcript", trong khi cùng video đó local lấy được 2.716 từ ngay. Kết luận: fetch transcript **không chạy được từ server Vercel**, chỉ chạy được từ IP dân dụng.
+4. ✅ **Đã verify khác biệt environment (2026-07-12).** Test thực tế với video `0-_js3fzvys`: nút Re-fetch trên production thất bại, trong khi local lấy được 2.716 từ. Khả năng cao là YouTube soft-block/rate-limit request từ datacenter IP hoặc session hiện tại; một A/B test chưa đủ để kết luận mọi Vercel IP bị chặn vĩnh viễn.
 
 ## Quy trình import video mới (từ 2026-07-12)
 
-Vì YouTube chặn IP Vercel, transcript phải lấy từ máy local:
+Trong khi transcript fetch từ production còn bị soft-block/rate-limit, dùng local fallback:
 
 1. **Import video trên admin production** như bình thường (`/admin/videos` → Batch Import). Metadata (title, description, thumbnail) vẫn lấy được vì dùng YouTube Data API chính thức. Transcript sẽ rỗng — badge "⚠ No transcript" sẽ hiện.
 2. **Chạy 1 lệnh trên máy local** (repo hungreo-Website):
    ```bash
-   npx tsx scripts/repair-video-transcripts.ts
+   npx tsx scripts/repair-video-transcripts.ts --video-id=<youtube-id>
+   npx tsx scripts/repair-video-transcripts.ts --apply \
+     --environment=production --video-id=<youtube-id>
    ```
-   Script tự quét video thiếu transcript → fetch → embed → lưu. Idempotent, chạy bao nhiêu lần cũng an toàn.
+   Lệnh đầu dry-run; chỉ lệnh có `--apply` mới ghi KV/Pinecone. Pipeline stage đủ vectors mới trước khi switch KV và cleanup vectors cũ.
 3. Xong — bot trả lời được ngay, không cần deploy.
 
-**Lưu ý:** đừng bấm "Generate Embeddings" trên production trước khi chạy script (sẽ tạo vectors mỏng chỉ có title+description; script sẽ xoá và tạo lại nên không hỏng gì, chỉ tốn API call). Nút "Re-fetch Transcript" trên production sẽ luôn fail chừng nào YouTube còn chặn IP Vercel — nút này chỉ hữu ích nếu sau này chuyển sang giải pháp proxy/API bên thứ ba.
+**Lưu ý:** UI không cho Generate Embeddings khi transcript còn trống. Nút "Re-fetch Transcript" trên production có thể tiếp tục fail khi YouTube soft-block/rate-limit environment hiện tại; failure được lưu thành `no_captions`, `blocked`, hoặc `failed` để admin biết bước xử lý tiếp theo.

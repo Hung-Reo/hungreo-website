@@ -1,4 +1,5 @@
 import { Pinecone } from '@pinecone-database/pinecone'
+import { collectVideoVectorIds } from './videoVectorLifecycle'
 
 let pineconeClient: Pinecone | null = null
 
@@ -96,4 +97,60 @@ export async function listAllVectorIds(
     console.error('[Pinecone] Failed to list vector IDs:', error)
     throw error
   }
+}
+
+/**
+ * Find every vector belonging to a video, including historical/orphan IDs
+ * that are no longer referenced by the KV video record.
+ */
+export async function listVideoVectorIds(
+  videoId: string,
+  trackedIds: string[] = []
+): Promise<string[]> {
+  if (!/^[A-Za-z0-9_-]{6,32}$/.test(videoId)) {
+    throw new Error('Invalid YouTube video ID')
+  }
+
+  const index = await getPineconeIndex()
+  const prefixIds: string[] = []
+  let paginationToken: string | undefined
+
+  do {
+    const response = await index.listPaginated({
+      prefix: `video_${videoId}_`,
+      limit: 100,
+      paginationToken,
+    })
+    prefixIds.push(
+      ...(response.vectors || [])
+        .map((vector) => vector.id)
+        .filter((id): id is string => Boolean(id))
+    )
+    paginationToken = response.pagination?.next
+  } while (paginationToken)
+
+  // Metadata lookup catches older/non-standard IDs that do not use the
+  // current video_<videoId>_ prefix.
+  const metadataIds = await listAllVectorIds({ videoId })
+  const metadataSet = new Set(metadataIds)
+  const expectedPrefix = `video_${videoId}_`
+  const validatedTrackedIds = trackedIds.filter(
+    (id) => id.startsWith(expectedPrefix) || metadataSet.has(id)
+  )
+  return collectVideoVectorIds(validatedTrackedIds, metadataIds, prefixIds)
+}
+
+/** Delete every known vector for one video. Throws so callers can safely retry. */
+export async function deleteVideoVectors(
+  videoId: string,
+  trackedIds: string[] = []
+): Promise<string[]> {
+  const index = await getPineconeIndex()
+  const vectorIds = await listVideoVectorIds(videoId, trackedIds)
+
+  for (let i = 0; i < vectorIds.length; i += 1000) {
+    await index.deleteMany(vectorIds.slice(i, i + 1000))
+  }
+
+  return vectorIds
 }
