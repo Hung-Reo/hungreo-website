@@ -48,10 +48,12 @@ npx tsx scripts/repair-video-transcripts.ts             # chạy thật
 | 1ItQnh3LWeg — AI Gave You A Promotion | 2.324 từ | 1 → 7 |
 | yhGzXULZkEw — What to teach when AI writes the code | 2.001 từ | 1 → 6 |
 | PplmzlgE0kg — Anthropic product team (Cat Wu) | 16.657 từ | 2 → 44 |
-| 7rzYDM6vMtI — OpenClaw (Peter Steinberger, TED) | ⏳ pending — YouTube 429 rate-limit, retry sau (dry-run đã xác nhận lấy được 1.776 từ) | |
-| Zsb8Ety67mo — John C. Maxwell (on Failure) | ⏳ pending — YouTube 429 rate-limit, retry sau (dry-run đã xác nhận lấy được 7.719 từ) | |
+| 7rzYDM6vMtI — OpenClaw (Peter Steinberger, TED) | 1.776 từ | 1 → 6 |
+| Zsb8Ety67mo — John C. Maxwell (on Failure) | 7.719 từ | 1 → 20 |
 
-**Verify end-to-end (production):** bot đã trả lời đúng nội dung transcript cho câu hỏi về video Anthropic (EN) và video AI Promotion (VI) ngay sau repair — không cần deploy vì vectors ghi thẳng vào Pinecone.
+**Hoàn tất 5/5.** 2 video cuối bị YouTube rate-limit (HTTP 429) ~1 giờ trong lúc repair, chạy lại script sau khi hết chặn là xong.
+
+**Verify end-to-end (production):** bot đã trả lời đúng nội dung transcript cho câu hỏi về video Anthropic (EN), AI Promotion (VI), John Maxwell (VI) — hiệu lực ngay không cần deploy vì vectors ghi thẳng vào Pinecone. Code fix đã deploy production ngày 2026-07-12 (commit 19e41e1).
 
 ## Lessons learned
 
