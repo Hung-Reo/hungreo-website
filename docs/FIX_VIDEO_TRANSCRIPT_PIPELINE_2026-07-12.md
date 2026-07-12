@@ -60,4 +60,18 @@ npx tsx scripts/repair-video-transcripts.ts             # chạy thật
 1. **Không bao giờ nuốt lỗi im lặng ở bước ingest dữ liệu** — transcript fail phải hiện cảnh báo cho admin ngay tại UI.
 2. **Dependency vào API không chính thức (Innertube) sẽ gãy định kỳ** — cần đường fallback + monitoring (badge cảnh báo giúp phát hiện sớm lần sau).
 3. **Chạy nhiều request YouTube liên tục sẽ bị soft-block tạm thời** (HTTP 200 body rỗng) — script repair nên retry sau cooldown.
-4. ⚠️ **Chưa verify trên Vercel:** fix mới verify từ local (IP dân dụng). Import video mới trên production cần test lại sau deploy — YouTube có thể chặn IP datacenter. Nếu bị chặn, dùng script này chạy local để backfill, hoặc chuyển fetch transcript sang client-side admin UI.
+4. ✅ **Đã verify trên Vercel (2026-07-12): YouTube CHẶN IP datacenter của Vercel.** Test thực tế với video `0-_js3fzvys`: nút Re-fetch trên production trả lỗi "Could not fetch transcript", trong khi cùng video đó local lấy được 2.716 từ ngay. Kết luận: fetch transcript **không chạy được từ server Vercel**, chỉ chạy được từ IP dân dụng.
+
+## Quy trình import video mới (từ 2026-07-12)
+
+Vì YouTube chặn IP Vercel, transcript phải lấy từ máy local:
+
+1. **Import video trên admin production** như bình thường (`/admin/videos` → Batch Import). Metadata (title, description, thumbnail) vẫn lấy được vì dùng YouTube Data API chính thức. Transcript sẽ rỗng — badge "⚠ No transcript" sẽ hiện.
+2. **Chạy 1 lệnh trên máy local** (repo hungreo-Website):
+   ```bash
+   npx tsx scripts/repair-video-transcripts.ts
+   ```
+   Script tự quét video thiếu transcript → fetch → embed → lưu. Idempotent, chạy bao nhiêu lần cũng an toàn.
+3. Xong — bot trả lời được ngay, không cần deploy.
+
+**Lưu ý:** đừng bấm "Generate Embeddings" trên production trước khi chạy script (sẽ tạo vectors mỏng chỉ có title+description; script sẽ xoá và tạo lại nên không hỏng gì, chỉ tốn API call). Nút "Re-fetch Transcript" trên production sẽ luôn fail chừng nào YouTube còn chặn IP Vercel — nút này chỉ hữu ích nếu sau này chuyển sang giải pháp proxy/API bên thứ ba.
