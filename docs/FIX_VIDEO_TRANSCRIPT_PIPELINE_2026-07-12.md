@@ -79,3 +79,16 @@ Trong khi transcript fetch từ production còn bị soft-block/rate-limit, dùn
 3. Xong — bot trả lời được ngay, không cần deploy.
 
 **Lưu ý:** UI không cho Generate Embeddings khi transcript còn trống. Nút "Re-fetch Transcript" trên production có thể tiếp tục fail khi YouTube soft-block/rate-limit environment hiện tại; failure được lưu thành `no_captions`, `blocked`, hoặc `failed` để admin biết bước xử lý tiếp theo.
+
+## Hybrid fallback trên Vercel (2026-07-14)
+
+Video `O8_isifBeKk` xác nhận thêm một false negative: cùng `youtubei.js 16.0.1`, local lấy được 3.378 từ nhưng Vercel nhận `caption_tracks` rỗng và gắn nhầm `NO_CAPTIONS`. Delete audit sau khi xoá video này sạch ở cả KV, category/all-video indexes và Pinecone (prefix + metadata đều 0 vector).
+
+Pipeline mới giữ direct YouTube caption làm primary miễn phí. Chỉ khi primary thất bại và có `SUPADATA_API_KEY`, server mới gọi Supadata qua endpoint cố định với `mode=native&text=true`; AI transcription không tự chạy để tránh billing ngoài ý muốn. Transcript thành công tiếp tục đi qua staged vector replacement hiện có.
+
+```bash
+# Required only for the Production fallback
+SUPADATA_API_KEY=your-supadata-api-key
+```
+
+Security/cost guards: admin auth vẫn nằm ở API route, key chỉ dùng server-side, endpoint/YouTube ID được allowlist, request timeout 20 giây, provider response bị validate và giới hạn 100.000 từ. Nếu không cấu hình key, behavior giữ nguyên primary flow; không có API call hoặc chi phí phụ.

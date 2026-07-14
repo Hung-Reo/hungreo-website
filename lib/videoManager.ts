@@ -7,6 +7,7 @@
 import { kv } from '@vercel/kv'
 import { Innertube } from 'youtubei.js'
 import axios from 'axios'
+import { trySupadataTranscriptFallback } from './supadataTranscript'
 
 export type VideoCategory = 'Leadership' | 'AI Works' | 'Health' | 'Entertaining' | 'Human Philosophy'
 
@@ -48,7 +49,7 @@ export type TranscriptFetchResult =
       ok: true
       transcript: string
       language?: string
-      source: 'caption-track' | 'legacy-panel'
+      source: 'caption-track' | 'legacy-panel' | 'supadata-native'
     }
   | {
       ok: false
@@ -324,13 +325,16 @@ export async function getVideoTranscriptResult(
     console.warn(
       `[VideoManager] ⚠️ Transcript unavailable for ${videoId}: ${fromTrack.code}`
     )
-    return fromTrack
+    return await trySupadataTranscriptFallback({
+      videoId,
+      primaryResult: fromTrack,
+    })
   } catch (error: any) {
     console.error(`[VideoManager] ⚠️ Failed to get transcript for ${videoId} — video will be saved without transcript:`, error.message)
     const message = String(error?.message || '')
     const rateLimited = /\b429\b|rate.?limit/i.test(message)
     const blocked = /\b403\b|forbidden|blocked/i.test(message)
-    return {
+    const primaryResult: TranscriptFetchResult = {
       ok: false,
       code: rateLimited ? 'RATE_LIMITED' : blocked ? 'BLOCKED' : 'UPSTREAM_ERROR',
       retryable: true,
@@ -340,6 +344,10 @@ export async function getVideoTranscriptResult(
           ? 'YouTube blocked the transcript request.'
           : 'YouTube transcript request failed.',
     }
+    return await trySupadataTranscriptFallback({
+      videoId,
+      primaryResult,
+    })
   }
 }
 

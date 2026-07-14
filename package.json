@@ -10,7 +10,7 @@
     "extract": "tsx scripts/extract-content.ts",
     "embed": "tsx scripts/generate-embeddings.ts",
     "scrape": "tsx scripts/scrape-website.ts",
-    "test": "tsx __tests__/textUtils.test.ts && tsx __tests__/security.test.ts && tsx __tests__/videoVectorLifecycle.test.ts"
+    "test": "tsx __tests__/textUtils.test.ts && tsx __tests__/security.test.ts && tsx __tests__/videoVectorLifecycle.test.ts && tsx __tests__/videoTranscriptFallback.test.ts"
   },
   "dependencies": {
     "@pinecone-database/pinecone": "^6.1.3",
