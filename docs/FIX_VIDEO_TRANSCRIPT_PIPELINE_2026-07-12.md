@@ -92,3 +92,9 @@ SUPADATA_API_KEY=your-supadata-api-key
 ```
 
 Security/cost guards: admin auth vẫn nằm ở API route, key chỉ dùng server-side, endpoint/YouTube ID được allowlist, request timeout 20 giây, provider response bị validate và giới hạn 100.000 từ. Nếu không cấu hình key, behavior giữ nguyên primary flow; không có API call hoặc chi phí phụ.
+
+## Retrieval theo video title (2026-07-14)
+
+Import + embedding thành công chưa đảm bảo bot sẽ lấy đúng context. Với câu hỏi tiếng Việt `lesson learn ... Self-study Blueprint`, vector của video `O8_isifBeKk` đứng hạng 11 (score `0.3728`) trong global semantic search, trong khi `/api/chat` trước đây chỉ lấy `topK: 5`. Cùng câu hỏi bằng tiếng Anh, các chunks của video đứng hạng 1–7; đây là multilingual retrieval false negative, không phải lỗi transcript hoặc embedding.
+
+Chat retrieval mới chạy discovery `topK: 20`, nhận diện title bằng lexical overlap có guard, rồi query lại tối đa 5 chunks với Pinecone metadata filter `videoId`. Page-context ID chỉ được dùng khi đúng format YouTube 11 ký tự; metadata phải có type `video`. Query chung chung không có title vẫn giữ global top 5 như cũ. Scoped query lỗi hoặc không có kết quả sẽ fallback về global context, và số chunks gửi GPT vẫn tối đa 5 nên không tăng đáng kể token cost.

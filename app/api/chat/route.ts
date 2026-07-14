@@ -8,12 +8,15 @@ import {
   getClientIp,
 } from '@/lib/rateLimit'
 import { validateChatMessage } from '@/lib/inputValidator'
+import { resolveVideoRetrievalScope } from '@/lib/chatRetrieval'
 
 // Use Node.js runtime for Pinecone compatibility
 export const runtime = 'nodejs'
 
 // Debug mode control (only enable in development or when explicitly needed)
 const DEBUG_MODE = process.env.ENABLE_DEBUG_LOGS === 'true'
+const DISCOVERY_TOP_K = 20
+const CONTEXT_TOP_K = 5
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
@@ -97,16 +100,51 @@ export async function POST(req: NextRequest) {
 
     // Step 2: Query Pinecone for relevant context
     const index = await getPineconeIndex()
-    const queryResponse = await index.query({
+    const discoveryResponse = await index.query({
       vector: questionEmbedding,
-      topK: 5, // Retrieve top 5 most relevant chunks
+      topK: DISCOVERY_TOP_K,
       includeMetadata: true,
     })
 
+    const videoScope = resolveVideoRetrievalScope({
+      query: sanitizedMessage,
+      pageContextVideoId:
+        pageContext && typeof pageContext === 'object'
+          ? pageContext.videoId
+          : undefined,
+      matches: discoveryResponse.matches,
+    })
+
+    let contextMatches = discoveryResponse.matches.slice(0, CONTEXT_TOP_K)
+
+    if (videoScope) {
+      try {
+        const scopedResponse = await index.query({
+          vector: questionEmbedding,
+          topK: CONTEXT_TOP_K,
+          includeMetadata: true,
+          filter: {
+            videoId: { $eq: videoScope.videoId },
+          },
+        })
+
+        if (scopedResponse.matches.length > 0) {
+          contextMatches = scopedResponse.matches
+        }
+      } catch {
+        // Keep the global top results if the optional scoped query is
+        // temporarily unavailable; chat should degrade gracefully.
+        console.warn('[Chat] Scoped video retrieval failed; using global fallback')
+      }
+    }
+
     // Debug: Log retrieved vectors (only in debug mode to prevent data leakage)
     if (DEBUG_MODE) {
-      console.log(`[Chat] Retrieved ${queryResponse.matches.length} vectors for query: "${sanitizedMessage}"`)
-      queryResponse.matches.forEach((match, i) => {
+      console.log(
+        `[Chat] Retrieved ${contextMatches.length} context vectors` +
+          (videoScope ? ` with ${videoScope.source} video scope` : '')
+      )
+      contextMatches.forEach((match, i) => {
         const meta = match.metadata as any
         console.log(`[Chat] Vector ${i+1}: ${match.id} (score: ${match.score?.toFixed(3)})`)
         console.log(`[Chat]   RAW METADATA:`, JSON.stringify(meta, null, 2))
@@ -116,7 +154,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Step 3: Build context from relevant documents
-    const context = queryResponse.matches
+    const context = contextMatches
       .map((match) => {
         const metadata = match.metadata as any
         const title = metadata.title || 'Untitled'
@@ -136,8 +174,8 @@ export async function POST(req: NextRequest) {
     // Step 4: Build context-aware system prompt
     let contextInfo = ''
     if (pageContext) {
-      if (pageContext.videoId) {
-        contextInfo = `\n\nThe user is currently viewing a YouTube video (ID: ${pageContext.videoId}). If they ask about "this video" or "the video", they're referring to this one.`
+      if (videoScope?.source === 'page-context') {
+        contextInfo = `\n\nThe user is currently viewing a YouTube video (ID: ${videoScope.videoId}). If they ask about "this video" or "the video", they're referring to this one.`
       } else if (pageContext.page) {
         contextInfo = `\n\nThe user is currently on page: ${pageContext.page}`
       }
@@ -239,7 +277,7 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
           assistantResponse: assistantMessage,
           timestamp: Date.now(),
           pageContext,
-          relevantDocs: queryResponse.matches.length,
+          relevantDocs: contextMatches.length,
           responseTime,
           needsHumanReply,
         }
