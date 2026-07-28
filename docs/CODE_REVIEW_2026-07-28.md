@@ -32,17 +32,35 @@ Hệ quả: dùng chùa OpenAI API (Hung trả tiền), ép bot phát ngôn dư�
 
 **Lưu ý:** `components/features/TranscriptSection.tsx` là **dead code** (không nơi nào render). Text trên `/tools/knowledge` nói *"Each video page includes the full transcript"* là mô tả cũ, không khớp thực tế.
 
+### 3. Traffic ẩn danh kích hoạt rebuild phá dữ liệu — CRITICAL
+Chuỗi lỗi: `/api/videos` (public, không rate limit) → `getVideoStats()` → nếu tổng category ≠ tổng videos → `autoRebuildCategorySets()` → `kv.del('videos:all')` + xoá 5 category set → build lại từ `getAllVideosComplete()`.
+
+Nhưng `getVideo()` **nuốt lỗi và trả `null`** → một lỗi đọc KV thoáng qua là video đó bị loại khỏi index. Guard duy nhất là `length === 0`, nên mất **một phần** (12/13) vẫn chạy tiếp: record `video:<id>` còn nguyên nhưng video biến mất khỏi website vĩnh viễn, không cảnh báo. Admin endpoint `rebuild-stats` dùng chung `getAllVideosComplete()` nên **dính đúng lỗi này**.
+
+**Fix (3 phần):**
+
+| # | Thay đổi | Chống được gì |
+|---|---|---|
+| a | `readVideoStrict()` — đọc bản ghi để lỗi transport **propagate**; `getVideo()` giữ nguyên hành vi nuốt lỗi cho việc render trang. `getAllVideosComplete()` chuyển sang dùng hàm này | Rebuild **abort** thay vì ghi đè index bằng danh sách thiếu. Bảo vệ **cả 2 đường** (public cũ + admin endpoint) |
+| b | `getVideoStats()` chỉ **cảnh báo**, không sửa. Xoá luôn `autoRebuildCategorySets()` (~60 dòng) vì đã thành dead code và trùng chức năng với admin endpoint | Traffic ẩn danh không còn chạm được thao tác ghi/xoá |
+| c | Admin `rebuild-stats` thêm guard: từ chối (409) nếu danh sách rỗng | Không thể xoá sạch index rồi ghi lại con số 0 |
+
+Sửa chữa vẫn dùng đường sẵn có: nút **"Rebuild Stats"** trong admin video manager (`POST /api/admin/videos/rebuild-stats`).
+
+**Verify** (test giả lập lỗi ở tầng `fetch`, chỉ đọc, không ghi gì vào KV):
+
+| Kịch bản | Kết quả |
+|---|---|
+| Lỗi transport khi đọc 1 bản ghi | ✅ `getAllVideosComplete()` **throw** (trước đây: trả list thiếu) |
+| Cùng lỗi đó, gọi `getVideo()` | ✅ Vẫn trả `null` — trang web không vỡ |
+| Record vắng mặt thật (orphan ID) | ✅ Bỏ qua, không throw → 12/13 (hành vi dọn rác đúng, giữ nguyên) |
+| Ép phát hiện lệch (1009 ≠ 13) | ✅ Chỉ log cảnh báo, **0 lệnh ghi** phát sinh |
+
+KV production kiểm tra sau test: `videos:all = 13`, category sum = 13 — nguyên vẹn.
+
 ---
 
 ## ⏳ CHƯA SỬA — xếp theo ưu tiên
-
-### CRITICAL
-**3. Traffic ẩn danh có thể kích hoạt rebuild phá dữ liệu**
-Chuỗi: `/api/videos` (public, không rate limit) → `getVideoStats()` → nếu tổng category ≠ tổng videos → `autoRebuildCategorySets()` ([lib/videoManager.ts:576](../lib/videoManager.ts)) → `kv.del('videos:all')` + xoá 5 category set → build lại từ `getAllVideosComplete()`.
-
-Nhưng `getVideo()` ([lib/videoManager.ts:389](../lib/videoManager.ts)) **nuốt lỗi và trả `null`** → một lỗi đọc KV thoáng qua là video đó bị loại khỏi index. Guard duy nhất là `length === 0`, mất **một phần** (12/13) vẫn chạy tiếp. Record `video:<id>` còn nhưng video biến mất khỏi website vĩnh viễn, không cảnh báo.
-
-*Hướng:* thao tác destructive không được kích hoạt bởi traffic public (chuyển sang cron/admin-only); `getAllVideosComplete()` phải **throw** khi lỗi đọc thay vì trả danh sách thiếu.
 
 ### HIGH
 **4. Inbox "cần trả lời" đếm sai: dashboard 38, thực tế 9**

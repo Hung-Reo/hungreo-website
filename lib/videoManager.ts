@@ -408,15 +408,27 @@ export async function saveVideo(video: Video): Promise<void> {
 }
 
 /**
+ * Read a video record, letting transport failures propagate.
+ *
+ * getVideo() deliberately swallows errors so that a single bad read only
+ * degrades one card on a page. An index rebuild must not inherit that
+ * behaviour: there, a failed read that looks like "no such video" gets the
+ * video dropped from videos:all and from its category set, which removes it
+ * from the site permanently even though video:<id> is still intact.
+ * A genuinely absent record still returns null — that is an orphan ID and
+ * dropping it is the correct outcome.
+ */
+async function readVideoStrict(videoId: string): Promise<Video | null> {
+  const video = await kv.get<any>(`video:${videoId}`)
+  return video ? normalizeVideo(video) : null
+}
+
+/**
  * Get video by ID
  */
 export async function getVideo(videoId: string): Promise<Video | null> {
   try {
-    const video = await kv.get<any>(`video:${videoId}`)
-    if (!video) return null
-
-    // Normalize to ensure bilingual format
-    return normalizeVideo(video)
+    return await readVideoStrict(videoId)
   } catch (error) {
     console.error('Failed to get video:', error)
     return null
@@ -589,7 +601,9 @@ export async function getAllVideosComplete(): Promise<Video[]> {
     if (!ids || ids.length === 0) break
 
     for (const id of ids) {
-      const video = await getVideo(id as string)
+      // readVideoStrict, not getVideo: callers rebuild indexes from this list,
+      // so a failed read must abort the caller rather than quietly shrink it.
+      const video = await readVideoStrict(id as string)
       if (video) all.push(video)
     }
 
@@ -601,67 +615,8 @@ export async function getAllVideosComplete(): Promise<Video[]> {
 }
 
 /**
- * Auto-rebuild Redis category sets from actual video data
- * Uses Redis lock to prevent concurrent rebuilds
- */
-async function autoRebuildCategorySets(): Promise<boolean> {
-  const LOCK_KEY = 'videos:rebuild-lock'
-  const LOCK_TTL = 30 // 30 seconds timeout
-
-  try {
-    // Try to acquire lock (NX = only set if not exists, EX = expiry in seconds)
-    const lockAcquired = await kv.set(LOCK_KEY, Date.now(), { nx: true, ex: LOCK_TTL })
-
-    if (!lockAcquired) {
-      console.log('[VideoManager] ⏭️ Rebuild already in progress, skipping...')
-      return false
-    }
-
-    console.log('[VideoManager] 🔧 Auto-rebuilding category sets (lock acquired)...')
-
-    // Get all videos from actual data (paginated so we never drop videos
-    // beyond the first page before deleting the indexes)
-    const allVideos = await getAllVideosComplete()
-    console.log(`[VideoManager] Found ${allVideos.length} videos to rebuild`)
-
-    if (allVideos.length === 0) {
-      console.warn('[VideoManager] No videos found, skipping rebuild')
-      await kv.del(LOCK_KEY)
-      return false
-    }
-
-    // Clear existing category sets
-    const categories: VideoCategory[] = ['Leadership', 'AI Works', 'Health', 'Entertaining', 'Human Philosophy']
-    await Promise.all(categories.map(cat => kv.del(`videos:${cat}`)))
-
-    // Rebuild category sets
-    const categoryStats: Record<string, number> = {}
-    for (const video of allVideos) {
-      await kv.sadd(`videos:${video.category}`, video.id)
-      categoryStats[video.category] = (categoryStats[video.category] || 0) + 1
-    }
-
-    // Rebuild videos:all sorted set
-    await kv.del('videos:all')
-    for (const video of allVideos) {
-      await kv.zadd('videos:all', { score: video.addedAt, member: video.id })
-    }
-
-    console.log('[VideoManager] ✅ Auto-rebuild completed:', categoryStats)
-
-    // Release lock
-    await kv.del(LOCK_KEY)
-    return true
-  } catch (error) {
-    console.error('[VideoManager] ❌ Auto-rebuild failed:', error)
-    // Release lock on error
-    await kv.del(LOCK_KEY).catch(() => {})
-    return false
-  }
-}
-
-/**
- * Get video statistics with automatic inconsistency detection and auto-repair
+ * Get video statistics. Read-only: inconsistencies are reported, never repaired
+ * here, because this runs on public request paths.
  */
 export async function getVideoStats() {
   try {
@@ -674,7 +629,7 @@ export async function getVideoStats() {
       kv.zcard('videos:all'),
     ])
 
-    let stats = {
+    const stats = {
       leadership: leadership || 0,
       aiWorks: aiWorks || 0,
       health: health || 0,
@@ -687,36 +642,14 @@ export async function getVideoStats() {
     const categorySum = stats.leadership + stats.aiWorks + stats.health + stats.entertaining + stats.philosophy
 
     if (categorySum !== stats.total && stats.total > 0) {
-      console.warn(`[VideoManager] ⚠️ Inconsistency detected: category sum (${categorySum}) != total (${stats.total})`)
-      console.warn('[VideoManager] 🔧 Triggering auto-rebuild...')
-
-      // Auto-rebuild with lock protection
-      const rebuilt = await autoRebuildCategorySets()
-
-      if (rebuilt) {
-        // Fetch fresh stats after successful rebuild
-        const [newLeadership, newAiWorks, newHealth, newEntertaining, newPhilosophy, newTotal] = await Promise.all([
-          kv.scard('videos:Leadership'),
-          kv.scard('videos:AI Works'),
-          kv.scard('videos:Health'),
-          kv.scard('videos:Entertaining'),
-          kv.scard('videos:Human Philosophy'),
-          kv.zcard('videos:all'),
-        ])
-
-        stats = {
-          leadership: newLeadership || 0,
-          aiWorks: newAiWorks || 0,
-          health: newHealth || 0,
-          entertaining: newEntertaining || 0,
-          philosophy: newPhilosophy || 0,
-          total: newTotal || 0,
-        }
-
-        console.log('[VideoManager] ✅ Returned fresh stats after auto-rebuild:', stats)
-      } else {
-        console.log('[VideoManager] ⏳ Rebuild in progress or failed, returning stale stats')
-      }
+      // Report only. This runs on the public /api/videos path, so it must stay
+      // read-only: repairing here let anonymous traffic delete and rewrite
+      // videos:all and every category set. Repair is an explicit admin action
+      // via POST /api/admin/videos/rebuild-stats ("Rebuild Stats" in the admin UI).
+      console.warn(
+        `[VideoManager] ⚠️ Video index inconsistent: category sum (${categorySum}) != total (${stats.total}). ` +
+          'Run "Rebuild Stats" in the admin video manager to repair.'
+      )
     }
 
     return stats

@@ -21,9 +21,25 @@ export async function POST() {
     console.log('[RebuildStats] Starting category sets rebuild...')
 
     // Get all videos from KV (paginated so we never drop videos beyond the
-    // first page before deleting the category sets)
+    // first page before deleting the category sets). This throws if any record
+    // fails to read, so a transport error aborts here instead of rebuilding a
+    // truncated index over the live one.
     const allVideos = await getAllVideosComplete()
     console.log(`[RebuildStats] Found ${allVideos.length} total videos`)
+
+    // Never let a rebuild wipe the indexes down to nothing: with no source
+    // records to write back, the deletes below would empty the whole library.
+    if (allVideos.length === 0) {
+      console.warn('[RebuildStats] Aborted: no video records were loaded')
+      return NextResponse.json(
+        {
+          error: 'Refusing to rebuild from an empty video list',
+          details:
+            'No video records could be loaded, so rebuilding would clear every index. Verify KV connectivity and try again.',
+        },
+        { status: 409 }
+      )
+    }
 
     // Clear existing category sets
     const categories = ['Leadership', 'AI Works', 'Health', 'Entertaining', 'Human Philosophy']
