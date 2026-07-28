@@ -5,6 +5,11 @@
 
 import { kv } from '@vercel/kv'
 
+// Daily and weekly buckets are only ever read for the current day/week; the
+// monthly aggregates keep a year of headroom for historical reporting.
+const DAILY_STATS_TTL_SECONDS = 60 * 60 * 24 * 90
+const MONTHLY_STATS_TTL_SECONDS = 60 * 60 * 24 * 400
+
 export interface VisitorStats {
   today: number
   thisWeek: number
@@ -119,12 +124,30 @@ export async function trackPageView(page: string, userAgent: string, screenWidth
     const monthlyHash = generateVisitorHash(yearMonth, userAgent, device)
     const sanitizedPage = sanitizePathname(page)
 
+    const dailyKey = `visitors:daily:${dateKey}`
+    const weeklyKey = `visitors:weekly:${weekStart}`
+    const monthlyUniqueKey = `visitors:${yearMonth}:unique`
+    const monthlyPagesKey = `visitors:${yearMonth}:pages`
+    const monthlyDevicesKey = `visitors:${yearMonth}:devices`
+
     await Promise.all([
-      kv.sadd(`visitors:daily:${dateKey}`, dailyHash),
-      kv.sadd(`visitors:weekly:${weekStart}`, weeklyHash),
-      kv.sadd(`visitors:${yearMonth}:unique`, monthlyHash),
-      kv.hincrby(`visitors:${yearMonth}:pages`, sanitizedPage, 1),
-      kv.hincrby(`visitors:${yearMonth}:devices`, device, 1),
+      kv.sadd(dailyKey, dailyHash),
+      kv.sadd(weeklyKey, weeklyHash),
+      kv.sadd(monthlyUniqueKey, monthlyHash),
+      kv.hincrby(monthlyPagesKey, sanitizedPage, 1),
+      kv.hincrby(monthlyDevicesKey, device, 1),
+    ])
+
+    // These keys are written per visit but never read beyond the current day,
+    // week and month, so without an expiry they accumulate forever — one set
+    // per day and per week, growing storage (and the visitor hashes retained)
+    // without bound. Re-applying the expiry on each write is idempotent.
+    await Promise.all([
+      kv.expire(dailyKey, DAILY_STATS_TTL_SECONDS),
+      kv.expire(weeklyKey, DAILY_STATS_TTL_SECONDS),
+      kv.expire(monthlyUniqueKey, MONTHLY_STATS_TTL_SECONDS),
+      kv.expire(monthlyPagesKey, MONTHLY_STATS_TTL_SECONDS),
+      kv.expire(monthlyDevicesKey, MONTHLY_STATS_TTL_SECONDS),
     ])
   } catch (error) {
     console.error('Failed to track page view:', error)

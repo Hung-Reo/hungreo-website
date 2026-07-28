@@ -9,6 +9,9 @@
 
 import { kv } from '@vercel/kv'
 
+// Contact request records and the daily indexes pointing at them share a lifetime.
+const CONTACT_REQUEST_TTL_SECONDS = 60 * 60 * 24 * 90
+
 export interface ContactRequest {
   id: string
   email: string
@@ -65,13 +68,15 @@ export async function saveContactRequest(data: {
   }
 
   // Store the contact request (90-day TTL)
-  await kv.set(`contact-request:${id}`, request, { ex: 60 * 60 * 24 * 90 })
+  await kv.set(`contact-request:${id}`, request, { ex: CONTACT_REQUEST_TTL_SECONDS })
 
   // Add to pending list
   await kv.lpush('contact-requests:pending', id)
 
-  // Add to daily list for stats
+  // Add to daily list for stats, expiring on the same clock as the records it
+  // points at so the index cannot outlive them (see chats:<date> in chatLogger).
   await kv.lpush(`contact-requests:${date}`, id)
+  await kv.expire(`contact-requests:${date}`, CONTACT_REQUEST_TTL_SECONDS)
 
   // Increment total counter
   await kv.incr('stats:contact-requests-total')
@@ -151,7 +156,7 @@ export async function updateContactRequest(
   }
 
   // Update the request
-  await kv.set(`contact-request:${id}`, updatedRequest, { ex: 60 * 60 * 24 * 90 })
+  await kv.set(`contact-request:${id}`, updatedRequest, { ex: CONTACT_REQUEST_TTL_SECONDS })
 
   // Move between lists if status changed
   if (updates.status && updates.status !== request.status) {

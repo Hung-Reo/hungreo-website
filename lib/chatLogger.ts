@@ -6,6 +6,9 @@
 import { kv } from '@vercel/kv'
 import { notifyHungAboutChat } from './emailNotifier'
 
+// Chat records and the daily indexes that point at them share one lifetime.
+const CHAT_TTL_SECONDS = 60 * 60 * 24 * 90
+
 /**
  * SECURITY: Sanitize pathname to prevent sensitive data leakage
  * Strips tokens, IDs, and other sensitive URL segments before logging
@@ -63,10 +66,13 @@ export async function logChat(log: ChatLog): Promise<void> {
     }
 
     // Store the chat log (90-day TTL)
-    await kv.set(key, sanitizedLog, { ex: 60 * 60 * 24 * 90 })
+    await kv.set(key, sanitizedLog, { ex: CHAT_TTL_SECONDS })
 
-    // Add to daily list
+    // Add to daily list, expiring it on the same clock as the records it points
+    // at. Without this the index outlives every chat:<id> it references and
+    // keeps reporting chats that can no longer be opened.
     await kv.lpush(`chats:${date}`, log.id)
+    await kv.expire(`chats:${date}`, CHAT_TTL_SECONDS)
 
     // Increment total chats counter
     await kv.incr('stats:total-chats')
@@ -134,8 +140,11 @@ export async function getChatStats(): Promise<ChatStats> {
       })
     }
 
-    // Get needs-reply count
-    const needsReply = (await kv.llen('inbox:needs-reply')) || 0
+    // Count only entries the admin can actually open. llen counts the raw list,
+    // which still holds IDs whose chat record has since expired.
+    const { logs: needsReplyLogs, expiredIds } = await loadNeedsReplyInbox()
+    await pruneExpiredInboxEntries(expiredIds)
+    const needsReply = needsReplyLogs.length
 
     return {
       totalChats: Number(totalChats),
@@ -188,20 +197,50 @@ export async function getChatLogs(startDate: Date, endDate: Date): Promise<ChatL
 }
 
 /**
+ * Read the needs-reply inbox, dropping entries whose chat record has expired.
+ *
+ * The inbox holds IDs forever while chat:<id> expires after 90 days, so it
+ * accumulates pointers to records that no longer exist. Counting the raw list
+ * therefore reported far more pending replies than the admin could actually
+ * open. Entries are pruned only when the record is confirmed absent — a failed
+ * read throws and leaves the inbox untouched, so a transport blip can never
+ * delete a genuinely pending item.
+ */
+async function loadNeedsReplyInbox(): Promise<{
+  logs: ChatLog[]
+  expiredIds: string[]
+}> {
+  const chatIds = ((await kv.lrange('inbox:needs-reply', 0, -1)) || []) as string[]
+  const logs: ChatLog[] = []
+  const expiredIds: string[] = []
+
+  for (const chatId of chatIds) {
+    const log = await kv.get(`chat:${chatId}`)
+    if (log) {
+      logs.push(log as ChatLog)
+    } else {
+      expiredIds.push(chatId)
+    }
+  }
+
+  return { logs, expiredIds }
+}
+
+async function pruneExpiredInboxEntries(expiredIds: string[]): Promise<void> {
+  if (expiredIds.length === 0) return
+
+  // LREM targets a single value, so a concurrent lpush is never lost.
+  await Promise.all(expiredIds.map((id) => kv.lrem('inbox:needs-reply', 0, id)))
+  console.log(`[ChatLogger] Pruned ${expiredIds.length} expired needs-reply entries`)
+}
+
+/**
  * Get chats that need human reply
  */
 export async function getNeedsReplyChats(): Promise<ChatLog[]> {
   try {
-    const chatIds = (await kv.lrange('inbox:needs-reply', 0, -1)) || []
-    const logs: ChatLog[] = []
-
-    for (const chatId of chatIds) {
-      const log = await kv.get(`chat:${chatId}`)
-      if (log) {
-        logs.push(log as ChatLog)
-      }
-    }
-
+    const { logs, expiredIds } = await loadNeedsReplyInbox()
+    await pruneExpiredInboxEntries(expiredIds)
     return logs
   } catch (error) {
     console.error('Failed to get needs-reply chats:', error)
@@ -214,15 +253,10 @@ export async function getNeedsReplyChats(): Promise<ChatLog[]> {
  */
 export async function markAsReplied(chatId: string): Promise<void> {
   try {
-    // Remove from needs-reply list
-    const chatIds = (await kv.lrange('inbox:needs-reply', 0, -1)) || []
-    const filteredIds = chatIds.filter((id) => id !== chatId)
-
-    // Clear and rebuild the list
-    await kv.del('inbox:needs-reply')
-    if (filteredIds.length > 0) {
-      await kv.lpush('inbox:needs-reply', ...filteredIds)
-    }
+    // Single atomic removal. The previous read-filter-delete-rewrite lost any
+    // chat logged between the delete and the rewrite, and LPUSH of the
+    // remaining IDs reversed the inbox order on every call.
+    await kv.lrem('inbox:needs-reply', 0, chatId)
   } catch (error) {
     console.error('Failed to mark as replied:', error)
   }

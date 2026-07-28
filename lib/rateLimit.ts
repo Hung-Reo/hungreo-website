@@ -14,7 +14,7 @@ import { kv } from '@vercel/kv'
 export const chatbotRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(10, '1 m'),
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:chatbot',
 })
 
@@ -25,7 +25,7 @@ export const chatbotRateLimit = new Ratelimit({
 export const chatbotHourlyRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(50, '1 h'),
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:chatbot:hourly',
 })
 
@@ -37,7 +37,7 @@ export const chatbotHourlyRateLimit = new Ratelimit({
 export const adminLoginRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(5, '15 m'),
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:admin:login',
 })
 
@@ -49,7 +49,7 @@ export const adminLoginRateLimit = new Ratelimit({
 export const adminLoginStrictRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(10, '1 h'),
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:admin:login:strict',
 })
 
@@ -61,7 +61,7 @@ export const adminLoginStrictRateLimit = new Ratelimit({
 export const adminApiRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(30, '1 m'),
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:admin:api',
 })
 
@@ -73,7 +73,7 @@ export const adminApiRateLimit = new Ratelimit({
 export const fileUploadRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(5, '10 m'),
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:upload',
 })
 
@@ -85,7 +85,7 @@ export const fileUploadRateLimit = new Ratelimit({
 export const publicApiRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(3, '1 m'),
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:public:api',
 })
 

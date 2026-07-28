@@ -12,14 +12,14 @@ const BACKUP_ADMIN_EMAIL = process.env.BACKUP_ADMIN_EMAIL
 const forgotPasswordRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(3, '15 m'), // 3 requests per 15 minutes per IP
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:forgot-password:ip',
 })
 
 const forgotPasswordEmailRateLimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(2, '1 h'), // 2 requests per hour per email
-  analytics: true,
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
   prefix: 'ratelimit:forgot-password:email',
 })
 

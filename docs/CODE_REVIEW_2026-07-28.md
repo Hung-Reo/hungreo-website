@@ -58,26 +58,42 @@ Sửa chữa vẫn dùng đường sẵn có: nút **"Rebuild Stats"** trong adm
 
 KV production kiểm tra sau test: `videos:all = 13`, category sum = 13 — nguyên vẹn.
 
+### 4. Inbox "cần trả lời" đếm sai — HIGH
+`chat:<id>` có TTL 90 ngày nhưng index list không bao giờ được dọn, nên hai code path đếm khác nhau: `kv.llen()` đếm cả rác, còn `getNeedsReplyChats()` lọc record chết. Kèm 2 bug trong `markAsReplied()`: `LPUSH` nhiều phần tử **đảo ngược thứ tự** mỗi lần đánh dấu; `del` + `lpush` không atomic → chat ghi vào đúng khe giữa 2 lệnh sẽ **mất**.
+
+**Fix:**
+- `markAsReplied()` → dùng **`LREM`** (1 lệnh atomic). Hết cả bug đảo thứ tự lẫn khe mất dữ liệu.
+- `loadNeedsReplyInbox()` dùng chung cho cả đếm và liệt kê → không thể lệch nhau nữa. Chỉ gỡ entry khi **xác nhận record vắng mặt**; lỗi đọc thì throw và không đụng gì (cùng bài học với mục #3).
+- `chats:<date>` được `expire` cùng nhịp 90 ngày với record nó trỏ tới → hết sinh rác mới.
+- Áp dụng cùng cách cho `contact-requests:<date>` (đang có đúng lỗi đó, 2/6 entry rác).
+
+**Verify trên production:** dọn 29 entry rác → dashboard/danh sách/KV đều = 15 ✓. Test `markAsReplied` trên 7 entry: gỡ đúng số lượng ✓, **thứ tự giữ nguyên** ✓, dashboard khớp ✓.
+
+### 5. Key KV không có TTL, phình vĩnh viễn — HIGH
+`visitors:*` ghi 3 set + 2 hash mỗi lượt truy cập mà không `ex:`.
+
+**Fix:** `trackPageView()` set TTL mỗi lần ghi — daily/weekly **90 ngày**, monthly **400 ngày** (đủ chỗ cho báo cáo lịch sử). Backfill TTL cho 102 key cũ (chỉ gán hạn, **không xoá gì**) + 18 key `chats:*` cũ.
+
+**Phát hiện thêm khi sửa:** `analytics: true` của Upstash Ratelimit sinh zset `ratelimit:*:events:*` **không TTL và không ai đọc** (111 key, tăng mãi) — `Analytics` trong codebase là Vercel Analytics, hoàn toàn khác. Đã đổi thành `false` ở 9 chỗ; verify rate limit vẫn chặn đúng (10×200 → 429).
+
+**Kết quả:** 100% key `visitors:*` và `chats:*` đã có hạn; các key còn thiếu TTL đều là dữ liệu cố ý giữ vĩnh viễn (video, blog, project, CMS, password hash).
+
+### 6. Dependency: 2 critical + nhiều high — HIGH (một phần)
+**Đã sửa (không breaking):** `npm audit fix` → **critical 2 → 0**. Nâng `next-auth` beta.31 → beta.32, `@auth/core` 0.41.2 → 0.41.3, `oauth4webapi`, `dompurify`. Chỉ 11 package đổi, `package.json` không đổi.
+
+Vì đây là phần **xác thực**, đã test kỹ: providers endpoint ✓, CSRF token ✓, admin API 401 khi chưa login ✓, `/admin/dashboard` → 307 redirect ✓, **sai mật khẩu → từ chối, không cấp session cookie** ✓.
+
+**Chưa sửa — cần nâng major, phải làm riêng có test:**
+
+| Package | Vấn đề | Ghi chú |
+|---|---|---|
+| `next` 14.2 → 16 | high; kéo theo `postcss` 8.4.31 lồng bên trong | Nhảy 2 major. Next 15 đổi `params`/`searchParams` thành async — ảnh hưởng nhiều route. **Rủi ro thật, không nên gộp chung** |
+| `nodemailer` 7 → 9 | high | Production dep, cần test gửi mail |
+| Bộ ESLint (~19 gói) | high | **Dev-only, không lên production** — không có rủi ro runtime |
+
 ---
 
 ## ⏳ CHƯA SỬA — xếp theo ưu tiên
-
-### HIGH
-**4. Inbox "cần trả lời" đếm sai: dashboard 38, thực tế 9**
-`chat:<id>` có TTL 90 ngày nhưng index list không bao giờ được dọn. Đo trên production:
-
-| Key | Entry | Còn sống | Rác |
-|---|---|---|---|
-| `inbox:needs-reply` | 38 | 9 | **29** |
-| `chats:2025-11-15` | 40 | 0 | **40** |
-
-Hai code path đếm khác nhau: `kv.llen()` ([lib/chatLogger.ts:138](../lib/chatLogger.ts)) → 38, còn `getNeedsReplyChats()` lọc record chết → 9.
-
-Kèm 2 bug trong `markAsReplied()` ([lib/chatLogger.ts:222](../lib/chatLogger.ts)): `LPUSH` nhiều phần tử **đảo ngược thứ tự list** mỗi lần đánh dấu; `del` + `lpush` không atomic → chat mới ghi vào đúng khe giữa 2 lệnh sẽ **mất**.
-
-**5. `visitors:*` không có TTL** — [lib/visitorTracker.ts:123](../lib/visitorTracker.ts) ghi 3 set mỗi lượt truy cập, không `ex:`. Hiện 107 keys/232 members, tăng vĩnh viễn. Mọi key khác (`chat:`, `contact-request:`, `job:`) đều có TTL — chỗ này bị sót. Ngược tinh thần GDPR trong CLAUDE.md.
-
-**6. Dependency: 2 critical + 6 high** — gốc ở `postcss` đi kèm Next.js 14.2. Fix cần nâng Next 16 (breaking) → làm riêng, có test.
 
 ### MEDIUM
 | # | Vấn đề | Vị trí |
@@ -88,6 +104,7 @@ Kèm 2 bug trong `markAsReplied()` ([lib/chatLogger.ts:222](../lib/chatLogger.ts
 | 10 | `data.email` chèn thô vào HTML email (chỗ khác đều `escapeHtml`); regex email cho phép `"`, `<`, `>` | `lib/emailNotifier.ts:410` |
 | 11 | `/api/admin/reset-password` và `/api/analytics/track` không rate limit | 2 route |
 | 12 | Heartbeat SSE gọi `controller.enqueue` trực tiếp, không check `closed`/try-catch | `app/api/stream/[id]/route.ts:60` |
+| 13 | `contact-requests:pending`/`:resolved` là list thường trực, vẫn còn 2 entry rác — cùng loại với #4 nhưng chưa dọn (quy mô nhỏ) | `lib/contactRequestLogger.ts` |
 
 ### Refactoring
 | Vấn đề | Con số | Vì sao |
