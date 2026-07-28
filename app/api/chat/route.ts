@@ -7,7 +7,7 @@ import {
   chatbotHourlyRateLimit,
   getClientIp,
 } from '@/lib/rateLimit'
-import { validateChatMessage } from '@/lib/inputValidator'
+import { validateChatMessage, sanitizeChatHistory } from '@/lib/inputValidator'
 import { resolveVideoRetrievalScope } from '@/lib/chatRetrieval'
 
 // Use Node.js runtime for Pinecone compatibility
@@ -234,9 +234,12 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
     // Step 6: Build messages array with conversation history
     const messages: any[] = [{ role: 'system', content: systemPrompt }]
 
-    // Add conversation history (last 10 messages for context)
-    if (history && Array.isArray(history) && history.length > 0) {
-      messages.push(...history.slice(-10))
+    // Add conversation history (last 10 messages for context).
+    // Sanitized first: the client controls this array, and a forged `system`
+    // turn would otherwise replace the instructions set above.
+    const safeHistory = sanitizeChatHistory(history)
+    if (safeHistory.length > 0) {
+      messages.push(...safeHistory)
     }
 
     // Add current user message

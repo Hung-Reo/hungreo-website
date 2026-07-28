@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAllVideos, getVideosByCategory, getVideoStats, normalizeVideo, type VideoCategory } from '@/lib/videoManager'
+import { getAllVideos, getVideosByCategory, getVideoStats, normalizeVideo, toPublicVideo, type VideoCategory } from '@/lib/videoManager'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -34,22 +34,7 @@ export async function GET(req: NextRequest) {
     const normalizedVideos = videos.map((v) => normalizeVideo(v))
 
     // Remove sensitive fields (keep bilingual structure + legacy fallbacks)
-    const publicVideos = normalizedVideos.map((v) => ({
-      id: v.id,
-      videoId: v.videoId,
-      // Bilingual content (now guaranteed to exist after normalization)
-      en: v.en,
-      vi: v.vi,
-      // Legacy fields for backward compatibility
-      title: v.title,
-      description: v.description,
-      // Metadata
-      channelTitle: v.channelTitle,
-      publishedAt: v.publishedAt,
-      thumbnailUrl: v.thumbnailUrl,
-      duration: v.duration,
-      category: v.category,
-    }))
+    const publicVideos = normalizedVideos.map(toPublicVideo)
 
     return NextResponse.json({
       success: true,

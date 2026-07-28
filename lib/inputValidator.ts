@@ -104,6 +104,53 @@ export function validateChatMessage(message: string): ValidationResult {
 }
 
 /**
+ * A conversation turn that is safe to forward to the model
+ */
+export interface ChatHistoryMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+// The UI sends the last 10 turns; user messages are capped at 1000 characters
+// and replies at 2000 tokens, so these limits never truncate a real conversation.
+const MAX_HISTORY_MESSAGES = 10
+const MAX_HISTORY_MESSAGE_CHARS = 10000
+
+/**
+ * Sanitize chatbot conversation history supplied by the client.
+ *
+ * The client fully controls this array, so it must never reach the model as-is:
+ * an injected `system` turn overrides the server's instructions, and unbounded
+ * content turns the endpoint into an open-ended (and billable) model proxy.
+ */
+export function sanitizeChatHistory(history: unknown): ChatHistoryMessage[] {
+  if (!Array.isArray(history)) {
+    return []
+  }
+
+  const sanitized: ChatHistoryMessage[] = []
+
+  for (const item of history.slice(-MAX_HISTORY_MESSAGES)) {
+    if (!item || typeof item !== 'object') continue
+
+    const { role, content } = item as { role?: unknown; content?: unknown }
+
+    if (role !== 'user' && role !== 'assistant') continue
+    if (typeof content !== 'string') continue
+
+    const trimmed = content.trim()
+    if (!trimmed) continue
+
+    sanitized.push({
+      role,
+      content: trimmed.slice(0, MAX_HISTORY_MESSAGE_CHARS),
+    })
+  }
+
+  return sanitized
+}
+
+/**
  * Validate file upload
  * Rules:
  * - File size: max 10MB

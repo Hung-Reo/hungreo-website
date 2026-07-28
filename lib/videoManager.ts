@@ -131,6 +131,37 @@ export function normalizeVideo(video: any): Video {
 }
 
 /**
+ * Shape a video for public (unauthenticated) consumers.
+ *
+ * Transcripts are deliberately excluded: they exist to feed server-side vector
+ * retrieval, and returning them added ~350KB to every listing response while
+ * publishing the whole knowledge base to anonymous callers.
+ */
+export function toPublicVideo(video: Video) {
+  const toPublicContent = (content: VideoContent) => ({
+    title: content.title,
+    description: content.description,
+    summary: content.summary,
+  })
+
+  return {
+    id: video.id,
+    videoId: video.videoId,
+    en: toPublicContent(video.en),
+    vi: toPublicContent(video.vi),
+    // Legacy fields for backward compatibility
+    title: video.title,
+    description: video.description,
+    // Metadata
+    channelTitle: video.channelTitle,
+    publishedAt: video.publishedAt,
+    thumbnailUrl: video.thumbnailUrl,
+    duration: video.duration,
+    category: video.category,
+  }
+}
+
+/**
  * Extract video ID from YouTube URL
  */
 export function extractVideoId(url: string): string | null {
