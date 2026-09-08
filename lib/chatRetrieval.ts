@@ -82,19 +82,16 @@ function isVideoMetadata(
 }
 
 /**
- * Resolve an optional video scope without trusting raw user input.
- * A validated page context wins; otherwise a scope is selected only when the
+ * Resolve bounded video scopes without trusting raw user input.
+ * A validated page context comes first; title scopes are selected only when the
  * query overlaps at least two distinctive title tokens with sufficient signal.
  */
-export function resolveVideoRetrievalScope({
+export function resolveVideoRetrievalScopes({
   query,
   pageContextVideoId,
   matches,
-}: ResolveVideoRetrievalScopeOptions): VideoRetrievalScope | undefined {
+}: ResolveVideoRetrievalScopeOptions): VideoRetrievalScope[] {
   const contextVideoId = getValidVideoId(pageContextVideoId)
-  if (contextVideoId) {
-    return { videoId: contextVideoId, source: 'page-context' }
-  }
 
   const queryTokens = new Set(getDistinctiveTokens(query))
   const candidates = new Map<
@@ -143,12 +140,77 @@ export function resolveVideoRetrievalScope({
     }
   }
 
-  const best = [...candidates.values()].sort(
+  const ranked = [...candidates.values()].sort(
     (a, b) =>
       b.matchingTokens - a.matchingTokens ||
       b.coverage - a.coverage ||
       b.score - a.score
-  )[0]
+  )
 
-  return best ? { videoId: best.videoId, source: 'title' } : undefined
+  const scopes: VideoRetrievalScope[] = contextVideoId
+    ? [{ videoId: contextVideoId, source: 'page-context' }] : []
+  for (const candidate of ranked) {
+    if (candidate.videoId !== contextVideoId) scopes.push({ videoId: candidate.videoId, source: 'title' })
+  }
+  // Bounded fan-out: no more than three optional Pinecone queries.
+  return scopes.slice(0, 3)
+}
+
+/** Compatibility helper for page-context attribution and existing callers. */
+export function resolveVideoRetrievalScope(options: ResolveVideoRetrievalScopeOptions): VideoRetrievalScope | undefined {
+  return resolveVideoRetrievalScopes(options)[0]
+}
+
+/**
+ * Keep scoped depth AND global evidence. Round-robin gives each available
+ * scope and the global pool a slot before taking another chunk from either.
+ * Discovery/global limits remain unchanged; only scoped contexts grow to 8.
+ */
+export async function retrieveChatMatches({
+  query, pageContextVideoId, discoveryMatches, queryVideo, onScopeError,
+}: {
+  query: string
+  pageContextVideoId?: unknown
+  discoveryMatches: ReadonlyArray<RetrievalMatchLike>
+  queryVideo: (videoId: string) => Promise<ReadonlyArray<RetrievalMatchLike>>
+  onScopeError?: () => void
+}): Promise<RetrievalMatchLike[]> {
+  const scopes = resolveVideoRetrievalScopes({ query, pageContextVideoId, matches: discoveryMatches })
+  const global = discoveryMatches.slice(0, 5)
+  if (!scopes.length) return global
+
+  const responses = await Promise.all(scopes.map(async scope => {
+    try {
+      const matches = await queryVideo(scope.videoId)
+      return matches.filter(match => match.metadata?.videoId === scope.videoId).slice(0, 5)
+    } catch {
+      onScopeError?.()
+      return []
+    }
+  }))
+  const pools = responses.filter(matches => matches.length > 0)
+  if (!pools.length) return global
+  if (pools.length === 1) {
+    // Preserve all five chunks for a single-video question as before, then
+    // add global evidence without duplicating the scoped chunks.
+    return [...new Map([...pools[0], ...global].map(match => [match.id, match])).values()].slice(0, 8)
+  }
+  pools.push(global)
+
+  const result: RetrievalMatchLike[] = []
+  const seen = new Set<string>()
+  while (result.length < 8) {
+    let added = false
+    for (const pool of pools) {
+      let next = pool.shift()
+      while (next && seen.has(next.id)) next = pool.shift()
+      if (!next) continue
+      seen.add(next.id)
+      result.push(next)
+      added = true
+      if (result.length === 8) break
+    }
+    if (!added) break
+  }
+  return result
 }

@@ -38,8 +38,12 @@ export function websiteUrlFromPage(page: string): string {
 
 export function describeSource(metadata: Record<string, any>, position: number): SourceDescriptor {
   const type = firstString(metadata?.vectorType, metadata?.type) || 'unknown'
-  const title = firstString(metadata?.title) || 'Untitled'
-  const content = firstString(metadata?.description, metadata?.text) || 'No description'
+  const title = firstString(metadata?.title, type === 'document' ? metadata?.fileName : undefined) || 'Untitled'
+  // Both approval paths store the full chunk in content. Legacy videos may
+  // have a repeated promotional description while content holds the transcript.
+  const fullContent = (type === 'video' || type === 'document') && typeof metadata?.content === 'string'
+    ? metadata.content.trim() : ''
+  const content = fullContent || firstString(metadata?.description, metadata?.text) || 'No description'
 
   const descriptor: SourceDescriptor = {
     label: `Source ${position}`,

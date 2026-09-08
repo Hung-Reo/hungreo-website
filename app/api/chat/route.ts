@@ -8,7 +8,7 @@ import {
   getClientIp,
 } from '@/lib/rateLimit'
 import { validateChatMessage, sanitizeChatHistory } from '@/lib/inputValidator'
-import { resolveVideoRetrievalScope } from '@/lib/chatRetrieval'
+import { resolveVideoRetrievalScope, retrieveChatMatches } from '@/lib/chatRetrieval'
 import { buildContext } from '@/lib/chatContext'
 
 // Use Node.js runtime for Pinecone compatibility
@@ -116,28 +116,22 @@ export async function POST(req: NextRequest) {
       matches: discoveryResponse.matches,
     })
 
-    let contextMatches = discoveryResponse.matches.slice(0, CONTEXT_TOP_K)
-
-    if (videoScope) {
-      try {
-        const scopedResponse = await index.query({
+    const contextMatches = await retrieveChatMatches({
+      query: sanitizedMessage,
+      pageContextVideoId:
+        pageContext && typeof pageContext === 'object' ? pageContext.videoId : undefined,
+      discoveryMatches: discoveryResponse.matches,
+      queryVideo: async (videoId) => {
+        const response = await index.query({
           vector: questionEmbedding,
           topK: CONTEXT_TOP_K,
           includeMetadata: true,
-          filter: {
-            videoId: { $eq: videoScope.videoId },
-          },
+          filter: { videoId: { $eq: videoId } },
         })
-
-        if (scopedResponse.matches.length > 0) {
-          contextMatches = scopedResponse.matches
-        }
-      } catch {
-        // Keep the global top results if the optional scoped query is
-        // temporarily unavailable; chat should degrade gracefully.
-        console.warn('[Chat] Scoped video retrieval failed; using global fallback')
-      }
-    }
+        return response.matches
+      },
+      onScopeError: () => console.warn('[Chat] Scoped video retrieval failed; keeping available context'),
+    })
 
     // Debug: Log retrieved vectors (only in debug mode to prevent data leakage)
     if (DEBUG_MODE) {

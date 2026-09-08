@@ -119,6 +119,30 @@ test('marks a private document as not publicly accessible', () => {
   assert.ok(!context.includes('URL:'), 'no link is offered for a private file')
 })
 
+test('video uses actual transcript rather than repeated promotional description', () => {
+  const transcript = 'The implementation requires clear requirements and a testable outcome.'
+  const source = describeSource({ ...legacyVideo, description: 'Subscribe and join the bootcamp', content: transcript }, 1)
+  assert.equal(source.content, transcript)
+})
+
+test('document uses full chunk including evidence beyond the preview', () => {
+  const full = 'a'.repeat(500) + ' The decisive evidence occurs after the preview.'
+  assert.equal(describeSource({ ...uploadedDocument, description: full.slice(0, 500), content: full }, 1).content, full)
+})
+
+test('approve-route metadata works without backfilling title or description', () => {
+  const source = describeSource({ type: 'document', vectorType: 'document', fileName: 'Family notes.docx', content: 'Full approved content', documentId: 'doc-approved' }, 1)
+  assert.equal(source.title, 'Family notes.docx')
+  assert.equal(source.content, 'Full approved content')
+  assert.equal(source.url, undefined)
+})
+
+test('empty or malformed full content retains legacy preview', () => {
+  for (const content of ['', '   ', {}, 123]) {
+    assert.equal(describeSource({ ...legacyVideo, content }, 1).content, legacyVideo.description)
+  }
+})
+
 console.log(`\nTotal: ${passed + failed}`)
 console.log(`Passed: ${passed}`)
 console.log(`Failed: ${failed}`)
