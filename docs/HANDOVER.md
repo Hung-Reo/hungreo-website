@@ -19,14 +19,17 @@ DNS quản ở **Hostinger** (`ns1/ns2.dns-parking.com`), KHÔNG dùng Vercel na
 |---|---|---|---|
 | A | `@` | `76.76.21.21` | Vercel — sửa được |
 | CNAME | `www` | `hungreo.com` | tự theo apex |
-| A | `n8n` | `72.61.123.33` | ⛔ VPS |
-| A | `bot` | `72.61.123.33` | ⛔ VPS |
+| A | `n8n` | `<VPS_IP>` | ⛔ VPS |
+| A | `bot` | `<VPS_IP>` | ⛔ VPS |
+
+> Giá trị thật của `<VPS_IP>` / `<OLD_HOST_IP>` nằm ở `docs/INFRA_PRIVATE.local.md`
+> (gitignored). Repo này **public** — đừng ghi IP hạ tầng vào file được commit.
 
 VPS (`ssh hungreo-claude-vps`) chạy **n8n + 3 Telegram bot của OpenClaw**. n8n hard-code `WEBHOOK_URL=https://n8n.hungreo.com/`. Đổi nameserver sang Vercel = zone mới mất 2 record này = **n8n webhook chết + bot ngừng nhận tin**.
 
 Cũng **không bao giờ bấm "Reset DNS records"** trong hPanel — xoá sạch về mặc định.
 
-TTL của `@` là 60s → đổi/revert có hiệu lực trong ~1-2 phút. Revert website: đổi `@` về `2.57.91.91`.
+TTL của `@` là 60s → đổi/revert có hiệu lực trong ~1-2 phút. Revert website: đổi `@` về `<OLD_HOST_IP>`.
 
 ### 2. Push GitHub KHÔNG tự deploy
 Git integration không hoạt động. Sau khi push phải chạy:

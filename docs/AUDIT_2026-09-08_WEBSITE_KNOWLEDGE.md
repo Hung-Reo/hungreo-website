@@ -97,7 +97,7 @@ Replay dùng logic local hiện tại và read-only Pinecone; **không phải tr
 - Robots và sitemap cả ba dùng hungreo.com. Sitemap có 5 trang tĩnh + 3 blog + 3 project, chưa có Knowledge/video. `lastmod` trang tĩnh là thời điểm build 2026-08-24, không phải bằng chứng nội dung vừa được cập nhật.
 - Source search app/components/lib không thấy hard-coded `hungreo.vercel.app`; payload public project/blog cũng không có chuỗi này. Link điều hướng quan sát được dùng hungreo.com/relative paths. Chưa audit toàn bộ backlink bên ngoài.
 - `/admin/dashboard` anonymous → 307 `/admin/login`; `/api/auth/session` anonymous → null. Cookie config là host-only; chưa thực hiện đăng nhập/reset-password để kiểm thử đầy đủ. Không giả định session domain cũ tự chuyển được.
-- DNS live: Hostinger `ns1/ns2.dns-parking.com`, apex A `76.76.21.21`, www CNAME `hungreo.com`; n8n và bot A vẫn `72.61.123.33`. Không thao tác VPS/DNS.
+- DNS live: Hostinger `ns1/ns2.dns-parking.com`, apex A `76.76.21.21`, www CNAME `hungreo.com`; n8n và bot A vẫn `<VPS_IP>`. Không thao tác VPS/DNS.
 
 **Đề xuất:** giữ hungreo.com làm public canonical; redirect vĩnh viễn www và alias cũ hungreo.vercel.app về cùng path/query trên hungreo.com. Giữ deployment URLs phục vụ kiểm tra kỹ thuật theo cơ chế access hiện có. Dùng domain redirect của Vercel nếu alias hỗ trợ; nếu không, rule theo hostname chính xác trong Next.js, không wildcard mọi vercel.app. Không cần đổi DNS, nameserver hay xóa project.
 
