@@ -2,32 +2,15 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { VideoPlayer } from '@/components/features/VideoPlayer'
 import { RelatedVideos } from '@/components/features/RelatedVideos'
-import { getVideo as getVideoFromDB, normalizeVideo, type VideoCategory } from '@/lib/videoManager'
-
-const CATEGORY_MAPPINGS: Record<string, { name: string; category: VideoCategory }> = {
-  'leadership': { name: 'Leadership', category: 'Leadership' },
-  'ai-works': { name: 'AI Works', category: 'AI Works' },
-  'health': { name: 'Health', category: 'Health' },
-  'entertaining': { name: 'Entertaining', category: 'Entertaining' },
-  'human-philosophy': { name: 'Human Philosophy', category: 'Human Philosophy' },
-}
+import { getVideo as getVideoFromDB, normalizeVideo } from '@/lib/videoManager'
+import { CATEGORY_MAPPINGS, createVideoSlug } from '@/lib/knowledge'
+import { BASE_URL } from '@/lib/metadata'
 
 interface PageProps {
   params: {
     category: string
     slug: string
   }
-}
-
-// Create slug from video ID and title
-function createVideoSlug(videoId: string, title: string): string {
-  const effectiveTitle = title.trim() || 'video'
-  const titleSlug = effectiveTitle
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .substring(0, 50)
-  return `${titleSlug}-${videoId}`
 }
 
 // Extract video ID from slug (format: "title-slug-videoId")
@@ -77,6 +60,14 @@ export async function generateMetadata({ params }: PageProps) {
   return {
     title: `${title} | ${CATEGORY_MAPPINGS[params.category]?.name || ''} - AI Tools`,
     description: description.substring(0, 160),
+    alternates: {
+      // Canonical points at the slug the route itself would redirect to, so
+      // stale title slugs for the same videoId do not read as separate pages.
+      canonical: `${BASE_URL}/tools/knowledge/${params.category}/${createVideoSlug(
+        video.videoId,
+        title
+      )}`,
+    },
   }
 }
 

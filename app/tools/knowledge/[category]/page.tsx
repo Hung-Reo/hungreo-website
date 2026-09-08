@@ -1,15 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { VideoGrid } from '@/components/features/VideoGrid'
-import { getVideosByCategory, type VideoCategory } from '@/lib/videoManager'
+import { getVideosByCategory } from '@/lib/videoManager'
+import { CATEGORY_MAPPINGS } from '@/lib/knowledge'
+import { BASE_URL } from '@/lib/metadata'
 
-const CATEGORY_MAPPINGS: Record<string, { name: string; category: VideoCategory }> = {
-  'leadership': { name: 'Leadership', category: 'Leadership' },
-  'ai-works': { name: 'AI Works', category: 'AI Works' },
-  'health': { name: 'Health', category: 'Health' },
-  'entertaining': { name: 'Entertaining', category: 'Entertaining' },
-  'human-philosophy': { name: 'Human Philosophy', category: 'Human Philosophy' },
-}
 
 interface PageProps {
   params: {
@@ -24,6 +19,9 @@ export function generateMetadata({ params }: PageProps) {
   return {
     title: `${mapping.name} Videos | AI Tools - Hung Dinh`,
     description: `Browse curated ${mapping.name} videos with AI-powered summaries and Q&A.`,
+    alternates: {
+      canonical: `${BASE_URL}/tools/knowledge/${params.category}`,
+    },
   }
 }
 

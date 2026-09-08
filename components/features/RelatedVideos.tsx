@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getBaseUrl } from '@/lib/getBaseUrl'
 import type { VideoCategory } from '@/lib/videoManager'
+import { createVideoSlug } from '@/lib/knowledge'
 
 interface RelatedVideosProps {
   category: VideoCategory
@@ -32,18 +33,6 @@ async function getRelatedVideos(category: VideoCategory, currentVideoId: string,
     console.error('Error fetching related videos:', error)
     return []
   }
-}
-
-// Create slug from video ID
-function createVideoSlug(videoId: string, title: string): string {
-  // Ensure title is not empty to avoid creating slugs like "-videoId"
-  const effectiveTitle = title.trim() || 'video'
-  const titleSlug = effectiveTitle
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .substring(0, 50)
-  return `${titleSlug}-${videoId}`
 }
 
 export async function RelatedVideos({ category, categorySlug, currentVideoId }: RelatedVideosProps) {

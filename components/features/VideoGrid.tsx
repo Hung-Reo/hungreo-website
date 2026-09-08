@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Grid, List, Search } from 'lucide-react'
 import { Video } from '@/lib/videoManager'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { createVideoSlug } from '@/lib/knowledge'
 
 interface VideoGridProps {
   videos: Video[]
@@ -41,18 +42,6 @@ export function VideoGrid({ videos, categorySlug }: VideoGridProps) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
     }
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
-
-  // Create slug from video ID
-  function createVideoSlug(videoId: string, title: string, fallbackTitle?: string): string {
-    // Use fallback title if the primary title is empty
-    const effectiveTitle = title.trim() || fallbackTitle || 'video'
-    const titleSlug = effectiveTitle
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '')
-      .substring(0, 50)
-    return `${titleSlug}-${videoId}`
   }
 
   return (
