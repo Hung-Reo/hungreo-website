@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { Project } from '@/lib/contentManager'
 import { Loader2, ArrowLeft, Github, ExternalLink, Lightbulb, Code } from 'lucide-react'
-import DOMPurify from 'isomorphic-dompurify'
+// Content is fetched after mount; sanitize with the browser DOM, not server-side jsdom.
+import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 
 // Configure marked for better parsing

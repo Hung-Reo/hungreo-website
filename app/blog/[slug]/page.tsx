@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { BlogPost } from '@/lib/contentManager'
 import { Loader2, ArrowLeft, Calendar, Clock, Tag, BookOpen } from 'lucide-react'
-import DOMPurify from 'isomorphic-dompurify'
+// Content is fetched after mount; sanitize with the browser DOM, not server-side jsdom.
+import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 
 // Configure marked for better parsing
