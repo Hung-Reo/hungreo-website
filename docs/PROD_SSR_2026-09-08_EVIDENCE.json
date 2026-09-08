@@ -1,0 +1,265 @@
+{
+  "manifest": {
+    "baseCommit": "c36f42e008c303dd339d90439510b89054dfc05f",
+    "patchSha256": "0d112e5c4b02072e2f7aa72f8de4fb6812d1c59665a7e0acc71e196a94df482b",
+    "files": [
+      "app/blog/[slug]/page.tsx",
+      "app/projects/[slug]/page.tsx",
+      "package.json",
+      "package-lock.json",
+      "__tests__/detailPagesSSR.test.ts",
+      "scripts/serve-ssr-fixtures.ts"
+    ],
+    "previousDeployment": "dpl_E2GCmbYJgPq9EEn3sCQVDbdVQGyA",
+    "candidateUrl": "https://hungreo-website-hojo1twmk-hungreos-projects.vercel.app",
+    "candidateId": "dpl_EH7USNZ7YgZmuFD2ef3EraX8bHXv"
+  },
+  "before": [
+    {
+      "url": "https://hungreo.com/projects/openclaw-personal-ai-operations-platform",
+      "status": 500,
+      "time": "2026-09-08T11:58:56.804933+00:00"
+    },
+    {
+      "url": "https://hungreo.com/projects/ai-powered-personal-assistant-telegram-bot",
+      "status": 500,
+      "time": "2026-09-08T11:58:57.939683+00:00"
+    },
+    {
+      "url": "https://hungreo.com/projects/hungreo-personal-portfolio-website",
+      "status": 500,
+      "time": "2026-09-08T11:58:59.073804+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun",
+      "status": 500,
+      "time": "2026-09-08T11:59:00.420123+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/redefining-education-in-the-ai-era-from-knowledge-to-love",
+      "status": 500,
+      "time": "2026-09-08T11:59:01.527823+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age",
+      "status": 500,
+      "time": "2026-09-08T11:59:02.704702+00:00"
+    }
+  ],
+  "candidate": [
+    {
+      "path": "/projects/openclaw-personal-ai-operations-platform",
+      "exit": 0,
+      "status": "200",
+      "title": "OpenClaw Personal AI Operations Platform",
+      "serverError": false
+    },
+    {
+      "path": "/projects/ai-powered-personal-assistant-telegram-bot",
+      "exit": 0,
+      "status": "200",
+      "title": "AI-Powered Personal Assistant Telegram Bot",
+      "serverError": false
+    },
+    {
+      "path": "/projects/hungreo-personal-portfolio-website",
+      "exit": 0,
+      "status": "200",
+      "title": "Hungreo Personal Portfolio Website",
+      "serverError": false
+    },
+    {
+      "path": "/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun",
+      "exit": 0,
+      "status": "200",
+      "title": "Awakening Inner Peace",
+      "serverError": false
+    },
+    {
+      "path": "/blog/redefining-education-in-the-ai-era-from-knowledge-to-love",
+      "exit": 0,
+      "status": "200",
+      "title": "Redefining Education in the AI Era: From Knowledge to Love",
+      "serverError": false
+    },
+    {
+      "path": "/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age",
+      "exit": 0,
+      "status": "200",
+      "title": "The Real AI Journey: Preserving Humanity in the AI Age",
+      "serverError": false
+    }
+  ],
+  "after": [
+    {
+      "url": "https://hungreo.com/projects/openclaw-personal-ai-operations-platform",
+      "attempt": 1,
+      "status": 200,
+      "title": "OpenClaw Personal AI Operations Platform",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:25.140965+00:00"
+    },
+    {
+      "url": "https://hungreo.com/projects/ai-powered-personal-assistant-telegram-bot",
+      "attempt": 1,
+      "status": 200,
+      "title": "AI-Powered Personal Assistant Telegram Bot",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:25.858740+00:00"
+    },
+    {
+      "url": "https://hungreo.com/projects/hungreo-personal-portfolio-website",
+      "attempt": 1,
+      "status": 200,
+      "title": "Hungreo Personal Portfolio Website",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:26.545091+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun",
+      "attempt": 1,
+      "status": 200,
+      "title": "Awakening Inner Peace",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:27.236333+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/redefining-education-in-the-ai-era-from-knowledge-to-love",
+      "attempt": 1,
+      "status": 200,
+      "title": "Redefining Education in the AI Era: From Knowledge to Love",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:27.909701+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age",
+      "attempt": 1,
+      "status": 200,
+      "title": "The Real AI Journey: Preserving Humanity in the AI Age",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:28.561691+00:00"
+    },
+    {
+      "url": "https://hungreo.com/projects/openclaw-personal-ai-operations-platform",
+      "attempt": 2,
+      "status": 200,
+      "title": "OpenClaw Personal AI Operations Platform",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:29.207684+00:00"
+    },
+    {
+      "url": "https://hungreo.com/projects/ai-powered-personal-assistant-telegram-bot",
+      "attempt": 2,
+      "status": 200,
+      "title": "AI-Powered Personal Assistant Telegram Bot",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:29.897898+00:00"
+    },
+    {
+      "url": "https://hungreo.com/projects/hungreo-personal-portfolio-website",
+      "attempt": 2,
+      "status": 200,
+      "title": "Hungreo Personal Portfolio Website",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:30.669848+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun",
+      "attempt": 2,
+      "status": 200,
+      "title": "Awakening Inner Peace",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:31.324115+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/redefining-education-in-the-ai-era-from-knowledge-to-love",
+      "attempt": 2,
+      "status": 200,
+      "title": "Redefining Education in the AI Era: From Knowledge to Love",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:31.998379+00:00"
+    },
+    {
+      "url": "https://hungreo.com/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age",
+      "attempt": 2,
+      "status": 200,
+      "title": "The Real AI Journey: Preserving Humanity in the AI Age",
+      "titleMatch": true,
+      "serverError": false,
+      "at": "2026-09-08T12:05:32.630318+00:00"
+    },
+    {
+      "path": "/",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/"
+    },
+    {
+      "path": "/about",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/about"
+    },
+    {
+      "path": "/projects",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/projects"
+    },
+    {
+      "path": "/blog",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/blog"
+    },
+    {
+      "path": "/tools/knowledge",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/tools/knowledge"
+    },
+    {
+      "path": "/admin/dashboard",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/admin/login"
+    },
+    {
+      "path": "/api/auth/providers",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/api/auth/providers",
+      "callbackHostCorrect": true
+    },
+    {
+      "path": "/api/auth/session",
+      "status": 200,
+      "finalUrl": "https://hungreo.com/api/auth/session",
+      "anonymousSessionNull": true
+    }
+  ],
+  "runtimeLogCheck": {
+    "deploymentId": "dpl_EH7USNZ7YgZmuFD2ef3EraX8bHXv",
+    "since": "2026-09-08T12:01:40Z",
+    "until": "2026-09-08T12:06:36Z",
+    "filters": [
+      "statusCode=5xx",
+      "query=ERR_REQUIRE_ESM"
+    ],
+    "result": "No logs found for either filter; bounded observation only."
+  },
+  "browser": {
+    "host": "hungreo.com",
+    "pages": 6,
+    "languages": [
+      "en",
+      "vi"
+    ],
+    "result": "12/12 h1 and non-empty article .prose; observed correct translated titles",
+    "uatByOwner": "pending"
+  }
+}

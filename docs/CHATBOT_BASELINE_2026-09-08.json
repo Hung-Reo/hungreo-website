@@ -1,0 +1,1827 @@
+{
+  "date": "2026-09-08",
+  "endpoint": "https://hungreo.com/api/chat",
+  "deployment": "dpl_E2GCmbYJgPq9EEn3sCQVDbdVQGyA",
+  "method": "One live call per case. Replay is a separate local read-only reconstruction, not same-request production trace. No raw source context included.",
+  "baseline": [
+    {
+      "id": "single_vi",
+      "question": "Cho mình 3 bài học chính từ video Self-study Blueprint, mỗi bài kèm nguồn.",
+      "expected": [
+        "O8_isifBeKk"
+      ],
+      "status": 200,
+      "ttft_s": 6.31,
+      "total_s": 10.74,
+      "answer": "Chào bạn! Dưới đây là **3 bài học chính** từ video **How to Teach Yourself Anything (The Self-Study Blueprint)** kèm nguồn để bạn tham khảo 🎓💡:\n\n---\n\n### 1. **Tiêu thụ kiến thức một cách có chủ đích, không ngẫu nhiên**  \nBạn cần xác định rõ **kỹ năng nào sẽ thay đổi cuộc sống bạn nhiều nhất trong năm tới** và tập trung sâu vào kỹ năng đó thay vì học dàn trải nhiều thứ. Việc tập trung vào một kỹ năng giúp bạn phát triển kỹ năng có giá trị cao và trở thành người có giá trị trên thị trường.  \nNguồn: [How to Teach Yourself Anything (The Self-Study Blueprint)](https://www.youtube.com/watch?v=O8_isifBeKk) (từ 09:59 đến 12:55)\n\n---\n\n### 2. **Phản chiếu và áp dụng ngay kiến thức đã học**  \nSau mỗi lần học (đọc sách, nghe podcast, xem video), hãy tự hỏi: **\"Tôi có thể áp dụng điều gì ngay bây giờ?\"** và lập kế hoạch cụ thể để thực hành. Phản chiếu giúp não bộ tổ chức thông tin và tăng khả năng sử dụng kiến thức thành kỹ năng thực tế.  \nNguồn: [How to Teach Yourself Anything (The Self-Study Blueprint)](https://www.youtube.com/watch?v=O8_isifBeKk) (từ 11:01 đến 14:00)\n\n---\n\n### 3. **Lặp lại và dạy lại để biến kiến thức thành kỹ năng**  \nLặp đi lặp lại việc áp dụng kiến thức giúp hình thành kỹ năng tự động hóa. Tiếp đó, việc **dạy lại cho người khác** sẽ củng cố sâu hơn kỹ năng bạn đã học và giúp bạn phát triển toàn diện hơn.  \nNguồn: [How to Teach Yourself Anything (The Self-Study Blueprint)](https://www.youtube.com/watch?v=O8_isifBeKk) (từ 14:00 đến 16:41)\n\n---\n\nBạn có thể xem chi tiết hơn tại video:  \n[How to Teach Yourself Anything (The Self-Study Blueprint)](https://www.youtube.com/watch?v=O8_isifBeKk) 🚀\n\nHy vọng những chia sẻ này sẽ hữu ích cho bạn trên hành trình tự học và phát triển kỹ năng! 💪🎯",
+      "payload": {
+        "message": "Cho mình 3 bài học chính từ video Self-study Blueprint, mỗi bài kèm nguồn.",
+        "history": [],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    },
+    {
+      "id": "two_vi",
+      "question": "So sánh Self-study Blueprint với What to teach when AI writes the code của Rainer Stropek: 2 điểm chung, 1 khác biệt; dẫn link cả hai video.",
+      "expected": [
+        "O8_isifBeKk",
+        "yhGzXULZkEw"
+      ],
+      "status": 200,
+      "ttft_s": 3.64,
+      "total_s": 7.53,
+      "answer": "**So sánh Self-study Blueprint và \"What to teach when AI writes the code\" của Rainer Stropek** 🎓💡\n\n---\n\n### 2 điểm chung:\n• **Tập trung vào phát triển kỹ năng thiết yếu cho tương lai:** Cả hai đều nhấn mạnh việc phát triển kỹ năng cốt lõi vượt lên trên kiến thức kỹ thuật thuần túy. Trong bài nói của Rainer Stropek, ông nhấn mạnh rằng khi AI viết code, điều quan trọng còn lại là **\"sự rõ ràng\" (clarity)** trong việc diễn đạt ý tưởng để AI thực hiện chính xác. Tương tự, Self-study Blueprint cũng hướng đến việc xây dựng tư duy và kỹ năng tự học để thích nghi trong môi trường thay đổi nhanh.\n\n• **Khuyến khích tư duy sáng tạo và khả năng thực thi ý tưởng:** Rainer Stropek chia sẻ rằng ông không yêu thích coding chỉ vì viết code, mà vì khả năng biến ý tưởng thành hiện thực. Điều này tương đồng với Self-study Blueprint - tập trung vào việc **tự học và áp dụng kiến thức để tạo ra giá trị thực tiễn**.\n\n---\n\n### 1 điểm khác biệt:\n• **Phạm vi ứng dụng và mục đích:**  \n- Bài nói của Rainer Stropek dành riêng cho lập trình viên và giáo viên công nghệ, tập trung vào việc điều chỉnh cách dạy và học lập trình trong thời đại AI viết code.  \n- Trong khi đó, Self-study Blueprint có thể là một phương pháp học tổng quát hơn, dành cho nhiều lĩnh vực chứ không chỉ riêng lập trình, nhằm phát triển kỹ năng tự học và thích nghi cá nhân.\n\n---\n\n### Link video tham khảo:\n- [What to teach when AI writes the code | Rainer Stropek | TEDxLinz](https://www.youtube.com/watch?v=yhGzXULZkEw)  \n- Xin lỗi, tôi không có thông tin về video Self-study Blueprint trong cơ sở dữ liệu. Vui lòng liên hệ Hung tại hungreo2005@gmail.com để biết thêm chi tiết.\n\nNếu bạn muốn tôi giúp phân tích sâu hơn hoặc có câu hỏi khác, cứ hỏi nhé! 🚀",
+      "payload": {
+        "message": "So sánh Self-study Blueprint với What to teach when AI writes the code của Rainer Stropek: 2 điểm chung, 1 khác biệt; dẫn link cả hai video.",
+        "history": [],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    },
+    {
+      "id": "three_en",
+      "question": "Synthesize three practical learning principles from Self-study Blueprint, What to teach when AI writes the code, and Vibe Coding Fundamentals In 33 minutes. Attribute each idea and link all three videos.",
+      "expected": [
+        "O8_isifBeKk",
+        "yhGzXULZkEw",
+        "iLCDSY2XX7E"
+      ],
+      "status": 200,
+      "ttft_s": 2.97,
+      "total_s": 6.32,
+      "answer": "Here are three practical learning principles synthesized from the videos **Self-study Blueprint**, **What to Teach When AI Writes the Code**, and **Vibe Coding Fundamentals In 33 minutes**:\n\n---\n\n### Practical Learning Principles 🎓💡\n\n1. **Emphasize Understanding Over Memorization**  \n   From **Vibe Coding Fundamentals In 33 minutes**, the focus is on grasping core coding concepts deeply rather than just memorizing syntax. This principle helps learners build a solid foundation that adapts well when AI tools start writing code.  \n   Watch here: [Vibe Coding Fundamentals In 33 minutes](https://www.youtube.com/watch?v=iLCDSY2XX7E)\n\n2. **Adapt Teaching to AI’s Role in Coding**  \n   From **What to Teach When AI Writes the Code**, the key idea is to shift teaching from rote coding to critical thinking, problem decomposition, and higher-level design since AI can handle routine coding tasks. This prepares learners to partner effectively with AI.  \n   (Note: The exact video link for this title is not in the provided context, so for more info, please contact Hung.)\n\n3. **Create a Structured Self-Study Plan**  \n   From **Self-study Blueprint**, the principle is to design a clear, goal-oriented learning path with milestones, regular practice, and reflection. This structured approach ensures steady progress and retention.  \n   (Note: The exact video link for this title is not in the provided context, so for more info, please contact Hung.)\n\n---\n\n### Summary  \nTogether, these principles highlight the importance of deep understanding, evolving teaching methods alongside AI, and disciplined self-study strategies to thrive in modern coding careers. 🚀\n\nIf you want to dive into coding fundamentals, check out the detailed **Vibe Coding Fundamentals In 33 minutes** video here:  \n[Vibe Coding Fundamentals In 33 minutes](https://www.youtube.com/watch?v=iLCDSY2XX7E)\n\nFor the other two videos, please reach out to Hung for access or more information.\n\n---\n\nIf you'd like, I can help you with links or info about Hung's AI Agent Bootcamp or other resources mentioned in the videos! 😊",
+      "payload": {
+        "message": "Synthesize three practical learning principles from Self-study Blueprint, What to teach when AI writes the code, and Vibe Coding Fundamentals In 33 minutes. Attribute each idea and link all three videos.",
+        "history": [],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    },
+    {
+      "id": "personal_vi",
+      "question": "Từ Self-study Blueprint và thông tin công khai trên website, Hưng có thể áp dụng gì vào hành trình Business Analyst sang AI Product Builder? Tách rõ dữ kiện về Hưng với đề xuất của bạn và dẫn nguồn cho cả hai.",
+      "expected": [
+        "O8_isifBeKk",
+        "hungreo.com"
+      ],
+      "status": 200,
+      "ttft_s": 1.85,
+      "total_s": 8.58,
+      "answer": "Chào bạn! Dưới đây là phân tích tách bạch giữa dữ kiện về Hưng và đề xuất áp dụng từ Self-study Blueprint cùng thông tin công khai trên website của Hưng cho hành trình chuyển từ Business Analyst sang AI Product Builder.\n\n---\n\n**🔹 Dữ kiện về Hưng Dinh từ website và tài liệu công khai**  \n- **Kinh nghiệm**: Hưng có 20 năm kinh nghiệm Business Analyst trong các lĩnh vực Giáo dục, FMCG & Sản xuất. (Nguồn: Trang chủ)  \n- **Hành trình AI**:  \n  • Từ tháng 10/2025, Hưng bắt đầu tự học và phát triển các dự án AI cá nhân như chatbot AI, ứng dụng di động, và AI agent tự động hóa công việc.  \n  • Tham gia tư vấn ứng dụng AI tại trường Pétrus Ký, hỗ trợ 200 giáo viên và 2.000 học sinh áp dụng AI trong giảng dạy. (Nguồn: About Me | Hung Dinh)  \n- **Tư duy & phương pháp**:  \n  • Hưng nhấn mạnh \"Problem-First Mindset\" - hiểu sâu sắc vấn đề trước khi nghĩ đến giải pháp AI.  \n  • Xây dựng AI như một đối tác tư duy (Human + AI) chứ không chỉ là công cụ.  \n  • Lập trình, vận hành chatbot AI tích hợp với workflow tự động n8n và phát triển ứng dụng web cá nhân. (Nguồn: Hungreo Personal Portfolio Website, Blog)  \n- **Dự án nổi bật**: Văn Hóa Gia Đình - dùng AI để bảo tồn giá trị nhân văn, không chỉ tự động hóa. (Nguồn: Trang chủ, Blog)\n\n---\n\n**🔹 Đề xuất áp dụng Self-study Blueprint cho Hưng**  \nTừ những dữ kiện trên, Hưng có thể áp dụng các bước sau cho hành trình phát triển AI Product Builder:  \n\n1. **Xây dựng nền tảng kiến thức AI qua tự học có hệ thống**  \n   • Tiếp tục áp dụng blueprint tự học, tập trung vào kỹ thuật AI như lập trình chatbot, workflow tự động, tích hợp vector database như hiện tại.  \n   • Kết hợp học hỏi từ các công cụ AI mới (Codex, Claude Code) để nâng cao hiệu quả coding và độ chính xác. 💡  \n\n2. **Giữ vững tư duy \"Problem-First\" và nhân văn trong AI**  \n   • Trước khi xây dựng sản phẩm AI, tiếp tục đào sâu hiểu biết vấn đề thực tế của khách hàng hoặc người dùng cuối.  \n   • Áp dụng triết lý Human + AI để thiết kế sản phẩm AI không chỉ tự động hóa mà còn tăng giá trị con người. 🎯  \n\n3. **Phát triển các dự án thực tế, chia sẻ công khai (Build in Public)**  \n   • Tiếp tục phát triển dự án cá nhân và dự án tư vấn, đồng thời chia sẻ thất bại, bài học để học hỏi và tạo cộng đồng.  \n   • Điều này giúp hoàn thiện kỹ năng quản lý sản phẩm AI và xây dựng thương hiệu cá nhân. 🚀  \n\n4. **Kết nối kiến thức BA truyền thống với kỹ thuật AI hiện đại**  \n   • Sử dụng kinh nghiệm phân tích kinh doanh sâu rộng để định hướng sản phẩm AI phù hợp nhu cầu thực tế.  \n   • Kết hợp kỹ năng phân tích với khả năng kỹ thuật để làm cầu nối giữa người dùng và công nghệ AI. 💼  \n\n---\n\n**🔹 Nguồn tham khảo**  \n- Trang chủ Hung Dinh: Business Analyst → AI Product Builder  \n- About Me | Hung Dinh (Professional Journey)  \n- Hungreo Personal Portfolio Website (AI chatbot, workflow, coding)  \n- Blog | Hung Dinh (Problem-First Mindset, Human + AI, Văn Hóa Gia Đình project)\n\n---\n\nHy vọng phân tích trên giúp bạn hiểu rõ cách Hưng có thể áp dụng Self-study Blueprint và thông tin công khai để phát triển hành trình từ Business Analyst sang AI Product Builder một cách hiệu quả! Nếu bạn cần thêm chi tiết, cứ hỏi nhé! 😊🚀",
+      "payload": {
+        "message": "Từ Self-study Blueprint và thông tin công khai trên website, Hưng có thể áp dụng gì vào hành trình Business Analyst sang AI Product Builder? Tách rõ dữ kiện về Hưng với đề xuất của bạn và dẫn nguồn cho cả hai.",
+        "history": [],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    },
+    {
+      "id": "followup_vi",
+      "question": "Vậy hai nguồn vừa so sánh khác nhau ở đâu khi áp dụng để học làm sản phẩm AI? Dẫn lại link cả hai.",
+      "expected": [
+        "O8_isifBeKk",
+        "yhGzXULZkEw"
+      ],
+      "status": 200,
+      "ttft_s": 1.9,
+      "total_s": 5.43,
+      "answer": "**So sánh sự khác biệt khi áp dụng hai nguồn để học làm sản phẩm AI** 🚀💡\n\n---\n\n### Khác biệt khi áp dụng trong học làm sản phẩm AI:\n\n• **What to teach when AI writes the code (Rainer Stropek):**  \nTập trung vào việc hiểu rõ những kỹ năng cần thiết khi AI hỗ trợ hoặc thay thế việc viết code truyền thống. Điều này đặc biệt hữu ích cho lập trình viên và người dạy lập trình, giúp họ điều chỉnh cách học và phát triển kỹ năng sao cho phù hợp với môi trường có AI tham gia sâu. Khi xây dựng sản phẩm AI, nội dung này giúp bạn tập trung vào khả năng **giao tiếp ý tưởng rõ ràng để AI thực hiện đúng**, cũng như hiểu vai trò bổ trợ của AI trong quy trình phát triển.\n\n• **Self-study Blueprint:**  \nTập trung vào phương pháp tự học và phát triển kỹ năng một cách tổng thể, không chỉ riêng lập trình hay AI. Khi làm sản phẩm AI, phương pháp này giúp xây dựng tư duy tự chủ, khả năng thích nghi và học hỏi liên tục — những yếu tố quan trọng để cập nhật nhanh các công nghệ AI mới và giải quyết vấn đề đa dạng trong sản phẩm.\n\n---\n\n### Tóm lại:  \n- **Rainer Stropek** cung cấp góc nhìn chuyên sâu vào kỹ năng lập trình và giảng dạy trong thời đại AI viết code.  \n- **Self-study Blueprint** là phương pháp nền tảng để phát triển tư duy tự học, rất cần thiết để làm chủ sản phẩm AI trong dài hạn.\n\n---\n\n### Link video tham khảo:\n- [What to teach when AI writes the code | Rainer Stropek | TEDxLinz](https://www.youtube.com/watch?v=yhGzXULZkEw)  \n- Xin lỗi, tôi không có thông tin về video Self-study Blueprint trong cơ sở dữ liệu. Vui lòng liên hệ Hung tại hungreo2005@gmail.com để biết thêm chi tiết.\n\nNếu bạn cần thêm thông tin hoặc phân tích khác, hãy cho tôi biết nhé! 🌟",
+      "payload": {
+        "message": "Vậy hai nguồn vừa so sánh khác nhau ở đâu khi áp dụng để học làm sản phẩm AI? Dẫn lại link cả hai.",
+        "history": [
+          {
+            "role": "user",
+            "content": "So sánh Self-study Blueprint với What to teach when AI writes the code của Rainer Stropek: 2 điểm chung, 1 khác biệt; dẫn link cả hai video."
+          },
+          {
+            "role": "assistant",
+            "content": "**So sánh Self-study Blueprint và \"What to teach when AI writes the code\" của Rainer Stropek** 🎓💡\n\n---\n\n### 2 điểm chung:\n• **Tập trung vào phát triển kỹ năng thiết yếu cho tương lai:** Cả hai đều nhấn mạnh việc phát triển kỹ năng cốt lõi vượt lên trên kiến thức kỹ thuật thuần túy. Trong bài nói của Rainer Stropek, ông nhấn mạnh rằng khi AI viết code, điều quan trọng còn lại là **\"sự rõ ràng\" (clarity)** trong việc diễn đạt ý tưởng để AI thực hiện chính xác. Tương tự, Self-study Blueprint cũng hướng đến việc xây dựng tư duy và kỹ năng tự học để thích nghi trong môi trường thay đổi nhanh.\n\n• **Khuyến khích tư duy sáng tạo và khả năng thực thi ý tưởng:** Rainer Stropek chia sẻ rằng ông không yêu thích coding chỉ vì viết code, mà vì khả năng biến ý tưởng thành hiện thực. Điều này tương đồng với Self-study Blueprint - tập trung vào việc **tự học và áp dụng kiến thức để tạo ra giá trị thực tiễn**.\n\n---\n\n### 1 điểm khác biệt:\n• **Phạm vi ứng dụng và mục đích:**  \n- Bài nói của Rainer Stropek dành riêng cho lập trình viên và giáo viên công nghệ, tập trung vào việc điều chỉnh cách dạy và học lập trình trong thời đại AI viết code.  \n- Trong khi đó, Self-study Blueprint có thể là một phương pháp học tổng quát hơn, dành cho nhiều lĩnh vực chứ không chỉ riêng lập trình, nhằm phát triển kỹ năng tự học và thích nghi cá nhân.\n\n---\n\n### Link video tham khảo:\n- [What to teach when AI writes the code | Rainer Stropek | TEDxLinz](https://www.youtube.com/watch?v=yhGzXULZkEw)  \n- Xin lỗi, tôi không có thông tin về video Self-study Blueprint trong cơ sở dữ liệu. Vui lòng liên hệ Hung tại hungreo2005@gmail.com để biết thêm chi tiết.\n\nNếu bạn muốn tôi giúp phân tích sâu hơn hoặc có câu hỏi khác, cứ hỏi nhé! 🚀"
+          }
+        ],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    },
+    {
+      "id": "switch_vi",
+      "question": "Bỏ qua video đang xem. Hãy tóm tắt What to teach when AI writes the code của Rainer Stropek và dẫn link đúng video.",
+      "expected": [
+        "yhGzXULZkEw"
+      ],
+      "status": 200,
+      "ttft_s": 1.82,
+      "total_s": 2.26,
+      "answer": "Xin lỗi, tôi không có thông tin về video \"What to teach when AI writes the code\" của Rainer Stropek trong cơ sở dữ liệu. Vui lòng liên hệ Hung tại hungreo2005@gmail.com để biết thêm chi tiết.",
+      "payload": {
+        "message": "Bỏ qua video đang xem. Hãy tóm tắt What to teach when AI writes the code của Rainer Stropek và dẫn link đúng video.",
+        "history": [],
+        "pageContext": {
+          "page": "/tools/knowledge/Leadership/self-study",
+          "videoId": "O8_isifBeKk"
+        }
+      }
+    },
+    {
+      "id": "unknown_vi",
+      "question": "Trong kho có tài liệu tên Zeta-742 Learning Blueprint không? Nếu không thấy nguồn hãy nói rõ, không đoán nội dung.",
+      "expected": [],
+      "status": 200,
+      "ttft_s": 2.21,
+      "total_s": 2.64,
+      "answer": "Xin lỗi, tôi không có thông tin về tài liệu tên \"Zeta-742 Learning Blueprint\" trong cơ sở dữ liệu. Vui lòng liên hệ Hung tại hungreo2005@gmail.com để biết thêm chi tiết.",
+      "payload": {
+        "message": "Trong kho có tài liệu tên Zeta-742 Learning Blueprint không? Nếu không thấy nguồn hãy nói rõ, không đoán nội dung.",
+        "history": [],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    },
+    {
+      "id": "website_doc_en",
+      "question": "According to Hung’s published website and CV if available, how does his Business Analyst background connect to his AI product projects? Cite the exact source pages or document; distinguish facts from inference.",
+      "expected": [
+        "hungreo.com"
+      ],
+      "status": 200,
+      "ttft_s": 2.24,
+      "total_s": 6.57,
+      "answer": "Certainly! Here's how Hung Dinh's Business Analyst background connects to his AI product projects, based on his published website and CV context:\n\n**Facts from the provided context:**\n\n- On the main website page titled \"Hung Dinh - Business Analyst → AI Product Builder,\" it states:  \n  • **\"20 years Business Analyst experience in Education, FMCG & Manufacturing.\"**  \n  • He is now **\"building AI-powered products combining analytical rigor with technical execution.\"**  \n  This directly links his extensive BA experience with his current AI product development work.  \n  *(Source: Main website page /)*\n\n- From the \"About Me | Hung Dinh\" page, his professional journey includes:  \n  • Leading applications management at Samsung Vina Electronics (SAP sales modules, systems administration), indicating deep domain knowledge and analytical skills.  \n  • Consulting on AI tool application at an educational institution, showing how he applies his BA skills toward AI integration in real-world settings.  \n  • Self-study and independent AI projects involving AI chatbots, agents, and automation tools, showing transition from analysis to product building.  \n  *(Source: About Me | Hung Dinh)*\n\n- The \"Hungreo Personal Portfolio Website\" page highlights:  \n  • His progression from chatbot AI development to automated workflows and now building web apps.  \n  • The statement: **\"làm việc với AI là sự chuyển đổi thực sự từ BA sang Quản lý sản phẩm\"** (\"working with AI is a real transition from Business Analyst to Product Management\").  \n  This explicitly ties his BA background to evolving AI product leadership.  \n  *(Source: Hungreo Personal Portfolio Website)*\n\n**Inference (reasoned connection):**\n\n- Hung’s **analytical rigor from 20 years as a Business Analyst** likely supports his approach to deeply understanding problems before building AI solutions, as highlighted by his \"Problem-First Mindset\" on the main website.  \n- His BA experience in diverse industries (Education, FMCG, Manufacturing) equips him to identify real business problems that AI can solve, bridging the gap between business needs and technical execution.  \n- His current AI projects (OpenClaw AI platform, AI-powered Telegram bots, personal AI assistants) reflect applying that analytical foundation to design practical, user-centered AI products.\n\n---\n\n**Summary:**\n\nHung Dinh’s **20 years as a Business Analyst provide the analytical foundation and domain knowledge** that he leverages to build AI-powered products combining deep problem understanding with technical execution. This is explicitly stated on his main website and reflected in his professional journey and project portfolio.\n\n📄 Sources:  \n• Main website homepage (Business Analyst → AI Product Builder)  \n• About Me | Hung Dinh  \n• Hungreo Personal Portfolio Website  \n\n💡 This connection is a clear example of evolving from business analysis to AI product building by integrating analytical rigor with AI technology. 🚀",
+      "payload": {
+        "message": "According to Hung’s published website and CV if available, how does his Business Analyst background connect to his AI product projects? Cite the exact source pages or document; distinguish facts from inference.",
+        "history": [],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    },
+    {
+      "id": "document_video_vi",
+      "question": "So sánh nguyên tắc Học Tập và Rèn Luyện trong tài liệu Văn Hóa Gia Đình với Self-study Blueprint. Dẫn đúng nguồn tài liệu và video, tách lời nguồn với suy luận của bạn.",
+      "expected": [
+        "Van_Hoa_Gia_Dinh_RAG.docx",
+        "O8_isifBeKk"
+      ],
+      "status": 200,
+      "ttft_s": 2.66,
+      "total_s": 11.02,
+      "answer": "**So sánh nguyên tắc Học Tập và Rèn Luyện trong tài liệu Văn Hóa Gia Đình với Self-study Blueprint**\n\n---\n\n### 1. **Nguồn từ tài liệu Self-study Blueprint:**\n\nTrong video **\"How to Teach Yourself Anything (The Self-Study Blueprint)\"** [How to Teach Yourself Anything (The Self-Study Blueprint)](https://www.youtube.com/watch?v=O8_isifBeKk), Hung Dinh trình bày một hệ thống 5 bước để tự học hiệu quả:\n\n- **Bước 1: Consume intentionally (Tiếp nhận kiến thức có chủ đích)**  \n  Tập trung vào một kỹ năng quan trọng nhất thay vì học nhiều kỹ năng nông cạn.\n  \n- **Bước 2: Reflect (Suy ngẫm)**  \n  Sau khi học, tự hỏi \"Tôi có thể áp dụng điều này ngay bây giờ như thế nào?\" và lên kế hoạch hành động.\n  \n- **Bước 3: Apply immediately (Áp dụng ngay)**  \n  Hành động ngay với kiến thức vừa học để biến kiến thức thành kỹ năng thực tế.\n  \n- **Bước 4: Repeat (Lặp lại)**  \n  Tập luyện liên tục để hình thành thói quen và kỹ năng tự động.\n  \n- **Bước 5: Teach (Dạy lại)**  \n  Dạy người khác giúp củng cố kiến thức, phát hiện khoảng trống hiểu biết và thấu hiểu sâu sắc hơn.\n\nHung nhấn mạnh rằng:  \n> \"Kiến thức mà không được áp dụng chỉ là giải trí tinh thần.\"  \n> \"Bộ não thay đổi thật sự chỉ qua kinh nghiệm và thực hành.\"\n\n---\n\n### 2. **Suy luận so sánh với nguyên tắc Học Tập và Rèn Luyện trong Văn Hóa Gia Đình:**\n\nMặc dù tài liệu Văn Hóa Gia Đình không được cung cấp chi tiết trong bối cảnh này, nhưng từ tên gọi và ngữ cảnh chung, có thể suy luận rằng:\n\n- **Nguyên tắc Học Tập** trong Văn Hóa Gia Đình thường nhấn mạnh việc học tập có hệ thống, có sự dẫn dắt và truyền đạt giữa các thành viên trong gia đình, tạo môi trường phát triển kiến thức và giá trị văn hóa.\n\n- **Nguyên tắc Rèn Luyện** có thể tương tự với việc luyện tập thường xuyên, kiên trì để hình thành thói quen tốt, rèn luyện kỹ năng sống và tinh thần.\n\nSo với Self-study Blueprint của Hung Dinh:  \n- Cả hai đều **nhấn mạnh việc hành động và thực hành** để tạo ra kỹ năng, không chỉ ngừng lại ở việc tiếp nhận kiến thức.  \n- Việc **dạy lại (teach)** trong Self-study Blueprint tương đồng với truyền đạt trong gia đình, giúp củng cố kiến thức và xây dựng văn hóa học tập liên tục trong gia đình.  \n- Self-study Blueprint tập trung vào **tự chủ trong học tập**, trong khi Văn Hóa Gia Đình có thể nhấn mạnh thêm khía cạnh **hỗ trợ, dẫn dắt và môi trường gia đình** trong học tập và rèn luyện.\n\n---\n\n### **Tóm tắt:**\n\n| Tiêu chí                      | Self-study Blueprint 💡                                   | Văn Hóa Gia Đình (Suy luận) 🏠                             |\n|------------------------------|-----------------------------------------------------------|------------------------------------------------------------|\n| Phương pháp học tập          | Tự học có mục tiêu, tập trung sâu vào 1 kỹ năng           | Học tập có hệ thống, được gia đình hỗ trợ                   |\n| Rèn luyện                   | Lặp lại, thực hành ngay để hình thành kỹ năng              | Rèn luyện thường xuyên, hình thành thói quen và giá trị     |\n| Vai trò của việc dạy lại     | Dạy lại để củng cố, phát hiện khoảng trống kiến thức       | Truyền đạt giữa các thành viên, tạo môi trường học tập      |\n| Tự chủ trong học tập         | Rất cao, cá nhân tự điều khiển quá trình                    | Có sự hỗ trợ, định hướng từ gia đình                         |\n\n---\n\nNếu bạn muốn xem chi tiết về phương pháp của Hung Dinh, vui lòng tham khảo video:  \n[How to Teach Yourself Anything (The Self-Study Blueprint)](https://www.youtube.com/watch?v=O8_isifBeKk) 🎓🚀\n\n---\n\nNếu bạn cần thông tin cụ thể hơn về tài liệu Văn Hóa Gia Đình, vui lòng cho biết hoặc liên hệ với Hung để hỗ trợ thêm nhé!",
+      "payload": {
+        "message": "So sánh nguyên tắc Học Tập và Rèn Luyện trong tài liệu Văn Hóa Gia Đình với Self-study Blueprint. Dẫn đúng nguồn tài liệu và video, tách lời nguồn với suy luận của bạn.",
+        "history": [],
+        "pageContext": {
+          "page": "/"
+        }
+      }
+    }
+  ],
+  "retrieval_replay": [
+    {
+      "id": "single_vi",
+      "scope": {
+        "videoId": "O8_isifBeKk",
+        "source": "title"
+      },
+      "discovery": [
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.486833811,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_3",
+          "score": 0.483358383,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_6",
+          "score": 0.459286,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_0",
+          "score": 0.44666326,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_7",
+          "score": 0.438732713,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_4",
+          "score": 0.428915918,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_2",
+          "score": 0.421139687,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_8",
+          "score": 0.39335528,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_1",
+          "score": 0.386909634,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_4",
+          "score": 0.385613441,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+          "score": 0.359527498,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_0",
+          "score": 0.359184951,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_3",
+          "score": 0.35799551,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+          "score": 0.35011512,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_1",
+          "score": 0.347985595,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_9",
+          "score": 0.347765923,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "blog-sample-post",
+          "score": 0.347253889,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_8",
+          "score": 0.341834098,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.336575687,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+          "score": 0.336163342,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        }
+      ],
+      "selected": [
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+          "score": 0.359527498,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+          "score": 0.35011512,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_9",
+          "score": 0.347765923,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+          "score": 0.336163342,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+          "score": 0.333522171,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 31,
+        "total_tokens": 31
+      }
+    },
+    {
+      "id": "two_vi",
+      "scope": {
+        "videoId": "yhGzXULZkEw",
+        "source": "title"
+      },
+      "discovery": [
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.40877682,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_0",
+          "score": 0.406331062,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.398078114,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "blog-sample-post",
+          "score": 0.394897342,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.386375695,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_0",
+          "score": 0.365626276,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_1",
+          "score": 0.364410907,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_3",
+          "score": 0.361693323,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_6",
+          "score": 0.358177125,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_4",
+          "score": 0.356295556,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_2",
+          "score": 0.355565608,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "website___chunk_1",
+          "score": 0.354183257,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_14",
+          "score": 0.353861898,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_5",
+          "score": 0.352625,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_1",
+          "score": 0.351196647,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "video_1ItQnh3LWeg_chunk_5",
+          "score": 0.345044315,
+          "title": "AI Gave You A Promotion: Why AI Isn’t Replacing Jobs",
+          "type": "video",
+          "videoId": "1ItQnh3LWeg"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_13",
+          "score": 0.33832252,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+          "score": 0.336625576,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_1",
+          "score": 0.335247189,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "website__about_chunk_0",
+          "score": 0.332847,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        }
+      ],
+      "selected": [
+        {
+          "id": "video_yhGzXULZkEw_chunk_0",
+          "score": 0.406331062,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_1",
+          "score": 0.364410907,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_4",
+          "score": 0.356295556,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_2",
+          "score": 0.355565608,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_5",
+          "score": 0.352625,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 50,
+        "total_tokens": 50
+      }
+    },
+    {
+      "id": "three_en",
+      "scope": {
+        "videoId": "iLCDSY2XX7E",
+        "source": "title"
+      },
+      "discovery": [
+        {
+          "id": "video_iLCDSY2XX7E_chunk_1",
+          "score": 0.562586904,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_14",
+          "score": 0.538862944,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_12",
+          "score": 0.532188416,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_13",
+          "score": 0.514629543,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_0",
+          "score": 0.501988053,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_3",
+          "score": 0.49155587,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+          "score": 0.484183788,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_0",
+          "score": 0.482869118,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+          "score": 0.465903938,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+          "score": 0.46289593,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_6",
+          "score": 0.462173432,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_6",
+          "score": 0.461313665,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_4",
+          "score": 0.460954159,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_7",
+          "score": 0.460825324,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_6",
+          "score": 0.458559513,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_5",
+          "score": 0.455302924,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_1ItQnh3LWeg_chunk_5",
+          "score": 0.444684297,
+          "title": "AI Gave You A Promotion: Why AI Isn’t Replacing Jobs",
+          "type": "video",
+          "videoId": "1ItQnh3LWeg"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+          "score": 0.442040086,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_1",
+          "score": 0.441717058,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_2",
+          "score": 0.431170404,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        }
+      ],
+      "selected": [
+        {
+          "id": "video_iLCDSY2XX7E_chunk_1",
+          "score": 0.562586904,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_14",
+          "score": 0.538862944,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_12",
+          "score": 0.532188416,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_13",
+          "score": 0.514629543,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_0",
+          "score": 0.501988053,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 41,
+        "total_tokens": 41
+      }
+    },
+    {
+      "id": "personal_vi",
+      "discovery": [
+        {
+          "id": "website___chunk_0",
+          "score": 0.599782825,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website__about_chunk_0",
+          "score": 0.534267843,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.527933717,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "blog-sample-post",
+          "score": 0.475518972,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.460067302,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        },
+        {
+          "id": "website__about_chunk_2",
+          "score": 0.432163745,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website__projects_chunk_0",
+          "score": 0.394260824,
+          "title": "Projects | Hung Dinh",
+          "type": "website",
+          "page": "/projects"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.388988435,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "website___chunk_1",
+          "score": 0.382453769,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_1ItQnh3LWeg_chunk_5",
+          "score": 0.376740366,
+          "title": "AI Gave You A Promotion: Why AI Isn’t Replacing Jobs",
+          "type": "video",
+          "videoId": "1ItQnh3LWeg"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_2",
+          "score": 0.368965894,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "website__about_chunk_1",
+          "score": 0.35726428,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website__contact_chunk_0",
+          "score": 0.354185075,
+          "title": "Contact | Hung Dinh",
+          "type": "website",
+          "page": "/contact"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_5",
+          "score": 0.352552712,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_6",
+          "score": 0.351623476,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_0",
+          "score": 0.350775778,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "website__about_chunk_3",
+          "score": 0.345785737,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "video_PplmzlgE0kg_chunk_11",
+          "score": 0.343747437,
+          "title": "How Anthropic’s product team moves faster than anyone else | Cat Wu (Head of Product, Claude Code)",
+          "type": "video",
+          "videoId": "PplmzlgE0kg"
+        },
+        {
+          "id": "video_PplmzlgE0kg_chunk_34",
+          "score": 0.342754394,
+          "title": "How Anthropic’s product team moves faster than anyone else | Cat Wu (Head of Product, Claude Code)",
+          "type": "video",
+          "videoId": "PplmzlgE0kg"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_3",
+          "score": 0.338649839,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        }
+      ],
+      "selected": [
+        {
+          "id": "website___chunk_0",
+          "score": 0.599782825,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website__about_chunk_0",
+          "score": 0.534267843,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.527933717,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "blog-sample-post",
+          "score": 0.475518972,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.460067302,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 77,
+        "total_tokens": 77
+      }
+    },
+    {
+      "id": "followup_vi",
+      "discovery": [
+        {
+          "id": "blog-sample-post",
+          "score": 0.481074452,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.39819783,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "website___chunk_1",
+          "score": 0.375006467,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website___chunk_0",
+          "score": 0.367393315,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.362328947,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.360985726,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_5",
+          "score": 0.357383788,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_6",
+          "score": 0.336818755,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_1",
+          "score": 0.336651325,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "website__about_chunk_0",
+          "score": 0.328964829,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_4",
+          "score": 0.327862561,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_3",
+          "score": 0.323489606,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_3",
+          "score": 0.320319623,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "website___chunk_3",
+          "score": 0.316087276,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website__blog_redefining-education-in-the-ai-era-from-knowledge-to-love_chunk_0",
+          "score": 0.314275295,
+          "title": "Redefining Education in the AI Era: From Knowledge to Love",
+          "type": "website",
+          "page": "/blog/redefining-education-in-the-ai-era-from-knowledge-to-love"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_0",
+          "score": 0.313478351,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "website___chunk_2",
+          "score": 0.313325,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_4",
+          "score": 0.31078738,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_2",
+          "score": 0.310349971,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_2",
+          "score": 0.307594776,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        }
+      ],
+      "selected": [
+        {
+          "id": "blog-sample-post",
+          "score": 0.481074452,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.39819783,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "website___chunk_1",
+          "score": 0.375006467,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website___chunk_0",
+          "score": 0.367393315,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.362328947,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 50,
+        "total_tokens": 50
+      }
+    },
+    {
+      "id": "switch_vi",
+      "scope": {
+        "videoId": "O8_isifBeKk",
+        "source": "page-context"
+      },
+      "discovery": [
+        {
+          "id": "video_yhGzXULZkEw_chunk_0",
+          "score": 0.513467729,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_4",
+          "score": 0.453474671,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_1",
+          "score": 0.437039286,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_2",
+          "score": 0.433659434,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_5",
+          "score": 0.417253613,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.415631384,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        },
+        {
+          "id": "blog-sample-post",
+          "score": 0.41432026,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.413465142,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "video_yhGzXULZkEw_chunk_3",
+          "score": 0.407468677,
+          "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz",
+          "type": "video",
+          "videoId": "yhGzXULZkEw"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_14",
+          "score": 0.400476396,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_6",
+          "score": 0.395359129,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "website___chunk_1",
+          "score": 0.386627614,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_1ItQnh3LWeg_chunk_5",
+          "score": 0.384952277,
+          "title": "AI Gave You A Promotion: Why AI Isn’t Replacing Jobs",
+          "type": "video",
+          "videoId": "1ItQnh3LWeg"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_3",
+          "score": 0.383890331,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "video_iLCDSY2XX7E_chunk_13",
+          "score": 0.381912231,
+          "title": "Vibe Coding Fundamentals In 33 minutes",
+          "type": "video",
+          "videoId": "iLCDSY2XX7E"
+        },
+        {
+          "id": "website___chunk_2",
+          "score": 0.358637899,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_7rzYDM6vMtI_chunk_0",
+          "score": 0.357442737,
+          "title": "How I Created OpenClaw, the Breakthrough AI Agent | Peter Steinberger | TED",
+          "type": "video",
+          "videoId": "7rzYDM6vMtI"
+        },
+        {
+          "id": "website___chunk_0",
+          "score": 0.355808645,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_5",
+          "score": 0.355706453,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.354509234,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        }
+      ],
+      "selected": [
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+          "score": 0.313936561,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+          "score": 0.304798245,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_9",
+          "score": 0.276251256,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_1",
+          "score": 0.269342601,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+          "score": 0.25696066,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 42,
+        "total_tokens": 42
+      }
+    },
+    {
+      "id": "unknown_vi",
+      "discovery": [
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_0",
+          "score": 0.395328075,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_0",
+          "score": 0.35838294,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_2",
+          "score": 0.33581841,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.333219111,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_9",
+          "score": 0.326652408,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_10",
+          "score": 0.325965077,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_3",
+          "score": 0.325826764,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_8",
+          "score": 0.324894547,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_13",
+          "score": 0.31793496,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_8",
+          "score": 0.309327245,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_3",
+          "score": 0.308375388,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_6",
+          "score": 0.307299107,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_4",
+          "score": 0.306870073,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_6",
+          "score": 0.305247724,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "blog-sample-post",
+          "score": 0.303715348,
+          "title": "Tại Sao Problem-Solving Trước, AI Sau",
+          "type": "blog"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_1",
+          "score": 0.30351612,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_7",
+          "score": 0.302999437,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_1",
+          "score": 0.302161127,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_4",
+          "score": 0.301048696,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_12",
+          "score": 0.298178822,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        }
+      ],
+      "selected": [
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_0",
+          "score": 0.395328075,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_0",
+          "score": 0.35838294,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_2",
+          "score": 0.33581841,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.333219111,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_9",
+          "score": 0.326652408,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 44,
+        "total_tokens": 44
+      }
+    },
+    {
+      "id": "website_doc_en",
+      "discovery": [
+        {
+          "id": "website___chunk_0",
+          "score": 0.672168553,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website__about_chunk_0",
+          "score": 0.584145427,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.491369605,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        },
+        {
+          "id": "website__projects_chunk_0",
+          "score": 0.481300175,
+          "title": "Projects | Hung Dinh",
+          "type": "website",
+          "page": "/projects"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.462313771,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        },
+        {
+          "id": "website__contact_chunk_0",
+          "score": 0.434146911,
+          "title": "Contact | Hung Dinh",
+          "type": "website",
+          "page": "/contact"
+        },
+        {
+          "id": "website__about_chunk_2",
+          "score": 0.428056836,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website___chunk_1",
+          "score": 0.391079128,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_PplmzlgE0kg_chunk_0",
+          "score": 0.381474257,
+          "title": "How Anthropic’s product team moves faster than anyone else | Cat Wu (Head of Product, Claude Code)",
+          "type": "video",
+          "videoId": "PplmzlgE0kg"
+        },
+        {
+          "id": "website___chunk_2",
+          "score": 0.373399466,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_5",
+          "score": 0.364565164,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "video_1ItQnh3LWeg_chunk_5",
+          "score": 0.356538534,
+          "title": "AI Gave You A Promotion: Why AI Isn’t Replacing Jobs",
+          "type": "video",
+          "videoId": "1ItQnh3LWeg"
+        },
+        {
+          "id": "video_PplmzlgE0kg_chunk_1",
+          "score": 0.347627848,
+          "title": "How Anthropic’s product team moves faster than anyone else | Cat Wu (Head of Product, Claude Code)",
+          "type": "video",
+          "videoId": "PplmzlgE0kg"
+        },
+        {
+          "id": "website__blog_the-real-ai-journey-preserving-humanity-in-the-ai-age_chunk_0",
+          "score": 0.345993608,
+          "title": "The Real AI Journey: Preserving Humanity in the AI Age",
+          "type": "website",
+          "page": "/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age"
+        },
+        {
+          "id": "video_2IK3DFHRFfw_chunk_4",
+          "score": 0.34531647,
+          "title": "Generative AI in a Nutshell - how to survive and thrive in the age of AI",
+          "type": "video",
+          "videoId": "2IK3DFHRFfw"
+        },
+        {
+          "id": "website__about_chunk_1",
+          "score": 0.341675729,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website___chunk_3",
+          "score": 0.339688033,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "video_PplmzlgE0kg_chunk_34",
+          "score": 0.338560611,
+          "title": "How Anthropic’s product team moves faster than anyone else | Cat Wu (Head of Product, Claude Code)",
+          "type": "video",
+          "videoId": "PplmzlgE0kg"
+        },
+        {
+          "id": "video_PplmzlgE0kg_chunk_10",
+          "score": 0.334155351,
+          "title": "How Anthropic’s product team moves faster than anyone else | Cat Wu (Head of Product, Claude Code)",
+          "type": "video",
+          "videoId": "PplmzlgE0kg"
+        },
+        {
+          "id": "video_7rzYDM6vMtI_chunk_0",
+          "score": 0.333468258,
+          "title": "How I Created OpenClaw, the Breakthrough AI Agent | Peter Steinberger | TED",
+          "type": "video",
+          "videoId": "7rzYDM6vMtI"
+        }
+      ],
+      "selected": [
+        {
+          "id": "website___chunk_0",
+          "score": 0.672168553,
+          "title": "Hung Dinh - Business Analyst → AI Product Builder",
+          "type": "website",
+          "page": "/"
+        },
+        {
+          "id": "website__about_chunk_0",
+          "score": 0.584145427,
+          "title": "About Me | Hung Dinh",
+          "type": "website",
+          "page": "/about"
+        },
+        {
+          "id": "website__blog_chunk_0",
+          "score": 0.491369605,
+          "title": "Blog | Hung Dinh",
+          "type": "website",
+          "page": "/blog"
+        },
+        {
+          "id": "website__projects_chunk_0",
+          "score": 0.481300175,
+          "title": "Projects | Hung Dinh",
+          "type": "website",
+          "page": "/projects"
+        },
+        {
+          "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+          "score": 0.462313771,
+          "title": "Hungreo Personal Portfolio Website",
+          "type": "website",
+          "page": "/projects/hungreo-personal-portfolio-website"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 38,
+        "total_tokens": 38
+      }
+    },
+    {
+      "id": "document_video_vi",
+      "scope": {
+        "videoId": "O8_isifBeKk",
+        "source": "title"
+      },
+      "discovery": [
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_4",
+          "score": 0.531951725,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_6",
+          "score": 0.502288222,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_5",
+          "score": 0.494496822,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_3",
+          "score": 0.490309358,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_0",
+          "score": 0.489177167,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_7",
+          "score": 0.473579526,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_8",
+          "score": 0.420967132,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_0",
+          "score": 0.40642038,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_1",
+          "score": 0.399660528,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_1",
+          "score": 0.386489362,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_2",
+          "score": 0.380439848,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_3",
+          "score": 0.362537265,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1764226748060_ssobx09lf_chunk_2",
+          "score": 0.346688658,
+          "title": "Van_Hoa_Gia_Dinh_RAG.docx",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_4",
+          "score": 0.339916945,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_8",
+          "score": 0.339799,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+          "score": 0.3309322,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+          "score": 0.322331309,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+          "score": 0.318911642,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_7",
+          "score": 0.316928267,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        },
+        {
+          "id": "doc_1777623437350_j3g56el4m_chunk_9",
+          "score": 0.310130507,
+          "title": "Bi_nh_An_Tha__t.pdf",
+          "type": "document"
+        }
+      ],
+      "selected": [
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+          "score": 0.3309322,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+          "score": 0.322331309,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+          "score": 0.318911642,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_6",
+          "score": 0.306711912,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        },
+        {
+          "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+          "score": 0.301966459,
+          "title": "How to Teach Yourself Anything (The Self-Study Blueprint)",
+          "type": "video",
+          "videoId": "O8_isifBeKk"
+        }
+      ],
+      "embeddingUsage": {
+        "prompt_tokens": 76,
+        "total_tokens": 76
+      }
+    }
+  ],
+  "detail_http_checks": [
+    {
+      "url": "https://hungreo.com/projects/openclaw-personal-ai-operations-platform",
+      "status": 500
+    },
+    {
+      "url": "https://hungreo.com/projects/ai-powered-personal-assistant-telegram-bot",
+      "status": 500
+    },
+    {
+      "url": "https://hungreo.com/projects/hungreo-personal-portfolio-website",
+      "status": 500
+    },
+    {
+      "url": "https://hungreo.com/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun",
+      "status": 500
+    },
+    {
+      "url": "https://hungreo.com/blog/redefining-education-in-the-ai-era-from-knowledge-to-love",
+      "status": 500
+    },
+    {
+      "url": "https://hungreo.com/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age",
+      "status": 500
+    }
+  ]
+}
