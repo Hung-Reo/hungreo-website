@@ -1,0 +1,1297 @@
+{
+  "at": "2026-09-08T22:38:36.616Z",
+  "retrievalSha256": "4f07b3f66fcf395538444008752288966d7d94c649ef6427e387a0175b107f5a",
+  "contextSha256": "273eda4169034c8f53e309e8778798af487029ac8ab13bb7c764372484bfa104",
+  "index": "hungreo-website-v2",
+  "mode": "outside-route replay, not production response",
+  "rows": [
+    {
+      "id": "single_vi",
+      "expected": [
+        "O8_isifBeKk"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.359527498,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+            "score": 0.35011512,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_9",
+            "score": 0.347765923,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+            "score": 0.336163342,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+            "score": 0.333522171,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          }
+        ],
+        "contextChars": 12798
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.359527498,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+            "score": 0.35011512,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_9",
+            "score": 0.347765923,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+            "score": 0.336163342,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+            "score": 0.333522171,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_5",
+            "score": 0.486833811,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_3",
+            "score": 0.483358383,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_6",
+            "score": 0.459286,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          }
+        ],
+        "contextChars": 15916
+      },
+      "answerCheck": {
+        "beforeUsage": {
+          "prompt_tokens": 4008,
+          "completion_tokens": 432,
+          "total_tokens": 4440,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "afterUsage": {
+          "prompt_tokens": 4978,
+          "completion_tokens": 438,
+          "total_tokens": 5416,
+          "prompt_tokens_details": {
+            "cached_tokens": 1920,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "citedUrls": [
+          "https://www.youtube.com/watch?v=O8_isifBeKk"
+        ],
+        "allCitedVideoUrlsInContext": true,
+        "manualReview": "Source coverage and attribution checked; not a statistical grounding guarantee."
+      }
+    },
+    {
+      "id": "two_vi",
+      "expected": [
+        "O8_isifBeKk",
+        "yhGzXULZkEw"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "video_yhGzXULZkEw_chunk_0",
+            "score": 0.406331062,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_1",
+            "score": 0.364410907,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_4",
+            "score": 0.356295556,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_2",
+            "score": 0.355565608,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_5",
+            "score": 0.352625,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          }
+        ],
+        "contextChars": 14634
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "video_yhGzXULZkEw_chunk_0",
+            "score": 0.406331062,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.336625576,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+            "score": 0.40877682,
+            "type": "website",
+            "title": "Hungreo Personal Portfolio Website"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_1",
+            "score": 0.364410907,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+            "score": 0.296687722,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_5",
+            "score": 0.398078114,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_4",
+            "score": 0.356295556,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+            "score": 0.289642841,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          }
+        ],
+        "contextChars": 20937
+      },
+      "answerCheck": {
+        "beforeUsage": {
+          "prompt_tokens": 4432,
+          "completion_tokens": 380,
+          "total_tokens": 4812,
+          "prompt_tokens_details": {
+            "cached_tokens": 4224,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "afterUsage": {
+          "prompt_tokens": 5919,
+          "completion_tokens": 488,
+          "total_tokens": 6407,
+          "prompt_tokens_details": {
+            "cached_tokens": 2944,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "citedUrls": [
+          "https://www.youtube.com/watch?v=O8_isifBeKk",
+          "https://www.youtube.com/watch?v=yhGzXULZkEw"
+        ],
+        "allCitedVideoUrlsInContext": true,
+        "manualReview": "Source coverage and attribution checked; not a statistical grounding guarantee."
+      }
+    },
+    {
+      "id": "three_en",
+      "expected": [
+        "O8_isifBeKk",
+        "yhGzXULZkEw",
+        "iLCDSY2XX7E"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "video_iLCDSY2XX7E_chunk_1",
+            "score": 0.562586904,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          },
+          {
+            "id": "video_iLCDSY2XX7E_chunk_14",
+            "score": 0.538862944,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          },
+          {
+            "id": "video_iLCDSY2XX7E_chunk_12",
+            "score": 0.532188416,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          },
+          {
+            "id": "video_iLCDSY2XX7E_chunk_13",
+            "score": 0.514629543,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          },
+          {
+            "id": "video_iLCDSY2XX7E_chunk_0",
+            "score": 0.501988053,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          }
+        ],
+        "contextChars": 3145
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "video_iLCDSY2XX7E_chunk_1",
+            "score": 0.562586904,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_0",
+            "score": 0.482869118,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.484183788,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_iLCDSY2XX7E_chunk_14",
+            "score": 0.538862944,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          },
+          {
+            "id": "video_iLCDSY2XX7E_chunk_12",
+            "score": 0.532188416,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_4",
+            "score": 0.460954159,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+            "score": 0.465903938,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_iLCDSY2XX7E_chunk_13",
+            "score": 0.514629543,
+            "videoId": "iLCDSY2XX7E",
+            "type": "video",
+            "title": "Vibe Coding Fundamentals In 33 minutes"
+          }
+        ],
+        "contextChars": 23720
+      },
+      "answerCheck": {
+        "beforeUsage": {
+          "prompt_tokens": 2249,
+          "completion_tokens": 258,
+          "total_tokens": 2507,
+          "prompt_tokens_details": {
+            "cached_tokens": 2048,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "afterUsage": {
+          "prompt_tokens": 6341,
+          "completion_tokens": 468,
+          "total_tokens": 6809,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "citedUrls": [
+          "https://www.youtube.com/watch?v=yhGzXULZkEw",
+          "https://www.youtube.com/watch?v=iLCDSY2XX7E",
+          "https://www.youtube.com/watch?v=O8_isifBeKk"
+        ],
+        "allCitedVideoUrlsInContext": true,
+        "manualReview": "Source coverage and attribution checked; not a statistical grounding guarantee."
+      }
+    },
+    {
+      "id": "personal_vi",
+      "expected": [
+        "O8_isifBeKk",
+        "hungreo.com"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "website___chunk_0",
+            "score": 0.599782825,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website__about_chunk_0",
+            "score": 0.534267843,
+            "type": "website",
+            "title": "About Me | Hung Dinh"
+          },
+          {
+            "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+            "score": 0.527933717,
+            "type": "website",
+            "title": "Hungreo Personal Portfolio Website"
+          },
+          {
+            "id": "blog-sample-post",
+            "score": 0.475518972,
+            "type": "blog",
+            "title": "Tại Sao Problem-Solving Trước, AI Sau"
+          },
+          {
+            "id": "website__blog_chunk_0",
+            "score": 0.460067302,
+            "type": "website",
+            "title": "Blog | Hung Dinh"
+          }
+        ],
+        "contextChars": 5308
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "website___chunk_0",
+            "score": 0.599782825,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website__about_chunk_0",
+            "score": 0.534267843,
+            "type": "website",
+            "title": "About Me | Hung Dinh"
+          },
+          {
+            "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+            "score": 0.527933717,
+            "type": "website",
+            "title": "Hungreo Personal Portfolio Website"
+          },
+          {
+            "id": "blog-sample-post",
+            "score": 0.475518972,
+            "type": "blog",
+            "title": "Tại Sao Problem-Solving Trước, AI Sau"
+          },
+          {
+            "id": "website__blog_chunk_0",
+            "score": 0.460067302,
+            "type": "website",
+            "title": "Blog | Hung Dinh"
+          }
+        ],
+        "contextChars": 5308
+      }
+    },
+    {
+      "id": "followup_vi",
+      "expected": [
+        "O8_isifBeKk",
+        "yhGzXULZkEw"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "blog-sample-post",
+            "score": 0.481074452,
+            "type": "blog",
+            "title": "Tại Sao Problem-Solving Trước, AI Sau"
+          },
+          {
+            "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+            "score": 0.39819783,
+            "type": "website",
+            "title": "Hungreo Personal Portfolio Website"
+          },
+          {
+            "id": "website___chunk_1",
+            "score": 0.375006467,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website___chunk_0",
+            "score": 0.367393315,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website__blog_chunk_0",
+            "score": 0.362328947,
+            "type": "website",
+            "title": "Blog | Hung Dinh"
+          }
+        ],
+        "contextChars": 5303
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "blog-sample-post",
+            "score": 0.481074452,
+            "type": "blog",
+            "title": "Tại Sao Problem-Solving Trước, AI Sau"
+          },
+          {
+            "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+            "score": 0.39819783,
+            "type": "website",
+            "title": "Hungreo Personal Portfolio Website"
+          },
+          {
+            "id": "website___chunk_1",
+            "score": 0.375006467,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website___chunk_0",
+            "score": 0.367393315,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website__blog_chunk_0",
+            "score": 0.362328947,
+            "type": "website",
+            "title": "Blog | Hung Dinh"
+          }
+        ],
+        "contextChars": 5303
+      }
+    },
+    {
+      "id": "switch_vi",
+      "expected": [
+        "yhGzXULZkEw"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.313936561,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+            "score": 0.304798245,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_9",
+            "score": 0.276251256,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_1",
+            "score": 0.269342601,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+            "score": 0.25696066,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          }
+        ],
+        "contextChars": 12723
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.313936561,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_0",
+            "score": 0.513467729,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_4",
+            "score": 0.453474671,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_8",
+            "score": 0.304798245,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_1",
+            "score": 0.437039286,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_2",
+            "score": 0.433659434,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_9",
+            "score": 0.276251256,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_yhGzXULZkEw_chunk_5",
+            "score": 0.417253613,
+            "videoId": "yhGzXULZkEw",
+            "type": "video",
+            "title": "What to teach when AI writes the code | Rainer Stropek | TEDxLinz"
+          }
+        ],
+        "contextChars": 21466
+      }
+    },
+    {
+      "id": "unknown_vi",
+      "expected": [],
+      "before": {
+        "chunks": [
+          {
+            "id": "doc_1777623437350_j3g56el4m_chunk_0",
+            "score": 0.395328075,
+            "type": "document",
+            "title": "Bi_nh_An_Tha__t.pdf"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_0",
+            "score": 0.35838294,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1777623437350_j3g56el4m_chunk_2",
+            "score": 0.33581841,
+            "type": "document",
+            "title": "Bi_nh_An_Tha__t.pdf"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_5",
+            "score": 0.333219111,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1777623437350_j3g56el4m_chunk_9",
+            "score": 0.326652408,
+            "type": "document",
+            "title": "Bi_nh_An_Tha__t.pdf"
+          }
+        ],
+        "contextChars": 3162
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "doc_1777623437350_j3g56el4m_chunk_0",
+            "score": 0.395328075,
+            "type": "document",
+            "title": "Bi_nh_An_Tha__t.pdf"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_0",
+            "score": 0.35838294,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1777623437350_j3g56el4m_chunk_2",
+            "score": 0.33581841,
+            "type": "document",
+            "title": "Bi_nh_An_Tha__t.pdf"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_5",
+            "score": 0.333219111,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1777623437350_j3g56el4m_chunk_9",
+            "score": 0.326652408,
+            "type": "document",
+            "title": "Bi_nh_An_Tha__t.pdf"
+          }
+        ],
+        "contextChars": 5094
+      },
+      "answerCheck": {
+        "beforeUsage": {
+          "prompt_tokens": 2324,
+          "completion_tokens": 43,
+          "total_tokens": 2367,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "afterUsage": {
+          "prompt_tokens": 2952,
+          "completion_tokens": 45,
+          "total_tokens": 2997,
+          "prompt_tokens_details": {
+            "cached_tokens": 0,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "citedUrls": [],
+        "allCitedVideoUrlsInContext": true,
+        "manualReview": "Source coverage and attribution checked; not a statistical grounding guarantee."
+      }
+    },
+    {
+      "id": "website_doc_en",
+      "expected": [
+        "hungreo.com"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "website___chunk_0",
+            "score": 0.672168553,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website__about_chunk_0",
+            "score": 0.584145427,
+            "type": "website",
+            "title": "About Me | Hung Dinh"
+          },
+          {
+            "id": "website__blog_chunk_0",
+            "score": 0.491369605,
+            "type": "website",
+            "title": "Blog | Hung Dinh"
+          },
+          {
+            "id": "website__projects_chunk_0",
+            "score": 0.481300175,
+            "type": "website",
+            "title": "Projects | Hung Dinh"
+          },
+          {
+            "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+            "score": 0.462313771,
+            "type": "website",
+            "title": "Hungreo Personal Portfolio Website"
+          }
+        ],
+        "contextChars": 6214
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "website___chunk_0",
+            "score": 0.672168553,
+            "type": "website",
+            "title": "Hung Dinh - Business Analyst → AI Product Builder"
+          },
+          {
+            "id": "website__about_chunk_0",
+            "score": 0.584145427,
+            "type": "website",
+            "title": "About Me | Hung Dinh"
+          },
+          {
+            "id": "website__blog_chunk_0",
+            "score": 0.491369605,
+            "type": "website",
+            "title": "Blog | Hung Dinh"
+          },
+          {
+            "id": "website__projects_chunk_0",
+            "score": 0.481300175,
+            "type": "website",
+            "title": "Projects | Hung Dinh"
+          },
+          {
+            "id": "website__projects_hungreo-personal-portfolio-website_chunk_0",
+            "score": 0.462313771,
+            "type": "website",
+            "title": "Hungreo Personal Portfolio Website"
+          }
+        ],
+        "contextChars": 6214
+      }
+    },
+    {
+      "id": "document_video_vi",
+      "expected": [
+        "Van_Hoa_Gia_Dinh_RAG.docx",
+        "O8_isifBeKk"
+      ],
+      "before": {
+        "chunks": [
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.3309322,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+            "score": 0.322331309,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+            "score": 0.318911642,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_6",
+            "score": 0.306711912,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+            "score": 0.301966459,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          }
+        ],
+        "contextChars": 14907
+      },
+      "after": {
+        "chunks": [
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_0",
+            "score": 0.3309322,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_7",
+            "score": 0.322331309,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_5",
+            "score": 0.318911642,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_6",
+            "score": 0.306711912,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "video_O8_isifBeKk_v1784004588703_d5516062_chunk_4",
+            "score": 0.301966459,
+            "videoId": "O8_isifBeKk",
+            "type": "video",
+            "title": "How to Teach Yourself Anything (The Self-Study Blueprint)"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_4",
+            "score": 0.531951725,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_6",
+            "score": 0.502288222,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          },
+          {
+            "id": "doc_1764226748060_ssobx09lf_chunk_5",
+            "score": 0.494496822,
+            "type": "document",
+            "title": "Van_Hoa_Gia_Dinh_RAG.docx"
+          }
+        ],
+        "contextChars": 18044
+      },
+      "answerCheck": {
+        "beforeUsage": {
+          "prompt_tokens": 4494,
+          "completion_tokens": 451,
+          "total_tokens": 4945,
+          "prompt_tokens_details": {
+            "cached_tokens": 4352,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "afterUsage": {
+          "prompt_tokens": 5473,
+          "completion_tokens": 1248,
+          "total_tokens": 6721,
+          "prompt_tokens_details": {
+            "cached_tokens": 2944,
+            "audio_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "audio_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+          }
+        },
+        "citedUrls": [
+          "https://www.youtube.com/watch?v=O8_isifBeKk"
+        ],
+        "allCitedVideoUrlsInContext": true,
+        "manualReview": "Source coverage and attribution checked; not a statistical grounding guarantee."
+      }
+    }
+  ],
+  "liveDeployment": "dpl_FTDDTD2bkNpnVzzJjgFznqhzLTAB",
+  "publicLive": [
+    {
+      "url": "https://hungreo.com",
+      "final": "https://hungreo.com",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/about",
+      "final": "https://hungreo.com/about",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/about"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/contact",
+      "final": "https://hungreo.com/contact",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/contact"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/blog",
+      "final": "https://hungreo.com/blog",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/blog"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/projects",
+      "final": "https://hungreo.com/projects",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/projects"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge",
+      "final": "https://hungreo.com/tools/knowledge",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/security",
+      "final": "https://hungreo.com/security",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/security"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun",
+      "final": "https://hungreo.com/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/blog/awakening-inner-peace-lessons-from-thy-trn-vit-qun"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/blog/redefining-education-in-the-ai-era-from-knowledge-to-love",
+      "final": "https://hungreo.com/blog/redefining-education-in-the-ai-era-from-knowledge-to-love",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/blog/redefining-education-in-the-ai-era-from-knowledge-to-love"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age",
+      "final": "https://hungreo.com/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/blog/the-real-ai-journey-preserving-humanity-in-the-ai-age"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/projects/ai-powered-personal-assistant-telegram-bot",
+      "final": "https://hungreo.com/projects/ai-powered-personal-assistant-telegram-bot",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/projects/ai-powered-personal-assistant-telegram-bot"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/projects/openclaw-personal-ai-operations-platform",
+      "final": "https://hungreo.com/projects/openclaw-personal-ai-operations-platform",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/projects/openclaw-personal-ai-operations-platform"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/projects/hungreo-personal-portfolio-website",
+      "final": "https://hungreo.com/projects/hungreo-personal-portfolio-website",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/projects/hungreo-personal-portfolio-website"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/leadership",
+      "final": "https://hungreo.com/tools/knowledge/leadership",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/leadership"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works",
+      "final": "https://hungreo.com/tools/knowledge/ai-works",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/health",
+      "final": "https://hungreo.com/tools/knowledge/health",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/health"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/entertaining",
+      "final": "https://hungreo.com/tools/knowledge/entertaining",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/entertaining"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/human-philosophy",
+      "final": "https://hungreo.com/tools/knowledge/human-philosophy",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/human-philosophy"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/leadership/how-to-teach-yourself-anything-the-self-study-blue-O8_isifBeKk",
+      "final": "https://hungreo.com/tools/knowledge/leadership/how-to-teach-yourself-anything-the-self-study-blue-O8_isifBeKk",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/leadership/how-to-teach-yourself-anything-the-self-study-blue-O8_isifBeKk"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works/ai-gave-you-a-promotion-why-ai-isn-t-replacing-job-1ItQnh3LWeg",
+      "final": "https://hungreo.com/tools/knowledge/ai-works/ai-gave-you-a-promotion-why-ai-isn-t-replacing-job-1ItQnh3LWeg",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works/ai-gave-you-a-promotion-why-ai-isn-t-replacing-job-1ItQnh3LWeg"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works/what-to-teach-when-ai-writes-the-code-rainer-strop-yhGzXULZkEw",
+      "final": "https://hungreo.com/tools/knowledge/ai-works/what-to-teach-when-ai-writes-the-code-rainer-strop-yhGzXULZkEw",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works/what-to-teach-when-ai-writes-the-code-rainer-strop-yhGzXULZkEw"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works/how-anthropic-s-product-team-moves-faster-than-any-PplmzlgE0kg",
+      "final": "https://hungreo.com/tools/knowledge/ai-works/how-anthropic-s-product-team-moves-faster-than-any-PplmzlgE0kg",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works/how-anthropic-s-product-team-moves-faster-than-any-PplmzlgE0kg"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works/how-i-created-openclaw-the-breakthrough-ai-agent-p-7rzYDM6vMtI",
+      "final": "https://hungreo.com/tools/knowledge/ai-works/how-i-created-openclaw-the-breakthrough-ai-agent-p-7rzYDM6vMtI",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works/how-i-created-openclaw-the-breakthrough-ai-agent-p-7rzYDM6vMtI"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/leadership/a-conversation-on-failure-with-john-c-maxwell-Zsb8Ety67mo",
+      "final": "https://hungreo.com/tools/knowledge/leadership/a-conversation-on-failure-with-john-c-maxwell-Zsb8Ety67mo",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/leadership/a-conversation-on-failure-with-john-c-maxwell-Zsb8Ety67mo"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works/vibe-coding-fundamentals-in-33-minutes-iLCDSY2XX7E",
+      "final": "https://hungreo.com/tools/knowledge/ai-works/vibe-coding-fundamentals-in-33-minutes-iLCDSY2XX7E",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works/vibe-coding-fundamentals-in-33-minutes-iLCDSY2XX7E"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works/generative-ai-in-a-nutshell-how-to-survive-and-thr-2IK3DFHRFfw",
+      "final": "https://hungreo.com/tools/knowledge/ai-works/generative-ai-in-a-nutshell-how-to-survive-and-thr-2IK3DFHRFfw",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works/generative-ai-in-a-nutshell-how-to-survive-and-thr-2IK3DFHRFfw"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/human-philosophy/what-makes-a-good-life-lessons-from-the-longest-st-5jnEizYzQl0",
+      "final": "https://hungreo.com/tools/knowledge/human-philosophy/what-makes-a-good-life-lessons-from-the-longest-st-5jnEizYzQl0",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/human-philosophy/what-makes-a-good-life-lessons-from-the-longest-st-5jnEizYzQl0"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/entertaining/c-ch-n-u-h-ti-u-b-kho-asmr-cooking-culinary-frank-7WZ2n2XNucs",
+      "final": "https://hungreo.com/tools/knowledge/entertaining/c-ch-n-u-h-ti-u-b-kho-asmr-cooking-culinary-frank-7WZ2n2XNucs",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/entertaining/c-ch-n-u-h-ti-u-b-kho-asmr-cooking-culinary-frank-7WZ2n2XNucs"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/health/13-minutes-of-body-activation-loosening-exercises--8sJ5N9nsEmM",
+      "final": "https://hungreo.com/tools/knowledge/health/13-minutes-of-body-activation-loosening-exercises--8sJ5N9nsEmM",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/health/13-minutes-of-body-activation-loosening-exercises--8sJ5N9nsEmM"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/ai-works/nvidia-s-vision-jensen-huang-explores-the-h100-chi-OesPjXh_M_o",
+      "final": "https://hungreo.com/tools/knowledge/ai-works/nvidia-s-vision-jensen-huang-explores-the-h100-chi-OesPjXh_M_o",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/ai-works/nvidia-s-vision-jensen-huang-explores-the-h100-chi-OesPjXh_M_o"
+      ]
+    },
+    {
+      "url": "https://hungreo.com/tools/knowledge/leadership/what-happens-in-an-unsafe-work-environment-simon-s-L3RbhSM3z40",
+      "final": "https://hungreo.com/tools/knowledge/leadership/what-happens-in-an-unsafe-work-environment-simon-s-L3RbhSM3z40",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/tools/knowledge/leadership/what-happens-in-an-unsafe-work-environment-simon-s-L3RbhSM3z40"
+      ]
+    },
+    {
+      "url": "https://www.hungreo.com/about",
+      "final": "https://www.hungreo.com/about",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/about"
+      ]
+    },
+    {
+      "url": "https://hungreo.vercel.app/about",
+      "final": "https://hungreo.vercel.app/about",
+      "status": 200,
+      "canonical": [
+        "https://hungreo.com/about"
+      ]
+    }
+  ]
+}
