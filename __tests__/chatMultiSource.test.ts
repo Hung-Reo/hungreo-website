@@ -120,9 +120,52 @@ async function main() {
   })
   await test('malformed history IDs never reach a scoped query', () => {
     const scopes = resolveVideoRetrievalScopes({
-      query: 'câu hỏi chung chung', matches: [], historyVideoIds: ['too-short', '../../etc/passwd', 'O8_isifBeKk'],
+      query: 'Hai nguồn vừa rồi nói gì?', matches: [], historyVideoIds: ['too-short', '../../etc/passwd', 'O8_isifBeKk'],
     })
     assert.deepEqual(scopes.map(s => s.videoId), ['O8_isifBeKk'])
+  })
+  await test('switching from videos to CV preserves all five relevant global chunks', async () => {
+    const cv = Array.from({ length: 5 }, (_, i) => ({ ...doc, id: `cv-${i}`, metadata: { ...doc.metadata, title: 'CV Hung' } }))
+    let calls = 0
+    const result = await run('Bỏ qua các video. Kinh nghiệm công việc của Hưng trong CV là gì?', {
+      discoveryMatches: cv, historyVideoIds: ['O8_isifBeKk', 'abcdefghijk'],
+      queryVideo: async () => { calls++; return a },
+    })
+    assert.deepEqual(result, cv)
+    assert.equal(calls, 0)
+  })
+  await test('a standalone English question does not inherit earlier videos', () => {
+    assert.deepEqual(resolveVideoRetrievalScopes({ query: 'What is Hung’s work experience?', matches: [], historyVideoIds: ['O8_isifBeKk'] }), [])
+  })
+  await test('an explicit topic change overrides a deictic phrase', () => {
+    assert.deepEqual(resolveVideoRetrievalScopes({ query: 'Đổi chủ đề: điều đó trong CV là gì?', matches: [], historyVideoIds: ['O8_isifBeKk'] }), [])
+  })
+  await test('an English follow-up still recalls both cited sources', () => {
+    assert.equal(resolveVideoRetrievalScopes({ query: 'How do those two sources differ?', matches: [], historyVideoIds: ['O8_isifBeKk', 'abcdefghijk'] }).length, 2)
+  })
+  await test('a new named video does not inherit unrelated history', () => {
+    const scopes = resolveVideoRetrievalScopes({ query: 'Tóm tắt Vibe Coding Fundamentals In 33 minutes', matches: discovery, historyVideoIds: ['O8_isifBeKk', 'abcdefghijk'] })
+    assert.deepEqual(scopes.map(s => s.videoId), ['iLCDSY2XX7E'])
+  })
+  await test('linkless latest assistant turn does not resurrect older sources', () => {
+    assert.deepEqual(extractVideoIdsFromHistory([
+      { role: 'assistant', content: 'https://youtu.be/O8_isifBeKk' },
+      { role: 'user', content: 'Chuyển sang CV' },
+      { role: 'assistant', content: 'Hưng có kinh nghiệm BA.' },
+    ]), [])
+  })
+  await test('history URLs must use a real YouTube host and valid complete ID', () => {
+    assert.deepEqual(extractVideoIdsFromHistory([{ role: 'assistant', content: 'https://evil.test/youtube.com/watch?v=abcdefghijk https://youtu.be/abcdefghijkEXTRA https://www.youtube.com/watch?feature=share&v=O8_isifBeKk' }]), ['O8_isifBeKk'])
+  })
+  await test('a new named comparison does not pull in a third old video', () => {
+    const scopes = resolveVideoRetrievalScopes({ query: 'So sánh hai nguồn Self-study Blueprint và What to teach when AI writes the code: điểm chung?', matches: discovery, historyVideoIds: ['iLCDSY2XX7E'] })
+    assert.equal(scopes.length, 2)
+    assert.ok(!scopes.some(scope => scope.source === 'history'))
+  })
+  await test('an explicit comparison with the previous source may combine a title and history', () => {
+    const scopes = resolveVideoRetrievalScopes({ query: 'So sánh Vibe Coding Fundamentals In 33 minutes với video vừa rồi', matches: discovery, historyVideoIds: ['O8_isifBeKk'] })
+    assert.ok(scopes.some(scope => scope.videoId === 'O8_isifBeKk'))
+    assert.ok(scopes.some(scope => scope.videoId === 'iLCDSY2XX7E'))
   })
   console.log(`Multi-source: ${passed} passed, ${failed} failed`)
   process.exitCode = failed ? 1 : 0

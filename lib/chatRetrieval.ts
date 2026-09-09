@@ -13,7 +13,7 @@ interface ResolveVideoRetrievalScopeOptions {
   query: string
   pageContextVideoId?: unknown
   matches: ReadonlyArray<RetrievalMatchLike>
-  /** Videos the assistant already cited, newest first. Lets a follow-up such as
+  /** Videos cited in the latest assistant turn. Lets a follow-up such as
    *  "hai nguồn vừa so sánh khác nhau ở đâu" find sources the new question
    *  never names — the previous answer named them for it. */
   historyVideoIds?: ReadonlyArray<string>
@@ -73,27 +73,43 @@ function getDistinctiveTokens(value: string): string[] {
   ]
 }
 
-const YOUTUBE_URL_PATTERN =
-  /(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/g
-
 /**
- * Pull video IDs out of what the assistant previously said, newest turn first.
- * Only assistant turns are read: those links were produced from context this
- * server chose, so they cannot be used to point retrieval at arbitrary IDs.
+ * Conversation history is client supplied, including assistant turns. Treat
+ * these links as retrieval hints, never as proof of server provenance.
+ * Only the latest assistant turn supplies hints: a linkless answer ends the
+ * previous source context rather than resurrecting links from an older topic.
  */
 export function extractVideoIdsFromHistory(
   history: ReadonlyArray<{ role?: unknown; content?: unknown }> | undefined
 ): string[] {
   if (!Array.isArray(history)) return []
-  const ids: string[] = []
-  for (let i = history.length - 1; i >= 0; i--) {
-    const turn = history[i]
-    if (turn?.role !== 'assistant' || typeof turn.content !== 'string') continue
-    for (const match of turn.content.matchAll(YOUTUBE_URL_PATTERN)) {
-      if (!ids.includes(match[1])) ids.push(match[1])
-    }
+  const latest = [...history].reverse().find(turn => turn?.role === 'assistant')
+  if (typeof latest?.content !== 'string') return []
+  const ids = new Set<string>()
+  for (const match of latest.content.matchAll(/https?:\/\/[^\s<>()[\]]+/g)) {
+    try {
+      const url = new URL(match[0])
+      const host = url.hostname.toLowerCase()
+      const rawId = host === 'youtu.be'
+        ? url.pathname.slice(1)
+        : ['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(host) && url.pathname === '/watch'
+          ? url.searchParams.get('v') : undefined
+      const id = getValidVideoId(rawId)
+      if (id) ids.add(id)
+    } catch { /* Malformed links are not retrieval hints. */ }
   }
-  return ids
+  return [...ids]
+}
+
+/** Conservative, local follow-up detection; no additional model call.
+ * Unrecognized wording falls back to normal discovery rather than forcing old
+ * sources into a new question. Explicit topic changes always clear hints.
+ */
+function refersToPreviousSources(query: string, hasNamedSource: boolean): boolean {
+  const normalized = normalizeTokens(query.replace(/đ/gi, 'd')).join(' ')
+  if (/\b(doi chu de|chuyen chu de|bo qua|khong noi ve|new topic|change (the )?(topic|subject)|switch (the )?topic|ignore (the )?(previous|videos)|forget (that|those|the previous))\b/.test(normalized)) return false
+  if (hasNamedSource && !/\b(vua|truoc|o tren|do|previous|above|those|them)\b/.test(normalized)) return false
+  return /\b(hai nguon|ba nguon|cac nguon|hai video|ba video|hai y|ba y|phan do|dieu do|y do|vua (roi|so sanh|noi)|o tren|noi (ro|them)|giai thich them|tiep tuc|those|these|them|that (idea|point|part|lesson|video|source)|previous|above|elaborate|continue|tell me more)\b/.test(normalized)
 }
 
 function getValidVideoId(value: unknown): string | undefined {
@@ -110,7 +126,7 @@ function isVideoMetadata(
 
 /**
  * Resolve bounded video scopes without trusting raw user input.
- * A validated page context comes first; title scopes are selected only when the
+ * Named titles precede page context; title scopes are selected only when the
  * query overlaps at least two distinctive title tokens with sufficient signal.
  */
 export function resolveVideoRetrievalScopes({
@@ -189,7 +205,7 @@ export function resolveVideoRetrievalScopes({
   const ordered = titleScopes.length ? [...titleScopes, ...pageScopes] : [...pageScopes]
 
   const seen = new Set(ordered.map((scope) => scope.videoId))
-  for (const videoId of historyVideoIds || []) {
+  for (const videoId of refersToPreviousSources(query, ranked.length > 0) ? historyVideoIds || [] : []) {
     const valid = getValidVideoId(videoId)
     if (valid && !seen.has(valid)) {
       seen.add(valid)
