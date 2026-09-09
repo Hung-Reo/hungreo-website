@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict'
-import { retrieveChatMatches, type RetrievalMatchLike } from '../lib/chatRetrieval'
+import {
+  retrieveChatMatches,
+  resolveVideoRetrievalScopes,
+  extractVideoIdsFromHistory,
+  type RetrievalMatchLike,
+} from '../lib/chatRetrieval'
 
 const video = (videoId: string, title: string, n: number): RetrievalMatchLike => ({
   id: `${videoId}-${n}`, score: 0.8 - n / 100,
@@ -12,7 +17,7 @@ const doc = { id: 'doc-1', score: 0.9, metadata: { vectorType: 'document', docum
 const discovery = [doc, ...b, ...a, ...c]
 let failed = 0
 let passed = 0
-async function test(name: string, fn: () => Promise<void>) {
+async function test(name: string, fn: () => void | Promise<void>) {
   try { await fn(); passed++; console.log(`PASS ${name}`) }
   catch (e) { failed++; console.error(`FAIL ${name}`, e instanceof Error ? e.message : e) }
 }
@@ -78,6 +83,46 @@ async function main() {
     await run('Self-study Blueprint', { queryVideo: async () => frozen })
     assert.deepEqual(frozen, a)
     assert.equal(discovery.length, 16)
+  })
+  await test('follow-up recovers the videos the assistant just cited', async () => {
+    // The question names nothing; only the previous answer knows the sources.
+    const history = [
+      { role: 'user', content: 'So sánh hai video đó' },
+      { role: 'assistant', content: 'Xem [A](https://www.youtube.com/watch?v=O8_isifBeKk) và [B](https://youtu.be/abcdefghijk)' },
+    ]
+    const ids = extractVideoIdsFromHistory(history)
+    assert.deepEqual(ids, ['O8_isifBeKk', 'abcdefghijk'])
+    const result = await run('Vậy hai nguồn vừa so sánh khác nhau ở đâu khi áp dụng?', { historyVideoIds: ids })
+    for (const id of ids) assert.ok(result.some(m => m.metadata?.videoId === id), `${id} phải có mặt`)
+  })
+  await test('history video IDs are read from assistant turns only', () => {
+    const history = [
+      { role: 'user', content: 'https://www.youtube.com/watch?v=aaaaaaaaaaa' },
+      { role: 'assistant', content: 'https://www.youtube.com/watch?v=O8_isifBeKk' },
+    ]
+    assert.deepEqual(extractVideoIdsFromHistory(history), ['O8_isifBeKk'])
+    assert.deepEqual(extractVideoIdsFromHistory(undefined), [])
+  })
+  await test('a named video outranks the video the visitor is watching', () => {
+    const scopes = resolveVideoRetrievalScopes({
+      query: 'Bỏ qua video đang xem. Tóm tắt What to teach when AI writes the code',
+      pageContextVideoId: 'O8_isifBeKk', matches: discovery,
+    })
+    assert.equal(scopes[0].videoId, 'abcdefghijk')
+    assert.equal(scopes[0].source, 'title')
+    assert.ok(scopes.some(s => s.source === 'page-context'), 'video đang xem vẫn giữ một suất')
+  })
+  await test('page context stays primary when the question names nothing', () => {
+    const scopes = resolveVideoRetrievalScopes({
+      query: 'Video này nói về điều gì?', pageContextVideoId: 'O8_isifBeKk', matches: discovery,
+    })
+    assert.equal(scopes[0].source, 'page-context')
+  })
+  await test('malformed history IDs never reach a scoped query', () => {
+    const scopes = resolveVideoRetrievalScopes({
+      query: 'câu hỏi chung chung', matches: [], historyVideoIds: ['too-short', '../../etc/passwd', 'O8_isifBeKk'],
+    })
+    assert.deepEqual(scopes.map(s => s.videoId), ['O8_isifBeKk'])
   })
   console.log(`Multi-source: ${passed} passed, ${failed} failed`)
   process.exitCode = failed ? 1 : 0

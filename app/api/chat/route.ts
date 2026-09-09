@@ -8,7 +8,11 @@ import {
   getClientIp,
 } from '@/lib/rateLimit'
 import { validateChatMessage, sanitizeChatHistory } from '@/lib/inputValidator'
-import { resolveVideoRetrievalScope, retrieveChatMatches } from '@/lib/chatRetrieval'
+import {
+  resolveVideoRetrievalScope,
+  retrieveChatMatches,
+  extractVideoIdsFromHistory,
+} from '@/lib/chatRetrieval'
 import { buildContext } from '@/lib/chatContext'
 
 // Use Node.js runtime for Pinecone compatibility
@@ -97,6 +101,11 @@ export async function POST(req: NextRequest) {
     const sanitizedMessage = validation.sanitized!
 
     // Step 1: Create embedding for user's question
+    // Sanitized first: the client controls this array, and a forged `system`
+    // turn would otherwise replace the system instructions built below.
+    const safeHistory = sanitizeChatHistory(history)
+    const historyVideoIds = extractVideoIdsFromHistory(safeHistory)
+
     const questionEmbedding = await createEmbedding(sanitizedMessage)
 
     // Step 2: Query Pinecone for relevant context
@@ -114,6 +123,7 @@ export async function POST(req: NextRequest) {
           ? pageContext.videoId
           : undefined,
       matches: discoveryResponse.matches,
+      historyVideoIds,
     })
 
     const contextMatches = await retrieveChatMatches({
@@ -131,6 +141,7 @@ export async function POST(req: NextRequest) {
         return response.matches
       },
       onScopeError: () => console.warn('[Chat] Scoped video retrieval failed; keeping available context'),
+      historyVideoIds,
     })
 
     // Debug: Log retrieved vectors (only in debug mode to prevent data leakage)
@@ -253,10 +264,7 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
     // Step 6: Build messages array with conversation history
     const messages: any[] = [{ role: 'system', content: systemPrompt }]
 
-    // Add conversation history (last 10 messages for context).
-    // Sanitized first: the client controls this array, and a forged `system`
-    // turn would otherwise replace the instructions set above.
-    const safeHistory = sanitizeChatHistory(history)
+    // Sanitized above, before retrieval, so both uses share one safe copy.
     if (safeHistory.length > 0) {
       messages.push(...safeHistory)
     }
