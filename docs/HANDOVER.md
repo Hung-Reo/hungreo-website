@@ -7,8 +7,14 @@ Cập nhật: 2026-08-24 · Trạng thái: **production ổn định, không có
 Portfolio + AI chatbot của Hung Dinh. Next.js 14 App Router trên Vercel, dữ liệu ở Vercel KV (Upstash Redis), vector ở Pinecone, LLM là OpenAI.
 
 - **Production:** https://hungreo.com (mới chuyển từ hungreo.vercel.app ngày 2026-08-24)
-- **Đường lui:** https://hungreo.vercel.app vẫn sống
+- **Đường lui:** URL deployment (`hungreo-website-<hash>-hungreos-projects.vercel.app`),
+  lấy bằng `vercel ls`. Từ 2026-09-09 `www.hungreo.com`, `hungreo.vercel.app` và
+  `hungreo-website.vercel.app` **308 về apex** nên không dùng làm đường lui được nữa.
+  URL deployment cố ý KHÔNG bị redirect, chính vì vai trò này.
 - **Admin:** /admin (NextAuth v5, credentials)
+
+> Muốn tắt redirect: sửa `REDIRECT_HOSTS` trong `middleware.ts` rồi `vercel --prod`.
+> 308 bị browser cache khá lì — người đã truy cập cần xoá cache mới thấy thay đổi.
 
 ## ⛔ 4 điều tuyệt đối phải biết trước khi đụng vào
 

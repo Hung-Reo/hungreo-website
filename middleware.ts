@@ -25,8 +25,30 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   return response
 }
 
+// Hosts that serve the same site but must not compete with it in search.
+// Deployment URLs (hungreo-website-<hash>-*.vercel.app) are deliberately absent:
+// they stay reachable as the technical fallback and for `vercel curl` checks.
+const REDIRECT_HOSTS = new Set([
+  'www.hungreo.com',
+  'hungreo.vercel.app',
+  'hungreo-website.vercel.app',
+])
+const CANONICAL_HOST = 'hungreo.com'
+
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
+
+  // Consolidate hostnames before any other work. 308 keeps method and body, so
+  // a redirected POST still arrives intact. /api is left alone so an existing
+  // integration pinned to another host keeps working; search never indexes it.
+  const host = req.headers.get('host')?.split(':')[0].toLowerCase()
+  if (host && REDIRECT_HOSTS.has(host) && !pathname.startsWith('/api/')) {
+    const target = new URL(req.nextUrl)
+    target.host = CANONICAL_HOST
+    target.protocol = 'https:'
+    target.port = ''
+    return applySecurityHeaders(NextResponse.redirect(target, 308))
+  }
   const isAdminRoute = pathname.startsWith('/admin')
   const isAdminApiRoute = pathname.startsWith('/api/admin')
 
