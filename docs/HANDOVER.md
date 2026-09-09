@@ -1,6 +1,6 @@
 # Handover — hungreo.com
 
-Cập nhật: 2026-08-24 · Trạng thái: **production ổn định, không có task treo**
+Cập nhật: 2026-09-09 · Trạng thái: **production ổn định, không có task treo**
 
 ## Bối cảnh nhanh
 
@@ -39,7 +39,8 @@ Cũng **không bao giờ bấm "Reset DNS records"** trong hPanel — xoá sạc
 TTL của `@` là 60s → đổi/revert có hiệu lực trong ~1-2 phút. Revert website: đổi `@` về `<OLD_HOST_IP>`.
 
 ### 2. Push GitHub KHÔNG tự deploy
-Git integration không hoạt động. Sau khi push phải chạy:
+Git integration không hoạt động — **đã verify lại 2026-09-09**: push xong `vercel ls`
+không thấy deployment mới nào. Sau khi push phải chạy:
 ```bash
 vercel --prod
 ```
@@ -72,14 +73,32 @@ Cụ thể, những cái này đã chứng minh có giá trị trong phiên trư
 
 ## Việc còn lại (không gấp)
 
-Chi tiết đầy đủ ở [`docs/CODE_REVIEW_2026-07-28.md`](CODE_REVIEW_2026-07-28.md). Đã xong 3/3 CRITICAL + 3/3 HIGH. Còn lại:
+Chi tiết ở [`CODE_REVIEW_2026-07-28.md`](CODE_REVIEW_2026-07-28.md) và
+[`AUDIT_2026-09-08_WEBSITE_KNOWLEDGE.md`](AUDIT_2026-09-08_WEBSITE_KNOWLEDGE.md).
+
+**Audit 2026-09-08 đã xong cả 3 ưu tiên** — xem các release report
+`PROD_SSR_2026-09-08.md`, `PROD_P3_SEO_2026-09-08.md`,
+`PROD_CHAT_PATCH_A_2026-09-08.md`, `PROD_CHAT_BC_2026-09-09.md`,
+`PROD_FINAL_2026-09-09.md`.
 
 | Ưu tiên | Việc |
 |---|---|
 | Nâng major (làm riêng, có test) | `next` 14.2 → 16 (Next 15 đổi `params` thành async, ảnh hưởng nhiều route); `nodemailer` 7 → 9 |
-| MEDIUM (7 mục) | 2 hàm `chunkText` khác nhau cùng đổ vào 1 Pinecone index; `kv.keys('blog:*')` quét trúng `blog:categories`; slug index rác khi đổi slug; `data.email` chưa escape trong email HTML; thiếu rate limit ở 2 route; heartbeat SSE không guard; `contact-requests:pending/resolved` còn 2 entry rác |
+| MEDIUM (còn 6) | 2 hàm `chunkText` khác nhau cùng đổ vào 1 Pinecone index; `kv.keys('blog:*')` quét trúng `blog:categories`; slug index rác khi đổi slug; `data.email` chưa escape trong email HTML; thiếu rate limit ở 2 route; heartbeat SSE không guard |
 | Refactor | `isAdminEmail` copy 3 bản (liên quan bảo mật); `getClientIp` copy 2 bản; auth guard lặp inline ở 38 route; 149 chỗ `any`; `kv.keys()` + N+1 |
-| VPS (không liên quan website) | Bot `nemotron` chết — port 8789 không có service nghe |
+| Nội dung (cần Hưng duyệt) | Khối "Đang xây / Đang học" ở Home; case study theo quyết định → kết quả → bài học; số liệu 70%/80%/95% cần gắn kỳ đo |
+| Kiểm bên ngoài | Google Search Console: xác nhận duplicate indexing đã hết sau khi hợp nhất hostname 09/09 |
+| VPS (không liên quan website) | Bot `nemotron` chết — 09/09 chỉ thấy 2 process bot nghe ở `[::1]:18789` và `[::1]:18795` |
+
+### Đã đo và cố ý KHÔNG làm
+
+- **Nâng `DISCOVERY_TOP_K` 20 → 50.** Đo 2026-09-09: video được gọi tên luôn
+  nằm hạng 1, và 3 ca nhiều nguồn cố tình chọn video xa nhau đều lấy đủ nguồn
+  ở cả top20 lẫn top50 — kết quả y hệt. Không có lợi ích đo được.
+- **Retrieval theo history cho tài liệu.** Follow-up mơ hồ nhất vẫn lấy đúng
+  5/5 chunk tài liệu chỉ bằng embedding. Không cần cơ chế thêm.
+- **Rewrite git history để giấu IP VPS.** IP nằm trong record A công khai của
+  `n8n`/`bot.hungreo.com`, `dig` là ra. Xem [`VPS_SSH_HARDENING.md`](VPS_SSH_HARDENING.md).
 
 ## Lệnh hay dùng
 
