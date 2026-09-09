@@ -26,13 +26,15 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
 }
 
 // Hosts that serve the same site but must not compete with it in search.
-// Deployment URLs (hungreo-website-<hash>-*.vercel.app) are deliberately absent:
-// they stay reachable as the technical fallback and for `vercel curl` checks.
 const REDIRECT_HOSTS = new Set([
   'www.hungreo.com',
-  'hungreo.vercel.app',
   'hungreo-website.vercel.app',
 ])
+// hungreo.vercel.app is NOT redirected: it is the documented fallback for when
+// the apex has a DNS problem, and deployment URLs cannot take that role because
+// deployment protection bounces anonymous visitors to Vercel SSO. It is kept
+// out of search with noindex instead, which costs it nothing as a fallback.
+const NOINDEX_HOSTS = new Set(['hungreo.vercel.app'])
 const CANONICAL_HOST = 'hungreo.com'
 
 export async function middleware(req: NextRequest) {
@@ -49,6 +51,8 @@ export async function middleware(req: NextRequest) {
     target.port = ''
     return applySecurityHeaders(NextResponse.redirect(target, 308))
   }
+
+  const noindexHost = !!host && NOINDEX_HOSTS.has(host)
   const isAdminRoute = pathname.startsWith('/admin')
   const isAdminApiRoute = pathname.startsWith('/api/admin')
 
@@ -129,7 +133,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  return applySecurityHeaders(NextResponse.next())
+  const response = applySecurityHeaders(NextResponse.next())
+  if (noindexHost) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  return response
 }
 
 export const config = {
