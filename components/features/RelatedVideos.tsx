@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getBaseUrl } from '@/lib/getBaseUrl'
+import { unstable_noStore as noStore } from 'next/cache'
 import type { VideoCategory } from '@/lib/videoManager'
 import { createVideoSlug } from '@/lib/knowledge'
+import { loadRelatedVideos } from '@/lib/relatedVideos'
 
 interface RelatedVideosProps {
   category: VideoCategory
@@ -10,33 +11,11 @@ interface RelatedVideosProps {
   currentVideoId: string
 }
 
-async function getRelatedVideos(category: VideoCategory, currentVideoId: string, limit: number = 5) {
-  try {
-    const baseUrl = getBaseUrl()
-    const response = await fetch(
-      `${baseUrl}/api/videos?category=${encodeURIComponent(category)}`,
-      { next: { revalidate: 60 } }
-    )
-
-    if (!response.ok) {
-      return []
-    }
-
-    const data = await response.json()
-    const videos = data.videos || []
-
-    // Filter out current video and limit results
-    return videos
-      .filter((v: any) => v.id !== currentVideoId)
-      .slice(0, limit)
-  } catch (error) {
-    console.error('Error fetching related videos:', error)
-    return []
-  }
-}
-
 export async function RelatedVideos({ category, categorySlug, currentVideoId }: RelatedVideosProps) {
-  const videos = await getRelatedVideos(category, currentVideoId)
+  // @vercel/kv fetches with cache: 'default', which Next 14 keeps in the Data
+  // Cache indefinitely even on force-dynamic pages; newly added videos must show.
+  noStore()
+  const videos = await loadRelatedVideos(category, currentVideoId)
 
   if (videos.length === 0) {
     return null
@@ -49,7 +28,7 @@ export async function RelatedVideos({ category, categorySlug, currentVideoId }: 
       </h3>
 
       <div className="space-y-4">
-        {videos.map((video: any) => {
+        {videos.map((video) => {
           // Use bilingual title with fallback
           const displayTitle = video.en?.title || video.title || 'Untitled Video'
 

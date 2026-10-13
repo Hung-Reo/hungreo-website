@@ -1,6 +1,8 @@
 # Handover — hungreo.com
 
-Cập nhật: 2026-09-09 · Follow-up scope fix `a446fba` đã lên Prod `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy`, technical smoke 4/4 PASS; chờ owner UAT. Commit local chưa push. Xem `PROD_FOLLOWUP_SCOPE_2026-09-09.md`. Có lỗi Related Videos tái hiện cả deployment cũ (trang 200, khối liên quan bị ẩn); không gọi logs sạch. Nội dung đề xuất và dependency chưa publish/upgrade: `CONTENT_DRAFT_2026-09-09.md`, `DEPENDENCY_PLAN_2026-09-09.md`.
+Cập nhật: 2026-10-13 · Follow-up scope fix `a446fba` đã lên Prod `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy` và đã push lên `main` (13/10); technical smoke 4/4 PASS, chờ owner UAT. Xem `PROD_FOLLOWUP_SCOPE_2026-09-09.md`. Nội dung đề xuất và dependency chưa publish/upgrade: `CONTENT_DRAFT_2026-09-09.md`, `DEPENDENCY_PLAN_2026-09-09.md`.
+
+**Related Videos (13/10, branch `claude/brave-sagan-avxb8e`, chưa merge/deploy):** root cause là `RelatedVideos` gọi HTTP `/api/videos` qua `VERCEL_URL` = URL deployment bị deployment protection chặn → nhận HTML SSO → `Unexpected token '<'` → khối bị ẩn. Sửa: đọc KV trực tiếp qua `lib/relatedVideos.ts`, bỏ `lib/getBaseUrl.ts`, thêm `noStore()` cho sidebar. Local: tests/typecheck/build PASS; `next start` + KV giả render đủ sidebar và đọc KV mới mỗi request. Chưa smoke Prod.
 
 ## Bối cảnh nhanh
 
@@ -88,6 +90,7 @@ Chi tiết ở [`CODE_REVIEW_2026-07-28.md`](CODE_REVIEW_2026-07-28.md) và
 | MEDIUM (còn 6) | 2 hàm `chunkText` khác nhau cùng đổ vào 1 Pinecone index; `kv.keys('blog:*')` quét trúng `blog:categories`; slug index rác khi đổi slug; `data.email` chưa escape trong email HTML; thiếu rate limit ở 2 route; heartbeat SSE không guard |
 | Refactor | `isAdminEmail` copy 3 bản (liên quan bảo mật); `getClientIp` copy 2 bản; auth guard lặp inline ở 38 route; 149 chỗ `any`; `kv.keys()` + N+1 |
 | Nội dung (cần Hưng duyệt) | Khối "Đang xây / Đang học" ở Home; case study theo quyết định → kết quả → bài học; số liệu 70%/80%/95% cần gắn kỳ đo |
+| Cache KV (mới thấy 13/10) | `@vercel/kv` fetch với `cache: 'default'`; Next 14 lưu vào Data Cache vô thời hạn kể cả trang `force-dynamic` (VERIFIED trên `next start` local, Prod chưa kiểm). Trang chi tiết video/blog/project có thể hiển thị dữ liệu cũ sau khi sửa trong admin. Cần task riêng: kiểm trên Prod rồi chọn `noStore`/`fetchCache` hoặc revalidate theo tag |
 | Kiểm bên ngoài | Google Search Console: xác nhận duplicate indexing đã hết sau khi hợp nhất hostname 09/09 |
 | VPS (không liên quan website) | Chưa xác minh trạng thái `nemotron`; quan sát 2 listening process không đủ kết luận bot chết. Kiểm runtime trong project OpenClaw, đọc LOCAL_CONTEXT.md trước |
 
