@@ -2,7 +2,7 @@
 
 Cập nhật: 2026-10-13 · Follow-up scope fix `a446fba` đã lên Prod `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy` và đã push lên `main` (13/10); technical smoke 4/4 PASS, chờ owner UAT. Xem `PROD_FOLLOWUP_SCOPE_2026-09-09.md`. Nội dung đề xuất và dependency chưa publish/upgrade: `CONTENT_DRAFT_2026-09-09.md`, `DEPENDENCY_PLAN_2026-09-09.md`.
 
-**Related Videos (13/10, branch `claude/brave-sagan-avxb8e`, chưa merge/deploy):** root cause là `RelatedVideos` gọi HTTP `/api/videos` qua `VERCEL_URL` = URL deployment bị deployment protection chặn → nhận HTML SSO → `Unexpected token '<'` → khối bị ẩn. Sửa: đọc KV trực tiếp qua `lib/relatedVideos.ts`, bỏ `lib/getBaseUrl.ts`, thêm `noStore()` cho sidebar. Local: tests/typecheck/build PASS; `next start` + KV giả render đủ sidebar và đọc KV mới mỗi request. Chưa smoke Prod.
+**Related Videos — đã lên Prod 13/10:** `main@9297f89` → `dpl_7hfDRxbBPMpT7xtr6edNvHqfquh5` (rollback anchor: `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy`). Root cause: `RelatedVideos` gọi HTTP `/api/videos` qua `VERCEL_URL` = URL deployment bị SSO chặn → HTML → `Unexpected token '<'` → khối bị ẩn. Sửa: đọc KV trực tiếp (`lib/relatedVideos.ts`), bỏ `lib/getBaseUrl.ts`, `noStore()` cho sidebar. Smoke Prod: trang Vibe Coding HTTP 200, khối Related Videos hiện 5 video AI Works khác (loại đúng video hiện tại); 0 log error/warning 30 phút sau deploy. Chưa owner UAT.
 
 ## Bối cảnh nhanh
 
@@ -40,12 +40,15 @@ Cũng **không bao giờ bấm "Reset DNS records"** trong hPanel — xoá sạc
 
 TTL của `@` là 60s → đổi/revert có hiệu lực trong ~1-2 phút. Revert website: đổi `@` về `<OLD_HOST_IP>`.
 
-### 2. Push GitHub KHÔNG tự deploy
-Git integration không hoạt động — **đã verify lại 2026-09-09**: push xong `vercel ls`
-không thấy deployment mới nào. Sau khi push phải chạy:
+### 2. Push lên `main` KHÔNG tự deploy Prod
+Push `main` không tạo deployment Prod (verify 2026-09-09 và lại 2026-10-13). **Nhưng push branch khác
+tạo Preview tự động** (13/10: branch `claude/...` → preview `source: git`). Preview dùng KV riêng đang
+rỗng (0 video), nên không smoke được dữ liệu thật trên preview. Deploy Prod bằng một trong hai:
 ```bash
-vercel --prod
+vercel --prod                     # từ máy Mac
 ```
+hoặc từ cloud session qua Vercel connector: `create_deployment` với `gitSource` github `Hung-Reo/hungreo-website`,
+`ref: main`, `sha` cụ thể, `target: production` (cách đã dùng 13/10; gán alias ngay, không có bước promote riêng).
 
 ### 3. Transcript có fallback, không kết luận mọi import Vercel đều thất bại
 
