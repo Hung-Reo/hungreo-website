@@ -1,6 +1,6 @@
 # Handover — hungreo.com
 
-Cập nhật: 2026-09-09 · Trạng thái: **production ổn định, không có task treo**
+Cập nhật: 2026-09-09 · Follow-up scope fix `a446fba` đã lên Prod `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy`, technical smoke 4/4 PASS; chờ owner UAT. Commit local chưa push. Xem `PROD_FOLLOWUP_SCOPE_2026-09-09.md`. Có lỗi Related Videos tái hiện cả deployment cũ (trang 200, khối liên quan bị ẩn); không gọi logs sạch. Nội dung đề xuất và dependency chưa publish/upgrade: `CONTENT_DRAFT_2026-09-09.md`, `DEPENDENCY_PLAN_2026-09-09.md`.
 
 ## Bối cảnh nhanh
 
@@ -45,18 +45,19 @@ không thấy deployment mới nào. Sau khi push phải chạy:
 vercel --prod
 ```
 
-### 3. YouTube chặn IP Vercel
-Import video trên admin sẽ **không lấy được transcript** (badge "⚠ No transcript"). Phải chạy từ máy local:
+### 3. Transcript có fallback, không kết luận mọi import Vercel đều thất bại
+
+Pipeline hiện thử caption trực tiếp rồi Supadata native nếu được cấu hình. Video thiếu caption, provider lỗi hoặc hết quota vẫn có thể thất bại; cần xem trạng thái từng video. Code: `lib/videoManager.ts`, `lib/supadataTranscript.ts`.
+
+Repair CLI mặc định dry-run. Lệnh không tham số chỉ kiểm tra, không tự repair dữ liệu:
 ```bash
 npx tsx scripts/repair-video-transcripts.ts
 ```
-Script idempotent, có `--dry-run`. Nếu dính YouTube 429 thì chờ 15-60 phút chạy lại.
+Chỉ sau GO cho đúng video/môi trường mới dùng `--apply --environment=production --video-id=<id>`. Không re-embed cả index để thử.
 
-### 4. Thêm env var bằng CLI
-Phải dùng `--value` + `--no-sensitive`, nếu pipe stdin sẽ tạo biến **RỖNG**:
-```bash
-vercel env add TEN_BIEN production --value "gia-tri" --no-sensitive --yes
-```
+### 4. Env và secrets
+
+Không dùng ví dụ `--no-sensitive` cho API keys/secrets. Kiểm tra CLI/help hiện tại và dùng cơ chế nhập secret không lộ trong output/shell history. Không suy từ lỗi nhập liệu cũ thành quy tắc “stdin luôn tạo biến rỗng”. Không thay hoặc tạo credentials nếu chưa có GO cho cấu hình đó.
 
 ## Nguyên tắc làm việc đã thống nhất
 
@@ -76,27 +77,27 @@ Cụ thể, những cái này đã chứng minh có giá trị trong phiên trư
 Chi tiết ở [`CODE_REVIEW_2026-07-28.md`](CODE_REVIEW_2026-07-28.md) và
 [`AUDIT_2026-09-08_WEBSITE_KNOWLEDGE.md`](AUDIT_2026-09-08_WEBSITE_KNOWLEDGE.md).
 
-**Audit 2026-09-08 đã xong cả 3 ưu tiên** — xem các release report
+**Các release kỹ thuật của audit 2026-09-08 đã lên Prod; phần nội dung và các giới hạn còn lại chưa được coi là hoàn tất** — xem các release report
 `PROD_SSR_2026-09-08.md`, `PROD_P3_SEO_2026-09-08.md`,
 `PROD_CHAT_PATCH_A_2026-09-08.md`, `PROD_CHAT_BC_2026-09-09.md`,
 `PROD_FINAL_2026-09-09.md`.
 
 | Ưu tiên | Việc |
 |---|---|
-| Nâng major (làm riêng, có test) | `next` 14.2 → 16 (Next 15 đổi `params` thành async, ảnh hưởng nhiều route); `nodemailer` 7 → 9 |
+| Dependency | Xem `DEPENDENCY_PLAN_2026-09-09.md`: đánh giá theo runtime/advisory, chọn version vá hiện hành; không nâng major bằng `audit fix --force` |
 | MEDIUM (còn 6) | 2 hàm `chunkText` khác nhau cùng đổ vào 1 Pinecone index; `kv.keys('blog:*')` quét trúng `blog:categories`; slug index rác khi đổi slug; `data.email` chưa escape trong email HTML; thiếu rate limit ở 2 route; heartbeat SSE không guard |
 | Refactor | `isAdminEmail` copy 3 bản (liên quan bảo mật); `getClientIp` copy 2 bản; auth guard lặp inline ở 38 route; 149 chỗ `any`; `kv.keys()` + N+1 |
 | Nội dung (cần Hưng duyệt) | Khối "Đang xây / Đang học" ở Home; case study theo quyết định → kết quả → bài học; số liệu 70%/80%/95% cần gắn kỳ đo |
 | Kiểm bên ngoài | Google Search Console: xác nhận duplicate indexing đã hết sau khi hợp nhất hostname 09/09 |
-| VPS (không liên quan website) | Bot `nemotron` chết — 09/09 chỉ thấy 2 process bot nghe ở `[::1]:18789` và `[::1]:18795` |
+| VPS (không liên quan website) | Chưa xác minh trạng thái `nemotron`; quan sát 2 listening process không đủ kết luận bot chết. Kiểm runtime trong project OpenClaw, đọc LOCAL_CONTEXT.md trước |
 
 ### Đã đo và cố ý KHÔNG làm
 
 - **Nâng `DISCOVERY_TOP_K` 20 → 50.** Đo 2026-09-09: video được gọi tên luôn
-  nằm hạng 1, và 3 ca nhiều nguồn cố tình chọn video xa nhau đều lấy đủ nguồn
-  ở cả top20 lẫn top50 — kết quả y hệt. Không có lợi ích đo được.
+  nằm hạng 1 trong các ca đã thử, và 3 ca nhiều nguồn cố tình chọn video xa nhau đều lấy đủ nguồn
+  ở cả top20 lẫn top50 — kết quả y hệt trong bộ thử đó. Chưa có lợi ích đo được để tăng topK; không phải bảo đảm mọi truy vấn đều đủ nguồn.
 - **Retrieval theo history cho tài liệu.** Follow-up mơ hồ nhất vẫn lấy đúng
-  5/5 chunk tài liệu chỉ bằng embedding. Không cần cơ chế thêm.
+  5/5 chunk tài liệu chỉ bằng embedding trong ca đã thử. Tạm chưa thêm cơ chế; không coi là đã phủ mọi follow-up. Lỗi video cũ lấn context sau đổi chủ đề được xử lý riêng trong bản local `FOLLOWUP_SCOPE_2026-09-09.md`.
 - **Rewrite git history để giấu IP VPS.** IP nằm trong record A công khai của
   `n8n`/`bot.hungreo.com`, `dig` là ra. Xem [`VPS_SSH_HARDENING.md`](VPS_SSH_HARDENING.md).
 
