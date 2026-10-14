@@ -2,6 +2,8 @@
 
 Cập nhật: 2026-10-13 · Follow-up scope fix `a446fba` đã lên Prod `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy` và đã push lên `main` (13/10); technical smoke 4/4 PASS, chờ owner UAT. Xem `PROD_FOLLOWUP_SCOPE_2026-09-09.md`. Nội dung đề xuất và dependency chưa publish/upgrade: `CONTENT_DRAFT_2026-09-09.md`, `DEPENDENCY_PLAN_2026-09-09.md`.
 
+**CI `Security` xanh lại từ 14/10** (`4b9efab`, run #39): job Tests and Build đỏ ít nhất từ 09/09 vì `lib/translateVideo.ts` tạo client OpenAI lúc import → `next build` không có secret thì fail. Đã chuyển sang `getOpenAIClient()` (lười). Commit này **chưa deploy** — hành vi runtime không đổi khi có key, đi cùng release kế tiếp. Audit job vẫn báo 35 lỗ hổng (continue-on-error) → theo `DEPENDENCY_PLAN`. `.gitleaksignore` có 4 dòng glob không hợp lệ (gitleaks chỉ nhận fingerprint) — vô hại vì không có leak, dọn khi tiện.
+
 **Related Videos — đã lên Prod 13/10:** `main@9297f89` → `dpl_7hfDRxbBPMpT7xtr6edNvHqfquh5` (rollback anchor: `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy`). Root cause: `RelatedVideos` gọi HTTP `/api/videos` qua `VERCEL_URL` = URL deployment bị SSO chặn → HTML → `Unexpected token '<'` → khối bị ẩn. Sửa: đọc KV trực tiếp (`lib/relatedVideos.ts`), bỏ `lib/getBaseUrl.ts`, `noStore()` cho sidebar. Smoke Prod: trang Vibe Coding HTTP 200, khối Related Videos hiện 5 video AI Works khác (loại đúng video hiện tại); 0 log error/warning 30 phút sau deploy. Chưa owner UAT.
 
 ## Bối cảnh nhanh
