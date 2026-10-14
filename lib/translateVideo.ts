@@ -3,12 +3,8 @@
  * Uses OpenAI GPT-4 to translate video content from English to Vietnamese
  */
 
-import OpenAI from 'openai'
+import { getOpenAIClient } from './openai'
 import { VideoContent } from './videoManager'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
 
 /**
  * Translate video content from English to Vietnamese
@@ -51,7 +47,7 @@ Return ONLY a valid JSON object with this structure:
 
 Do not include any other text outside the JSON object.`
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAIClient().chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
