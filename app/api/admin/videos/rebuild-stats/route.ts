@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { kv } from '@vercel/kv'
+import { kv } from '@/lib/kv'
 import { getAllVideosComplete } from '@/lib/videoManager'
 
 export const runtime = 'nodejs'

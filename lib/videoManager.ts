@@ -4,7 +4,7 @@
  * Updated: Bilingual support (EN/VI)
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from './kv'
 import { Innertube } from 'youtubei.js'
 import axios from 'axios'
 import { trySupadataTranscriptFallback } from './supadataTranscript'

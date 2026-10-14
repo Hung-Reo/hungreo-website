@@ -3,7 +3,7 @@
  * Manages About content, Projects, and Blog Posts
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from './kv'
 import { v4 as uuidv4 } from 'uuid'
 
 // ============================================

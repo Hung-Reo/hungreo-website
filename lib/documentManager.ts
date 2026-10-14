@@ -5,7 +5,7 @@
  * Note: In development without Vercel KV, documents are stored in-memory only
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from './kv'
 import { put } from '@vercel/blob'
 
 // In-memory storage for development (when Vercel KV is not configured)

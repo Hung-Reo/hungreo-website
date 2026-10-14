@@ -3,7 +3,7 @@
  * Uses Vercel KV (Redis) for storage
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from './kv'
 import { notifyHungAboutChat } from './emailNotifier'
 
 // Chat records and the daily indexes that point at them share one lifetime.

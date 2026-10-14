@@ -4,7 +4,7 @@
  */
 
 import { Ratelimit } from '@upstash/ratelimit'
-import { kv } from '@vercel/kv'
+import { kv } from './kv'
 
 /**
  * Rate limiter for chatbot API

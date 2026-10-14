@@ -7,7 +7,7 @@
  * 2. Direct request: User asks "how to contact", "talk to human", etc.
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from './kv'
 
 // Contact request records and the daily indexes pointing at them share a lifetime.
 const CONTACT_REQUEST_TTL_SECONDS = 60 * 60 * 24 * 90

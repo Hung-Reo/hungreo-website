@@ -3,7 +3,7 @@
  * Stores aggregate counts only in Vercel KV
  */
 
-import { kv } from '@vercel/kv'
+import { kv } from './kv'
 
 // Daily and weekly buckets are only ever read for the current day/week; the
 // monthly aggregates keep a year of headroom for historical reporting.

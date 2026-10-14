@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { unstable_noStore as noStore } from 'next/cache'
 import type { VideoCategory } from '@/lib/videoManager'
 import { createVideoSlug } from '@/lib/knowledge'
 import { loadRelatedVideos } from '@/lib/relatedVideos'
@@ -12,9 +11,6 @@ interface RelatedVideosProps {
 }
 
 export async function RelatedVideos({ category, categorySlug, currentVideoId }: RelatedVideosProps) {
-  // @vercel/kv fetches with cache: 'default', which Next 14 keeps in the Data
-  // Cache indefinitely even on force-dynamic pages; newly added videos must show.
-  noStore()
   const videos = await loadRelatedVideos(category, currentVideoId)
 
   if (videos.length === 0) {
