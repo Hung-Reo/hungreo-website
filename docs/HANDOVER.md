@@ -1,6 +1,6 @@
 # Handover — hungreo.com
 
-Cập nhật: 2026-10-13 · Follow-up scope fix `a446fba` đã lên Prod `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy` và đã push lên `main` (13/10); technical smoke 4/4 PASS, chờ owner UAT. Xem `PROD_FOLLOWUP_SCOPE_2026-09-09.md`. Nội dung đề xuất và dependency chưa publish/upgrade: `CONTENT_DRAFT_2026-09-09.md`, `DEPENDENCY_PLAN_2026-09-09.md`.
+Cập nhật: 2026-10-15 · Prod chạy Next 15.5.28 + React 19 (UAT PASS). Trước đó · Follow-up scope fix `a446fba` đã lên Prod `dpl_3XVuKb4NDoiL7RZ2ufmPW3h3srTy` và đã push lên `main` (13/10); technical smoke 4/4 PASS, chờ owner UAT. Xem `PROD_FOLLOWUP_SCOPE_2026-09-09.md`. Nội dung đề xuất và dependency chưa publish/upgrade: `CONTENT_DRAFT_2026-09-09.md`, `DEPENDENCY_PLAN_2026-09-09.md`.
 
 **CI `Security` xanh lại từ 14/10** (`4b9efab`, run #39): job Tests and Build đỏ ít nhất từ 09/09 vì `lib/translateVideo.ts` tạo client OpenAI lúc import → `next build` không có secret thì fail. Đã chuyển sang `getOpenAIClient()` (lười). Commit này **chưa deploy** — hành vi runtime không đổi khi có key, đi cùng release kế tiếp. Audit job vẫn báo 35 lỗ hổng (continue-on-error) → theo `DEPENDENCY_PLAN`. `.gitleaksignore` có 4 dòng glob không hợp lệ (gitleaks chỉ nhận fingerprint) — vô hại vì không có leak, dọn khi tiện.
 
@@ -91,7 +91,7 @@ Chi tiết ở [`CODE_REVIEW_2026-07-28.md`](CODE_REVIEW_2026-07-28.md) và
 
 | Ưu tiên | Việc |
 |---|---|
-| Next 15 Phase 1 — **đã lên Prod 15/10, chờ owner UAT** | `main@105fa76` (`9dfd929`: next 15.5.28, react 19.2.9) → `dpl_87KMUXpNtFZopmHYRNU6m15EVAwR` (rollback anchor `dpl_4fm2ZDjF52zmBxetYfnbNhtywdtE`). CI Node 20 xanh. Smoke Prod: trang video Vibe Coding 200 + Related Videos 5 link, `/api/content/projects/[slug]` 200, `/api/videos` 14 video, 0 log error/warning. Phase 2 (`npm audit fix` non-major) sau 3–7 ngày ổn định. Kế hoạch: `DEPENDENCY_PLAN_2026-10-15.md` |
+| Next 15 Phase 1 — **đã lên Prod 15/10, owner UAT PASS** (public EN/VI, admin login + lưu blog, chatbot 3 câu) | `main@105fa76` (`9dfd929`: next 15.5.28, react 19.2.9) → `dpl_87KMUXpNtFZopmHYRNU6m15EVAwR` (rollback anchor `dpl_4fm2ZDjF52zmBxetYfnbNhtywdtE`). CI Node 20 xanh. Smoke Prod: trang video Vibe Coding 200 + Related Videos 5 link, `/api/content/projects/[slug]` 200, `/api/videos` 14 video, 0 log error/warning. Phase 2 (`npm audit fix` non-major) sau 3–7 ngày ổn định. Kế hoạch: `DEPENDENCY_PLAN_2026-10-15.md` |
 | Dependency | Xem `DEPENDENCY_PLAN_2026-09-09.md`: đánh giá theo runtime/advisory, chọn version vá hiện hành; không nâng major bằng `audit fix --force` |
 | Hardening — **đã lên Prod 15/10** | `main@12753f7` (fix `5af9af7`) → `dpl_84Avv6DkpX9NAkpHGzUtYnkFLdio` (rollback anchor `dpl_Fsk2owyy1B52eC6dB52YnxY3KriL`). Escape email HTML (admin + khách), rate limit `/api/analytics/track` 30/phút/IP và reset-password 5/15 phút/IP, lọc `blog:categories`, SSE dừng timer khi client đi. Smoke: `/api/content/blog` 200 đủ 3 bài, 0 log error/warning. Rate limit chưa kiểm được bằng POST từ cloud — theo dõi log. |
 | MEDIUM còn lại | 2 hàm `chunkText` khác nhau cùng đổ vào 1 Pinecone index (chỉ xử lý khi re-index); slug index cũ không xoá khi đổi slug (URL cũ vẫn resolve — vô hại) |
