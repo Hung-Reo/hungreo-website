@@ -91,6 +91,7 @@ Chi tiết ở [`CODE_REVIEW_2026-07-28.md`](CODE_REVIEW_2026-07-28.md) và
 
 | Ưu tiên | Việc |
 |---|---|
+| Next 15 Phase 1 — **trên branch, chờ GO deploy** | `9dfd929`: next 15.5.28, react 19.2.9, 19 file params/useParams, `serverExternalPackages`. Local + preview `dpl_cHyabc2USRMRfE4g4WAKekjdYQgt` PASS. Kế hoạch: `DEPENDENCY_PLAN_2026-10-15.md` |
 | Dependency | Xem `DEPENDENCY_PLAN_2026-09-09.md`: đánh giá theo runtime/advisory, chọn version vá hiện hành; không nâng major bằng `audit fix --force` |
 | Hardening — **đã lên Prod 15/10** | `main@12753f7` (fix `5af9af7`) → `dpl_84Avv6DkpX9NAkpHGzUtYnkFLdio` (rollback anchor `dpl_Fsk2owyy1B52eC6dB52YnxY3KriL`). Escape email HTML (admin + khách), rate limit `/api/analytics/track` 30/phút/IP và reset-password 5/15 phút/IP, lọc `blog:categories`, SSE dừng timer khi client đi. Smoke: `/api/content/blog` 200 đủ 3 bài, 0 log error/warning. Rate limit chưa kiểm được bằng POST từ cloud — theo dõi log. |
 | MEDIUM còn lại | 2 hàm `chunkText` khác nhau cùng đổ vào 1 Pinecone index (chỉ xử lý khi re-index); slug index cũ không xoá khi đổi slug (URL cũ vẫn resolve — vô hại) |
