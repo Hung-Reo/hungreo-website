@@ -1,6 +1,44 @@
-# Nội dung đề xuất — chờ Hưng duyệt, chưa publish
+# Nội dung đề xuất — chờ Hưng duyệt câu chữ mục 0, chưa publish
 
 Đây là bản copy EN/VI có thể đưa vào website sau khi duyệt. Ngôi “mình/I” là giọng văn đề xuất cho Hưng, chưa được coi là tuyên bố cá nhân đã xác nhận. Không thay CMS hoặc code Home trong lượt này.
+
+## 0. Bản theo input Hưng 15/10 — chờ duyệt câu chữ
+
+Hưng đã chốt: (1) giọng "mình / I" OK; (2) chủ đề tháng 9–10 như dưới; (3) **bỏ** các tỷ lệ 70/80/95% trong case study, giữ mô tả định tính ở mục 2. Bản này **thay** phần copy mục 1 bên dưới; vị trí và cách đưa vào code giữ nguyên.
+
+### VI — cập nhật tháng 10/2026
+
+**Đang xây**
+
+Tháng 9 và tháng 10, mình tập trung xây các AI Agent làm việc thật: trang bị cho chúng công cụ (tools) và kỹ năng (skills) phù hợp, đồng thời đặt chúng trong môi trường an toàn (sandbox) để mỗi hành động của AI trong công việc kinh doanh đều nằm trong tầm kiểm soát.
+
+Tháng 10 này, trọng tâm là Personal AI: mình rà soát lại chỉ dẫn (instructions) cho các agent để chúng hiểu mình hơn — cách mình làm việc, điều mình ưu tiên và những nguyên tắc mình giữ.
+
+Link: **Xem dự án OpenClaw** → `/projects/openclaw-personal-ai-operations-platform`
+
+**Đang học**
+
+Mình đang học sâu hơn về bảo mật cho AI: làm sao để agent được giao đúng quyền cần thiết và chạy trong sandbox khi thực hiện hành động thật cho doanh nghiệp. Song song, mình dành thời gian tìm hiểu sâu hơn về giáo dục — việc học và dạy sẽ thay đổi thế nào khi AI trở thành người đồng hành hằng ngày.
+
+Link: **Khám phá thư viện kiến thức** → `/tools/knowledge`
+
+### EN — updated October 2026
+
+**Building now**
+
+Through September and October, I've been building AI agents that do real work: giving them the right tools and skills, and running them inside a sandbox so every action an AI takes in a business setting stays under control.
+
+This month the focus is Personal AI: I'm reviewing the instructions my agents follow so they understand me better — how I work, what I prioritise and the principles I hold to.
+
+Link: **Explore the OpenClaw project** → `/projects/openclaw-personal-ai-operations-platform`
+
+**Learning now**
+
+I'm going deeper into AI security: how to give an agent only the permissions it needs and keep it sandboxed when it acts for a real business. Alongside that, I'm learning more about education — how learning and teaching change when AI becomes an everyday companion.
+
+Link: **Explore the knowledge library** → `/tools/knowledge`
+
+---
 
 ## 1. Home: Đang xây / Đang học
 
