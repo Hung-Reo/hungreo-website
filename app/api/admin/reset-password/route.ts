@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@/lib/kv'
+import { passwordResetRateLimit, getClientIp } from '@/lib/rateLimit'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
@@ -16,6 +17,14 @@ function isAdminEmail(email: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
+    const { success } = await passwordResetRateLimit.limit(getClientIp(req))
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const { token, newPassword } = await req.json()
 
     // Validate inputs

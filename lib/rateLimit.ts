@@ -90,6 +90,28 @@ export const publicApiRateLimit = new Ratelimit({
 })
 
 /**
+ * Rate limiter for public page-view tracking
+ * 30 page views per minute per IP; extra views are dropped, not errored
+ */
+export const analyticsTrackRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(30, '1 m'),
+  analytics: false,
+  prefix: 'ratelimit:analytics:track',
+})
+
+/**
+ * Rate limiter for password reset submissions
+ * 5 attempts per 15 minutes per IP
+ */
+export const passwordResetRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5, '15 m'),
+  analytics: false,
+  prefix: 'ratelimit:admin:reset-password',
+})
+
+/**
  * Helper function to get client IP from request
  * SECURITY: Only trust Vercel-provided headers to prevent IP spoofing
  * Falls back to 'anonymous' if IP cannot be determined

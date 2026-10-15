@@ -126,9 +126,9 @@ export async function notifyHungAboutChat(log: ChatLog): Promise<boolean> {
             <div class="section">
               <div class="label">Page Context:</div>
               <div class="value">
-                ${log.pageContext.page}
-                ${log.pageContext.videoId ? `<br/>Video ID: ${log.pageContext.videoId}` : ''}
-                ${log.pageContext.category ? `<br/>Category: ${log.pageContext.category}` : ''}
+                ${escapeHtml(String(log.pageContext.page))}
+                ${log.pageContext.videoId ? `<br/>Video ID: ${escapeHtml(String(log.pageContext.videoId))}` : ''}
+                ${log.pageContext.category ? `<br/>Category: ${escapeHtml(String(log.pageContext.category))}` : ''}
               </div>
             </div>
             `
@@ -139,7 +139,7 @@ export async function notifyHungAboutChat(log: ChatLog): Promise<boolean> {
               <div class="label">Metadata:</div>
               <div class="value">
                 <strong>Time:</strong> ${new Date(log.timestamp).toLocaleString('vi-VN')}<br/>
-                <strong>Session ID:</strong> ${log.sessionId}<br/>
+                <strong>Session ID:</strong> ${escapeHtml(String(log.sessionId))}<br/>
                 <strong>Response Time:</strong> ${log.responseTime}ms<br/>
                 <strong>Relevant Docs:</strong> ${log.relevantDocs || 0}
               </div>
@@ -254,7 +254,7 @@ export async function notifyContactRequest(data: {
 
             <div class="section">
               <div class="label">Email:</div>
-              <div class="value"><a href="mailto:${data.email}">${data.email}</a></div>
+              <div class="value"><a href="mailto:${escapeHtml(data.email)}">${escapeHtml(data.email)}</a></div>
             </div>
 
             <div class="section">
@@ -407,7 +407,7 @@ export async function notifyContactRequestFromChat(data: {
 
             <div class="section">
               <div class="label">Email:</div>
-              <div class="value"><a href="mailto:${data.email}">${data.email}</a></div>
+              <div class="value"><a href="mailto:${escapeHtml(data.email)}">${escapeHtml(data.email)}</a></div>
             </div>
 
             ${data.name ? `
@@ -439,7 +439,7 @@ export async function notifyContactRequestFromChat(data: {
             </div>
 
             <div style="text-align: center; margin-top: 20px;">
-              <a href="mailto:${data.email}?subject=Re: Câu hỏi của bạn trên Hungreo&body=Chào ${data.name || 'bạn'},%0D%0A%0D%0ACảm ơn bạn đã liên hệ. Về câu hỏi: '${encodeURIComponent(data.originalQuestion)}'%0D%0A%0D%0A" class="button">
+              <a href="mailto:${escapeHtml(data.email)}?subject=Re: Câu hỏi của bạn trên Hungreo&body=Chào ${encodeURIComponent(data.name || 'bạn')},%0D%0A%0D%0ACảm ơn bạn đã liên hệ. Về câu hỏi: '${encodeURIComponent(data.originalQuestion)}'%0D%0A%0D%0A" class="button">
                 📧 Reply ngay
               </a>
               <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/admin/contact-requests" class="button button-secondary">
@@ -562,7 +562,7 @@ export async function sendReplyToUser(data: {
               <h2 style="margin: 0;">Hưng from Hungreo</h2>
             </div>
 
-            <p>Chào ${data.toName || 'bạn'},</p>
+            <p>Chào ${escapeHtml(data.toName || 'bạn')},</p>
 
             <p>Cảm ơn bạn đã liên hệ qua chatbot. Về câu hỏi của bạn:</p>
 

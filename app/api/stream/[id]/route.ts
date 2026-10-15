@@ -28,27 +28,36 @@ export async function GET(
       let pollTimer: NodeJS.Timeout | null = null
       let closed = false
 
+      const stopTimers = () => {
+        if (heartbeat) clearInterval(heartbeat)
+        if (pollTimer) clearInterval(pollTimer)
+      }
+
       const sendEvent = (payload: any) => {
         if (closed) return
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`))
         } catch {
-          // Controller already closed; mark closed to prevent further sends
+          // Controller already closed: stop polling KV for a client that is gone
           closed = true
+          stopTimers()
         }
       }
 
       const close = () => {
+        stopTimers()
         if (closed) return
         closed = true
-        if (heartbeat) clearInterval(heartbeat)
-        if (pollTimer) clearInterval(pollTimer)
-        controller.close()
+        try {
+          controller.close()
+        } catch {
+          // Already closed by the runtime
+        }
       }
 
       // Heartbeat to keep connection alive
       heartbeat = setInterval(() => {
-        controller.enqueue(encoder.encode('data: {"type":"heartbeat"}\n\n'))
+        sendEvent({ type: 'heartbeat' })
       }, 15000)
 
       // Poll job status periodically
@@ -82,8 +91,8 @@ export async function GET(
       // Initial poll immediately
       await poll()
 
-      // Continue polling every second
-      pollTimer = setInterval(poll, 1000)
+      // Continue polling every second (unless the first poll already finished the stream)
+      if (!closed) pollTimer = setInterval(poll, 1000)
 
       // Handle client disconnect
       req.signal.addEventListener('abort', () => close())

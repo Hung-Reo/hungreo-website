@@ -380,8 +380,8 @@ export async function getAllBlogPosts(): Promise<BlogPost[]> {
   try {
     const keys = await kv.keys('blog:*')
 
-    // Filter out slug index keys
-    const blogKeys = keys.filter(key => !key.includes(':slug:'))
+    // Filter out slug index keys and the category list stored under the same prefix
+    const blogKeys = keys.filter(key => !key.includes(':slug:') && key !== 'blog:categories')
 
     const posts = await Promise.all(
       blogKeys.map(key => kv.get<BlogPost>(key))
