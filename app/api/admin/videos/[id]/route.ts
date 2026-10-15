@@ -40,7 +40,8 @@ export async function OPTIONS() {
 }
 
 // GET single video
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise
   try {
     const session = await auth()
     if (!session?.user || (session.user as any).role !== 'admin') {
@@ -61,7 +62,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PATCH update video category or generate embeddings
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise
   let jobId: string | null = null
   let isGeneratingEmbeddings = false
 
@@ -211,7 +213,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // PUT update video content (bilingual)
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise
   try {
     const session = await auth()
     if (!session?.user || (session.user as any).role !== 'admin') {
@@ -260,7 +263,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE video
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  const params = await paramsPromise
   try {
     const session = await auth()
     if (!session?.user || (session.user as any).role !== 'admin') {

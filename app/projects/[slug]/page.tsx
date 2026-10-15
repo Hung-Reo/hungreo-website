@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { notFound, useRouter } from 'next/navigation'
+import { notFound, useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -44,7 +44,8 @@ function contentToHTML(content: string): string {
   }
 }
 
-export default function ProjectPage({ params }: { params: { slug: string } }) {
+export default function ProjectPage() {
+  const params = useParams<{ slug: string }>()
   const { language, t } = useLanguage()
   const router = useRouter()
   const [project, setProject] = useState<Project | null>(null)

@@ -7,12 +7,13 @@ import { BASE_URL } from '@/lib/metadata'
 
 
 interface PageProps {
-  params: {
+  params: Promise<{
     category: string
-  }
+  }>
 }
 
-export function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params: paramsPromise }: PageProps) {
+  const params = await paramsPromise
   const mapping = CATEGORY_MAPPINGS[params.category]
   if (!mapping) return {}
 
@@ -28,7 +29,8 @@ export function generateMetadata({ params }: PageProps) {
 // Revalidate every 60 seconds (ISR)
 export const revalidate = 60
 
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({ params: paramsPromise }: PageProps) {
+  const params = await paramsPromise
   const mapping = CATEGORY_MAPPINGS[params.category]
 
   if (!mapping) {

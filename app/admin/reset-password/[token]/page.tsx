@@ -1,18 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Lock, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
-interface ResetPasswordPageProps {
-  params: {
-    token: string
-  }
-}
-
-export default function ResetPasswordPage({ params }: ResetPasswordPageProps) {
+export default function ResetPasswordPage() {
+  const params = useParams<{ token: string }>()
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')

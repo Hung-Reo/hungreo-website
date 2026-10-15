@@ -10,8 +10,9 @@ export const revalidate = 0
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params: paramsPromise }: { params: Promise<{ slug: string }> }
 ) {
+  const params = await paramsPromise
   const post = await getBlogPostBySlug(params.slug)
 
   if (!post) {

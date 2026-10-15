@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import {
   Save,
@@ -22,7 +22,8 @@ import { StatusToggle } from '@/components/admin/StatusToggle'
 import type { Project } from '@/lib/contentManager'
 import { generateSlug } from '@/lib/utils'
 
-export default function ProjectEditorPage({ params }: { params: { id: string } }) {
+export default function ProjectEditorPage() {
+  const params = useParams<{ id: string }>()
   const router = useRouter()
   const isNew = params.id === 'new'
 

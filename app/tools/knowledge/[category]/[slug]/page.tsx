@@ -7,10 +7,10 @@ import { CATEGORY_MAPPINGS, createVideoSlug } from '@/lib/knowledge'
 import { BASE_URL } from '@/lib/metadata'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     category: string
     slug: string
-  }
+  }>
 }
 
 // Extract video ID from slug (format: "title-slug-videoId")
@@ -45,7 +45,8 @@ async function getVideo(videoId: string) {
   }
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params: paramsPromise }: PageProps) {
+  const params = await paramsPromise
   const videoId = extractVideoId(params.slug)
   const video = await getVideo(videoId)
 
@@ -71,7 +72,8 @@ export async function generateMetadata({ params }: PageProps) {
   }
 }
 
-export default async function VideoDetailPage({ params }: PageProps) {
+export default async function VideoDetailPage({ params: paramsPromise }: PageProps) {
+  const params = await paramsPromise
   const mapping = CATEGORY_MAPPINGS[params.category]
 
   if (!mapping) {

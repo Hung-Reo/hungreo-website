@@ -29,8 +29,9 @@ export async function OPTIONS() {
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise
   const session = await auth()
 
   if (!session?.user || (session.user as any).role !== 'admin') {
@@ -57,8 +58,9 @@ export async function GET(
  */
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise
   const session = await auth()
 
   if (!session?.user || (session.user as any).role !== 'admin') {
@@ -119,8 +121,9 @@ export async function PUT(
  */
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+  const params = await paramsPromise
   const session = await auth()
 
   if (!session?.user || (session.user as any).role !== 'admin') {

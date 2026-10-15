@@ -3,11 +3,12 @@ import { getBlogPostBySlug } from '@/lib/contentManager'
 import { generateBlogPostMetadata, generateBlogPostJsonLd, serializeJsonLd } from '@/lib/metadata'
 
 type Props = {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
   children: React.ReactNode
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: paramsPromise }: Props): Promise<Metadata> {
+  const params = await paramsPromise
   const post = await getBlogPostBySlug(params.slug)
 
   if (!post || post.status !== 'published') {
@@ -21,7 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return generateBlogPostMetadata(post, 'en')
 }
 
-export default async function BlogPostLayout({ params, children }: Props) {
+export default async function BlogPostLayout({ params: paramsPromise, children }: Props) {
+  const params = await paramsPromise
   const post = await getBlogPostBySlug(params.slug)
 
   if (!post || post.status !== 'published') {

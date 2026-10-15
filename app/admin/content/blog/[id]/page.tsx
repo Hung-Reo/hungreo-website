@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import {
   ArrowLeft, Save, Loader2, Sparkles, X, Plus, Clock, ExternalLink, RotateCcw
@@ -30,11 +30,8 @@ interface BlogPostData {
   }
 }
 
-export default function BlogEditorPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default function BlogEditorPage() {
+  const params = useParams<{ id: string }>()
   const router = useRouter()
   const isNew = params.id === 'new'
 

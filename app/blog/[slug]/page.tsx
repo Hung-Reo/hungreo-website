@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { notFound, useRouter } from 'next/navigation'
+import { notFound, useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { BlogPost } from '@/lib/contentManager'
@@ -47,7 +47,8 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default function BlogPostPage() {
+  const params = useParams<{ slug: string }>()
   const { language } = useLanguage()
   const router = useRouter()
   const [post, setPost] = useState<BlogPost | null>(null)

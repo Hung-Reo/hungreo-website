@@ -3,11 +3,12 @@ import { getProjectBySlug } from '@/lib/contentManager'
 import { generateProjectMetadata, generateProjectJsonLd, serializeJsonLd } from '@/lib/metadata'
 
 type Props = {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
   children: React.ReactNode
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: paramsPromise }: Props): Promise<Metadata> {
+  const params = await paramsPromise
   const project = await getProjectBySlug(params.slug)
 
   if (!project || project.status !== 'published') {
@@ -21,7 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return generateProjectMetadata(project, 'en')
 }
 
-export default async function ProjectLayout({ params, children }: Props) {
+export default async function ProjectLayout({ params: paramsPromise, children }: Props) {
+  const params = await paramsPromise
   const project = await getProjectBySlug(params.slug)
 
   if (!project || project.status !== 'published') {

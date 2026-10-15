@@ -5,16 +5,17 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 /**
  * Public endpoint to get a single video by ID
  * This is more efficient than fetching all videos and filtering
  */
-export async function GET(_req: NextRequest, { params }: RouteParams) {
+export async function GET(_req: NextRequest, { params: paramsPromise }: RouteParams) {
+  const params = await paramsPromise
   try {
     const videoId = params.id
 
