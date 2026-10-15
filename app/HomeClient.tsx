@@ -107,6 +107,35 @@ export default function HomeClient() {
 
       {/* Main Content Container */}
       <div className="container mx-auto px-4 py-12">
+        {/* Now: Building / Learning */}
+      <section className="py-8">
+        <p className="mb-4 text-sm text-slate-500">{t('home.now.updated')}</p>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-lg border bg-white p-6">
+            <h2 className="text-xl font-semibold text-primary-600">{t('home.now.building.title')}</h2>
+            <p className="mt-3 text-slate-600">{t('home.now.building.p1')}</p>
+            <p className="mt-3 text-slate-600">{t('home.now.building.p2')}</p>
+            <Link
+              href="/projects/openclaw-personal-ai-operations-platform"
+              className="mt-4 inline-block font-medium text-primary-600 hover:text-primary-700"
+            >
+              {t('home.now.building.link')} →
+            </Link>
+          </div>
+          <div className="rounded-lg border bg-white p-6">
+            <h2 className="text-xl font-semibold text-primary-600">{t('home.now.learning.title')}</h2>
+            <p className="mt-3 text-slate-600">{t('home.now.learning.p1')}</p>
+            <p className="mt-3 text-slate-600">{t('home.now.learning.p2')}</p>
+            <Link
+              href="/tools/knowledge"
+              className="mt-4 inline-block font-medium text-primary-600 hover:text-primary-700"
+            >
+              {t('home.now.learning.link')} →
+            </Link>
+          </div>
+        </div>
+      </section>
+
         {/* Core Values */}
       <section className="py-8">
         <div className="grid gap-6 md:grid-cols-3">
