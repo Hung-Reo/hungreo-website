@@ -20,9 +20,18 @@ export async function OPTIONS() {
 }
 
 /**
- * GET - Fetch about content (public or admin)
+ * GET - Fetch about content (Admin only)
  */
 export async function GET() {
+  const session = await auth()
+
+  if (!session?.user || (session.user as any).role !== 'admin') {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+
   const content = await getAboutContent()
 
   if (!content) {

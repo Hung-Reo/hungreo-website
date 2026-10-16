@@ -148,8 +148,80 @@ test('CSV export preserves quoting while neutralizing untrusted chat text', () =
   assert.ok(csv.includes("'+video"))
 })
 
+import fs from 'fs'
+import path from 'path'
+
+test('(1) validate-reset-token enforces passwordResetRateLimit before KV lookup', () => {
+  const routeSource = fs.readFileSync(
+    path.join(process.cwd(), 'app/api/admin/validate-reset-token/route.ts'),
+    'utf8'
+  )
+  assert.ok(
+    routeSource.includes('passwordResetRateLimit') && routeSource.includes('getClientIp'),
+    'validate-reset-token must import and use passwordResetRateLimit and getClientIp'
+  )
+  assert.ok(
+    routeSource.includes('status: 429'),
+    'validate-reset-token must return 429 when rate limited'
+  )
+})
+
+test('(2) GET /api/admin/content/about enforces admin auth()', () => {
+  const routeSource = fs.readFileSync(
+    path.join(process.cwd(), 'app/api/admin/content/about/route.ts'),
+    'utf8'
+  )
+  const getMatch = routeSource.match(/export async function GET[\s\S]*?(?=export async function PUT|$)/)
+  assert.ok(getMatch, 'GET handler must exist in app/api/admin/content/about/route.ts')
+  const getBody = getMatch[0]
+  assert.ok(
+    getBody.includes('await auth()') && getBody.includes("role !== 'admin'") && getBody.includes('status: 401'),
+    'GET handler must check await auth(), role !== admin, and return 401 Unauthorized'
+  )
+})
+
+test('(3) getChatStats executes weekly and monthly llen checks concurrently with Promise.all', () => {
+  const loggerSource = fs.readFileSync(
+    path.join(process.cwd(), 'lib/chatLogger.ts'),
+    'utf8'
+  )
+  const statsMatch = loggerSource.match(/export async function getChatStats[\s\S]*?(?=export async function getChatLogs|$)/)
+  assert.ok(statsMatch, 'getChatStats must exist in lib/chatLogger.ts')
+  const statsBody = statsMatch[0]
+  assert.strictEqual(
+    /for\s*\([^)]*\)\s*\{[^}]*await\s+kv\.llen/.test(statsBody),
+    false,
+    'getChatStats must not await kv.llen sequentially inside a for loop'
+  )
+  assert.ok(
+    statsBody.includes('Promise.all'),
+    'getChatStats must use Promise.all for concurrent llen queries'
+  )
+})
+
+test('(4) package.json removes native bcrypt and keeps bcryptjs', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'))
+  assert.strictEqual('bcrypt' in (pkg.dependencies || {}), false, 'bcrypt must be removed from dependencies')
+  assert.strictEqual('bcrypt' in (pkg.devDependencies || {}), false, 'bcrypt must not be in devDependencies')
+  assert.ok('bcryptjs' in (pkg.dependencies || {}), 'bcryptjs must remain in dependencies')
+})
+
+test('(5) backup files app/about/page.tsx.backup and IMPLEMENTATION_PLAN.md.backup are removed', () => {
+  assert.strictEqual(
+    fs.existsSync(path.join(process.cwd(), 'app/about/page.tsx.backup')),
+    false,
+    'app/about/page.tsx.backup must not exist'
+  )
+  assert.strictEqual(
+    fs.existsSync(path.join(process.cwd(), 'IMPLEMENTATION_PLAN.md.backup')),
+    false,
+    'IMPLEMENTATION_PLAN.md.backup must not exist'
+  )
+})
+
 console.log(`\nTotal: ${passed + failed}`)
 console.log(`Passed: ${passed}`)
 console.log(`Failed: ${failed}`)
 
 process.exit(failed > 0 ? 1 : 0)
+

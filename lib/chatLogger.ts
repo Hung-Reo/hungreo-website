@@ -114,21 +114,21 @@ export async function getChatStats(): Promise<ChatStats> {
     const chatsTodayIds = (await kv.lrange(`chats:${today}`, 0, -1)) || []
     const chatsToday = chatsTodayIds.length
 
-    // Get chats this week (sum last 7 days)
-    let chatsThisWeek = 0
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      const count = (await kv.llen(`chats:${date}`)) || 0
-      chatsThisWeek += count
-    }
+    // Get chats this week (sum last 7 days) and this month (sum last 30 days) concurrently
+    const weekDates = Array.from({ length: 7 }, (_, i) =>
+      new Date(now.getTime() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    )
+    const monthDates = Array.from({ length: 30 }, (_, i) =>
+      new Date(now.getTime() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    )
 
-    // Get chats this month (sum last 30 days)
-    let chatsThisMonth = 0
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      const count = (await kv.llen(`chats:${date}`)) || 0
-      chatsThisMonth += count
-    }
+    const [weekCounts, monthCounts] = await Promise.all([
+      Promise.all(weekDates.map((date) => kv.llen(`chats:${date}`))),
+      Promise.all(monthDates.map((date) => kv.llen(`chats:${date}`))),
+    ])
+
+    const chatsThisWeek = weekCounts.reduce((sum, count) => sum + (count || 0), 0)
+    const chatsThisMonth = monthCounts.reduce((sum, count) => sum + (count || 0), 0)
 
     // Get top questions (top 10)
     const topQuestionsRaw = await kv.zrange('stats:top-questions', 0, 9, { rev: true, withScores: true })
