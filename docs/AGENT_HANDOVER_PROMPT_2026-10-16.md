@@ -41,10 +41,10 @@ Bạn tiếp quản repo `Hung-Reo/hungreo-website` — portfolio + AI chatbot c
 
 | # | Việc | Ghi chú / tiêu chí xong |
 |---|---|---|
-| 1 | **Owner UAT hardening đợt 2** | Hưng mở Admin Dashboard (số chat tuần/tháng hiển thị đúng) và trang sửa About (tải + lưu được). Ghi kết quả vào HANDOVER |
-| 2 | **Key Learnings của case study Telegram** | Ô `learnings` dùng chung EN/VI đang là tiếng Việt → trang EN hiện tiếng Việt. Hỏi Hưng giữ VI hay đổi sang 4 câu EN trong `docs/CASE_STUDY_TELEGRAM_2026-10-15.md` (Hưng tự sửa trong admin) |
+| 1 | **Owner UAT hardening đợt 2** | **ĐÃ XONG (16/10 — PASS):** Admin Dashboard (số chat tuần/tháng hiển thị đúng) và trang sửa About (tải + lưu được). Đã ghi vào HANDOVER |
+| 2 | **Key Learnings của case study Telegram** | **ĐÃ XONG (16/10):** Hưng xác nhận giữ nguyên bản tiếng Việt hiện tại trên Prod |
 | 3 | **Phase 2 dependency** (từ ~18–22/10, khi Next 15 ổn định) | `npm audit fix` **không** `--force`, release riêng; test + smoke + UAT editor admin (tiptap). Xem `DEPENDENCY_PLAN_2026-10-15.md` |
-| 4 | **AI agent cho website** (ý tưởng của Hưng) | Chưa code. Bước đầu: hỏi Hưng 3 câu (agent phục vụ ai trước — khách hay chính Hưng; một việc cụ thể muốn nó tự làm; ngân sách OpenAI/tháng) → phân tích chat log (chỉ đọc, cần GO vì dữ liệu Prod) → spec 1 trang → prototype 1 tool trên branch. Giữ GDPR (không PII), trần chi phí, chống prompt injection |
+| 4 | **AI agent / Thử nghiệm học & đúc kết 2 tuần** | Đã lập hướng dẫn thử 2 tuần cá nhân (`docs/EXPERIMENT_2W_LEARNING_BOT_2026-10-16.md`) dùng 1 bot Telegram sẵn có, chưa code/đọc log/đổi VPS/publish. Sau 2 tuần (~30/10) nhìn lại bằng chứng thực tế rồi mới đề xuất 1 cải tiến nhỏ |
 | 5 | Search Console (cuối tháng 10) | Hưng gửi ảnh Indexing → Pages; đọc giúp trang nào chưa index và vì sao |
 | 6 | Cập nhật Home hằng tháng (đầu tháng 11) | Hưng gửi 2–3 dòng → sửa key `home.now.*` EN + VI trong `contexts/LanguageContext.tsx`, đổi `home.now.updated` |
 | 7 | Phase 3 dependency (quyết định từng cái) | Nodemailer 8.x có vá (next-auth chỉ nhận ^7.0.7 \|\| ^8.0.5), puppeteer-core 25, Tailwind 4, Next 16 |
