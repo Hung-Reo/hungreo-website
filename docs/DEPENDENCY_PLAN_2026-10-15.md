@@ -51,4 +51,11 @@ Cập nhật cho `DEPENDENCY_PLAN_2026-09-09.md`. Chưa nâng package nào; ch�
 - `puppeteer-core` 25, `mammoth`, `@tailwindcss/typography` / `tailwindcss` 4 (thay đổi CSS lớn — chưa đáng làm).
 - Next 16: sau khi 15 ổn định; nhiều breaking hơn (middleware → proxy, Turbopack mặc định, bỏ `next lint`).
 
+### Trạng thái 19/10 + tasklist còn lại (chưa gấp, Hưng chốt 19/10)
+
+- ✅ Phase 1 (Next 15) · ✅ Phase 2 (`54fb004`) · ✅ nodemailer 8.0.11 (`d9b6b55`, owner test gửi email PASS) · ✅ sửa 404 favicon/manifest/`/admin` (`4978a41`). Audit prod còn 25 (9 moderate, 16 high).
+- [ ] **nodemailer 10.x (làm trước):** còn 8 advisory tới 10.0.5 (addressparser DoS, recipient-domain bypass, DNS cache TLS). `next-auth`/`@auth/core` bị báo high **chỉ vì kéo theo nodemailer** (VERIFIED từ `via` của `npm audit`), không phải lỗi riêng → sửa nodemailer là hết 3 dòng. Vướng: peer optional của next-auth `^7.0.7 || ^8.0.5` → thử trên branch xem `npm ci` có ERESOLVE không trước khi push. Test: trả lời 1 contact request (email của Hưng).
+- [ ] **puppeteer-core 25 (làm sau):** chuỗi `puppeteer-core → @puppeteer/browsers → proxy-agent → pac-proxy-agent → get-uri → basic-ftp` (FTP listing DoS) + `extract-zip`. App chỉ dùng ở nút cào website của admin (`lib/websiteScraper.ts`), đọc HTTPS, không dùng FTP → rủi ro thực tế rất thấp. Phải khớp phiên bản với `@sparticuz/chromium`. Test: bấm cào website 1 lần.
+- [ ] Để sau: `mammoth`/`gray-matter` (audit gợi ý hạ cấp — sai, chờ upstream), Tailwind 4, Next 16 (kèm postcss), warning tiptap *Duplicate extension names* (`StarterKit` v3 đã có Link/Underline).
+
 Không dùng `npm audit fix --force`. Không gộp phase với thay đổi tính năng (AI agent làm sau Phase 1).
