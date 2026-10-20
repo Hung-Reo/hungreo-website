@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import {
-  ArrowLeft, Save, Loader2, Sparkles, X, Plus, Clock, ExternalLink, RotateCcw
+  ArrowLeft, Save, Loader2, Sparkles, X, Plus, Clock, ExternalLink, RotateCcw, Languages
 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -14,6 +14,7 @@ import { ImageUploader } from '@/components/admin/ImageUploader'
 import { StatusToggle } from '@/components/admin/StatusToggle'
 import { LivingThoughtEditor } from '@/components/admin/LivingThoughtEditor'
 import type { LivingThoughtFields } from '@/lib/livingThought'
+import { applyTranslation } from '@/lib/applyTranslation'
 
 interface BlogPostData extends LivingThoughtFields {
   id?: string
@@ -46,6 +47,7 @@ export default function BlogEditorPage() {
   const [showPolishFlow, setShowPolishFlow] = useState(isNew)
   const [rawDraft, setRawDraft] = useState('')
   const [polishing, setPolishing] = useState(false)
+  const [translating, setTranslating] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState<BlogPostData | null>(null)
@@ -204,6 +206,52 @@ export default function BlogEditorPage() {
       toast.error(error instanceof Error ? error.message : 'Failed to regenerate')
     } finally {
       setPolishing(false)
+    }
+  }
+
+  // Translate the other language tab into the active one; the admin reviews before saving
+  async function handleTranslate() {
+    if (!formData) return
+    const to = activeTab
+    const from = to === 'en' ? 'vi' : 'en'
+    const empty = { title: '', excerpt: '', content: '' }
+    const source = formData[from] ?? empty
+    const target = formData[to] ?? empty
+
+    if (!source.title?.trim() && !source.excerpt?.trim() && !source.content?.trim()) {
+      toast.error(`Tab ${from.toUpperCase()} is empty — nothing to translate`)
+      return
+    }
+
+    const hasTargetText = Boolean(target.title?.trim() || target.excerpt?.trim() || target.content?.trim())
+    if (hasTargetText && !window.confirm(`Overwrite the current ${to.toUpperCase()} title, excerpt and content with the AI translation?`)) {
+      return
+    }
+
+    setTranslating(true)
+    try {
+      const res = await fetch('/api/admin/content/blog/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from, to, title: source.title, excerpt: source.excerpt, content: source.content }),
+      })
+
+      const result = await res.json().catch(() => null)
+      if (!res.ok || !result?.translated) {
+        throw new Error(result?.error || `Translate failed: ${res.status}`)
+      }
+
+      const { warnings, ...translated } = result.translated
+      setFormData((prev) => prev && { ...prev, [to]: applyTranslation(prev[to], translated) })
+      setHasUnsavedChanges(true)
+      toast.success(`Translated ${from.toUpperCase()} → ${to.toUpperCase()}. Review it, then Save.`)
+      if (warnings?.length) {
+        toast.warning(`Markdown changed (${warnings.join(', ')}) — please check before saving`, { duration: 10000 })
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to translate')
+    } finally {
+      setTranslating(false)
     }
   }
 
@@ -455,7 +503,7 @@ export default function BlogEditorPage() {
           <Button onClick={() => router.push('/admin/content/blog')} variant="outline">
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving || translating}>
             {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -477,6 +525,27 @@ export default function BlogEditorPage() {
           {/* Bilingual Content */}
           <div className="bg-white border rounded-lg overflow-hidden">
             <BilingualTabs activeTab={activeTab} onChange={setActiveTab} />
+
+            <div className="px-6 pt-4 flex items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                {activeTab === 'en'
+                  ? 'Fill this tab from the Vietnamese version, then review before saving.'
+                  : 'Điền tab này từ bản tiếng Anh, đọc lại rồi mới Save.'}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTranslate}
+                disabled={translating || saving}
+              >
+                {translating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Languages className="mr-2 h-4 w-4" />
+                )}
+                {activeTab === 'en' ? 'Dịch VI → EN' : 'Dịch EN → VI'}
+              </Button>
+            </div>
 
             <div className="p-6 space-y-6">
               {activeTab === 'en' ? (
