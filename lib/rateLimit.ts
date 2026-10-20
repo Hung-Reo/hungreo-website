@@ -188,3 +188,14 @@ export async function checkRateLimit(
 
   return null
 }
+
+/**
+ * Rate limiter for OpenClaw draft ingestion (/api/ingest/thought)
+ * Limits: 20 drafts per hour in total (keyed by a constant, not by IP)
+ */
+export const thoughtIngestRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(20, '1 h'),
+  analytics: false, // writes ratelimit:*:events:* zsets with no TTL that nothing reads
+  prefix: 'ratelimit:ingest:thought',
+})
