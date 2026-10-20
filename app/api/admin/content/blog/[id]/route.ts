@@ -7,6 +7,7 @@ import {
   generateSlug,
   calculateReadingTime,
 } from '@/lib/contentManager'
+import { normalizeLivingThought, getPublishBlockError } from '@/lib/livingThought'
 
 // Force Node.js runtime for PUT/DELETE support
 export const runtime = 'nodejs'
@@ -110,11 +111,17 @@ export async function PUT(
     const post = {
       ...existing,
       ...body,
+      ...normalizeLivingThought(body),
       id: params.id, // Ensure ID doesn't change
       slug,
       updatedAt: Date.now(),
       publishedAt,
       readingTime,
+    }
+
+    const publishBlockError = getPublishBlockError(post)
+    if (publishBlockError) {
+      return NextResponse.json({ error: publishBlockError }, { status: 400 })
     }
 
     await saveBlogPost(post)

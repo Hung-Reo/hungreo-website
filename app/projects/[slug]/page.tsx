@@ -182,8 +182,9 @@ export default function ProjectPage() {
           </div>
         )}
 
-        {/* Content */}
+        {/* Content (data-index-section: read by lib/websiteScraper.ts) */}
         <div
+          data-index-section={lang === 'en' ? 'Project' : 'Dự án'}
           className="prose prose-slate prose-lg max-w-none mb-12"
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(contentToHTML(project[lang].content || ''))
@@ -216,7 +217,10 @@ export default function ProjectPage() {
 
         {/* Key Learnings */}
         {project.learnings && project.learnings.length > 0 && (
-          <section className="mb-12 bg-amber-50 border border-amber-200 rounded-xl p-8">
+          <section
+            data-index-section={t('projects.keyLearnings')}
+            className="mb-12 bg-amber-50 border border-amber-200 rounded-xl p-8"
+          >
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <Lightbulb className="h-6 w-6 text-amber-600" />
               {t('projects.keyLearnings')}

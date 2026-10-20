@@ -12,8 +12,10 @@ import { BilingualTabs } from '@/components/admin/BilingualTabs'
 import RichTextEditor from '@/components/admin/RichTextEditor'
 import { ImageUploader } from '@/components/admin/ImageUploader'
 import { StatusToggle } from '@/components/admin/StatusToggle'
+import { LivingThoughtEditor } from '@/components/admin/LivingThoughtEditor'
+import type { LivingThoughtFields } from '@/lib/livingThought'
 
-interface BlogPostData {
+interface BlogPostData extends LivingThoughtFields {
   id?: string
   slug: string
   status: 'draft' | 'published'
@@ -594,6 +596,15 @@ export default function BlogEditorPage() {
               )}
             </div>
           </div>
+
+          <LivingThoughtEditor
+            value={formData}
+            activeTab={activeTab}
+            onChange={(patch) => {
+              setFormData({ ...formData, ...patch })
+              setHasUnsavedChanges(true)
+            }}
+          />
 
           {/* Featured Image */}
           <div className="bg-white border rounded-lg p-6">

@@ -5,7 +5,7 @@ import { notFound, useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/LanguageContext'
 import type { BlogPost } from '@/lib/contentManager'
-import { Loader2, ArrowLeft, Calendar, Clock, Tag, BookOpen } from 'lucide-react'
+import { Loader2, ArrowLeft, Calendar, Clock, Tag, BookOpen, Quote, Sparkles, History } from 'lucide-react'
 // Content is fetched after mount; sanitize with the browser DOM, not server-side jsdom.
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
@@ -45,6 +45,16 @@ function contentToHTML(content: string): string {
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+// occurredAt / thoughtEvolution dates are plain YYYY-MM-DD; format in UTC so the
+// day never shifts with the reader's timezone.
+function formatDay(day: string, lang: 'en' | 'vi'): string {
+  const date = new Date(`${day}T00:00:00Z`)
+  if (Number.isNaN(date.getTime())) return day
+  return date.toLocaleDateString(lang === 'en' ? 'en-US' : 'vi-VN', {
+    year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
+  })
 }
 
 export default function BlogPostPage() {
@@ -122,6 +132,18 @@ export default function BlogPostPage() {
     ? formatDate(new Date(post.publishedAt).toISOString())
     : formatDate(new Date(post.createdAt).toISOString())
 
+  // Living Thought blocks: fall back to the other language when this one is empty.
+  const structured = post.structuredContent
+  const otherLang = lang === 'en' ? 'vi' : 'en'
+  const thought = structured
+    ? (structured[lang].context || structured[lang].originalVoice || structured[lang].aiEditorial
+        ? structured[lang]
+        : structured[otherLang])
+    : null
+  // Hung writes in Vietnamese; flag the English block as a translation.
+  const voiceIsTranslation = lang === 'en' && Boolean(structured?.vi.originalVoice) && thought === structured?.en
+  const evolution = [...(post.thoughtEvolution || [])].sort((a, b) => a.date.localeCompare(b.date))
+
   return (
     <article className="container mx-auto px-4 py-12">
       <div className="max-w-4xl mx-auto">
@@ -167,6 +189,15 @@ export default function BlogPostPage() {
                 <span>{post.readTime} min read</span>
               </div>
             )}
+            {post.occurredAt && (
+              <div className="flex items-center gap-1">
+                <History className="h-4 w-4" />
+                <span>
+                  {lang === 'en' ? 'Happened on ' : 'Diễn ra ngày '}
+                  {formatDay(post.occurredAt, lang)}
+                </span>
+              </div>
+            )}
           </div>
         </header>
 
@@ -181,13 +212,89 @@ export default function BlogPostPage() {
           </div>
         )}
 
+        {/* Living Thought: context, Hung's own words, AI notes kept apart */}
+        {thought && (
+          <div className="space-y-8 mb-12">
+            {thought.context && (
+              <div data-index-section={lang === 'en' ? 'Context' : 'Bối cảnh'}>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2">
+                  {lang === 'en' ? 'Context' : 'Bối cảnh'}
+                </h2>
+                <p className="text-lg text-slate-700 whitespace-pre-wrap">{thought.context}</p>
+              </div>
+            )}
+
+            {thought.originalVoice && (
+              <div
+                data-index-section={lang === 'en' ? "Hung's own words" : 'Lời gốc của Hưng'}
+                className="border-l-4 border-primary-500 bg-primary-50/40 rounded-r-lg px-6 py-5"
+              >
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-primary-700 mb-3">
+                  <Quote className="h-4 w-4" />
+                  {lang === 'en' ? "Hung's own words" : 'Lời gốc của Hưng'}
+                </h2>
+                <blockquote className="text-lg leading-relaxed text-slate-900 whitespace-pre-wrap">
+                  {thought.originalVoice}
+                </blockquote>
+                {voiceIsTranslation && (
+                  <p className="mt-3 text-xs text-slate-500">
+                    Translated from the original Vietnamese.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {thought.aiEditorial && (
+              <div data-index-exclude className="border border-dashed border-slate-300 rounded-lg px-6 py-5">
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 mb-1">
+                  <Sparkles className="h-4 w-4" />
+                  {lang === 'en' ? 'Editorial notes (AI-assisted)' : 'Ghi chú biên tập (AI hỗ trợ)'}
+                </h2>
+                <p className="text-xs text-slate-500 mb-3">
+                  {lang === 'en'
+                    ? "Organised by AI from Hung's words above; not his own wording."
+                    : 'AI hệ thống hoá từ lời gốc ở trên, không phải nguyên văn của Hưng.'}
+                </p>
+                <div
+                  className="prose prose-slate max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(contentToHTML(thought.aiEditorial))
+                  }}
+                />
+              </div>
+            )}
+
+            {evolution.length > 0 && (
+              <div data-index-section={lang === 'en' ? 'How my thinking changed' : 'Tư duy thay đổi theo thời gian'}>
+                <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500 mb-3">
+                  <History className="h-4 w-4" />
+                  {lang === 'en' ? 'How my thinking changed' : 'Tư duy thay đổi theo thời gian'}
+                </h2>
+                <ol className="space-y-3 border-l border-slate-200 pl-5">
+                  {evolution.map((entry) => (
+                    <li key={entry.id}>
+                      <p className="text-sm font-medium text-slate-500">{formatDay(entry.date, lang)}</p>
+                      <p className="text-slate-800 whitespace-pre-wrap">
+                        {(lang === 'en' ? entry.noteEn : entry.noteVi) || entry.noteVi || entry.noteEn}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Content */}
-        <div
-          className="prose prose-slate prose-lg max-w-none mb-12"
-          dangerouslySetInnerHTML={{
-            __html: DOMPurify.sanitize(contentToHTML(post[lang].content || ''))
-          }}
-        />
+        {post[lang].content && (
+          <div
+            data-index-section={lang === 'en' ? 'Article' : 'Bài viết'}
+            className="prose prose-slate prose-lg max-w-none mb-12"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(contentToHTML(post[lang].content || ''))
+            }}
+          />
+        )}
 
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (

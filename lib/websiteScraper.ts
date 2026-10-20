@@ -183,6 +183,24 @@ async function scrapePageWithBrowser(browser: any, path: string): Promise<Scrape
         return { title, description, content: document.body.innerText }
       }
 
+      // Detail pages mark their indexable blocks. The section logic below only
+      // reads <section> elements, so an article body in a plain <div> was never
+      // indexed. Blocks inside [data-index-exclude] (AI editorial notes) are
+      // skipped so the chatbot never quotes them as Hung's own words.
+      const indexedBlocks = Array.from(mainElement.querySelectorAll('[data-index-section]'))
+        .filter((el) => !el.closest('[data-index-exclude]'))
+      if (indexedBlocks.length > 0) {
+        const marked = indexedBlocks
+          .map((el) => {
+            const label = el.getAttribute('data-index-section') || ''
+            const body = (el as HTMLElement).innerText.trim()
+            return body ? `${label}\n${body}` : ''
+          })
+          .filter(Boolean)
+          .join('\n\n')
+        return { title, description, content: marked }
+      }
+
       // Smart extraction: detect and properly format structured sections
       let content = ''
       const sections = mainElement.querySelectorAll('section')

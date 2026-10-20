@@ -5,6 +5,11 @@
 
 import { kv } from './kv'
 import { v4 as uuidv4 } from 'uuid'
+import type {
+  LivingThoughtContent,
+  ThoughtEvolutionEntry,
+  Uncertainty,
+} from './livingThought'
 
 // ============================================
 // Content Models
@@ -206,10 +211,16 @@ export interface BlogPost {
     rawDraft: string // Original pasted text
     detectedLanguage: 'en' | 'vi'
   }
+
+  // Living Thought (optional; see lib/livingThought.ts)
+  occurredAt?: string // YYYY-MM-DD, when it happened (not when it was written)
+  structuredContent?: LivingThoughtContent
+  thoughtEvolution?: ThoughtEvolutionEntry[]
+  uncertainties?: Uncertainty[] // Admin-only, never public
 }
 
 export type PublicProject = Omit<Project, 'createdBy' | 'source'>
-export type PublicBlogPost = Omit<BlogPost, 'createdBy' | 'source'>
+export type PublicBlogPost = Omit<BlogPost, 'createdBy' | 'source' | 'uncertainties'>
 
 export function serializePublicProject(project: Project): PublicProject {
   return {
@@ -246,6 +257,9 @@ export function serializePublicBlogPost(post: BlogPost): PublicBlogPost {
     tags: post.tags,
     featuredImage: post.featuredImage,
     readTime: post.readTime,
+    occurredAt: post.occurredAt,
+    structuredContent: post.structuredContent,
+    thoughtEvolution: post.thoughtEvolution,
   }
 }
 

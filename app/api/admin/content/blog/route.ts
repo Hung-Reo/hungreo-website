@@ -9,6 +9,7 @@ import {
   calculateReadingTime,
 } from '@/lib/contentManager'
 import type { BlogPost } from '@/lib/contentManager'
+import { normalizeLivingThought, getPublishBlockError } from '@/lib/livingThought'
 
 /**
  * GET - Fetch all blog posts with stats
@@ -95,6 +96,12 @@ export async function POST(req: NextRequest) {
       featuredImage: body.featuredImage || body.image,
       readTime,
       source: body.source,
+      ...normalizeLivingThought(body),
+    }
+
+    const publishBlockError = getPublishBlockError(post)
+    if (publishBlockError) {
+      return NextResponse.json({ error: publishBlockError }, { status: 400 })
     }
 
     await saveBlogPost(post)
