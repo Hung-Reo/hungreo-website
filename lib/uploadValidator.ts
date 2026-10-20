@@ -50,6 +50,15 @@ export function validateUpload(file: File, type: UploadType): ValidationResult {
   const sanitizedName = sanitizeFilename(file.name)
   const ext = '.' + (file.name.split('.').pop() || '').toLowerCase()
 
+  // iPhone photos default to HEIC; most browsers cannot compress or display them
+  if (type === 'image' && ['.heic', '.heif'].includes(ext)) {
+    return {
+      valid: false,
+      error: 'HEIC/HEIF photos (iPhone) are not supported. Export as JPEG or PNG first.',
+      sanitizedName,
+    }
+  }
+
   if (!config.allowedExtensions.includes(ext)) {
     return {
       valid: false,

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Upload, X, Loader2 } from 'lucide-react'
 import imageCompression from 'browser-image-compression'
 import { toast } from 'sonner'
+import { validateUpload } from '@/lib/uploadValidator'
+import { asUploadFile, getUploadErrorMessage } from '@/lib/uploadClient'
 
 interface ImageUploaderProps {
   onUpload: (url: string) => void
@@ -33,7 +35,7 @@ export function ImageUploader({
 
     try {
       const compressedFile = await imageCompression(file, options)
-      return compressedFile
+      return asUploadFile(compressedFile, file.name)
     } catch (error) {
       console.error('Image optimization failed:', error)
       return file // Return original if optimization fails
@@ -53,41 +55,38 @@ export function ImageUploader({
 
     try {
       for (const file of files) {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          toast.error(`${file.name} is not an image`)
+        // Same rules as the server (type, extension, 5MB before compression), checked up front
+        const validation = validateUpload(file, 'image')
+        if (!validation.valid) {
+          toast.error(`${file.name}: ${validation.error}`)
           continue
         }
 
-        // Validate file size (max 5MB before compression)
-        if (file.size > 5 * 1024 * 1024) {
-          toast.error(`${file.name} is too large (max 5MB)`)
-          continue
+        try {
+          // Optimize image
+          const optimizedFile = await optimizeImage(file)
+
+          // Upload to API
+          const formData = new FormData()
+          formData.append('image', optimizedFile)
+
+          const response = await fetch('/api/admin/upload/image', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!response.ok) {
+            throw new Error(await getUploadErrorMessage(response))
+          }
+
+          const { url } = await response.json()
+          onUpload(url)
+          toast.success(`${file.name} uploaded successfully`)
+        } catch (error) {
+          console.error('Upload error:', error)
+          toast.error(`${file.name}: ${error instanceof Error ? error.message : 'Upload failed'}`)
         }
-
-        // Optimize image
-        const optimizedFile = await optimizeImage(file)
-
-        // Upload to API
-        const formData = new FormData()
-        formData.append('image', optimizedFile)
-
-        const response = await fetch('/api/admin/upload/image', {
-          method: 'POST',
-          body: formData,
-        })
-
-        if (!response.ok) {
-          throw new Error('Upload failed')
-        }
-
-        const { url } = await response.json()
-        onUpload(url)
-        toast.success(`${file.name} uploaded successfully`)
       }
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error('Upload failed')
     } finally {
       setUploading(false)
       e.target.value = '' // Reset input
@@ -123,7 +122,7 @@ export function ImageUploader({
       {/* Upload Button */}
       <input
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
         multiple={multiple}
         onChange={handleFileUpload}
         disabled={uploading}
