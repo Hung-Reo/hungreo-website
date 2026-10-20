@@ -5,6 +5,8 @@ import { getJobStatus } from '@/lib/jobTracker'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const JOB_APPEAR_TIMEOUT_MS = 30_000
+
 /**
  * Server-Sent Events stream for job progress
  * GET /api/stream/[id]
@@ -60,12 +62,20 @@ export async function GET(
         sendEvent({ type: 'heartbeat' })
       }, 15000)
 
+      // The browser opens this stream before it sends the request that creates
+      // the job, so give the job a short grace period to appear.
+      const startedAt = Date.now()
+
       // Poll job status periodically
       const poll = async () => {
         try {
           const job = await getJobStatus(id)
 
           if (!job) {
+            if (Date.now() - startedAt < JOB_APPEAR_TIMEOUT_MS) {
+              sendEvent({ type: 'waiting' })
+              return
+            }
             sendEvent({ type: 'error', message: 'Job not found' })
             return close()
           }

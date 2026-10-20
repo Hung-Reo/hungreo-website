@@ -11,6 +11,7 @@ import { getPineconeIndex, listAllVectorIds } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
 import { chunkText } from '@/lib/textUtils'
 import { createJob, updateJobProgress, completeJob, failJob } from '@/lib/jobTracker'
+import { resolveJobId } from '@/lib/jobId'
 
 export const runtime = 'nodejs'
 
@@ -59,7 +60,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const { id } = await params
-    const { status, notes, extractedText } = await req.json()
+    const { status, notes, extractedText, jobId: requestedJobId } = await req.json()
+    const jobId = resolveJobId(requestedJobId, 'document-approval')
 
     if (!status || !['draft', 'review', 'approved', 'rejected'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
@@ -84,7 +86,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     // If approving, generate embeddings and add to Pinecone
     if (status === 'approved' && document.status !== 'approved') {
-      const jobId = `doc-${id}`
 
       try {
         console.log('[Approve] Creating embeddings for document:', document.id)
@@ -140,7 +141,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         document.pineconeIds = pineconeIds
 
         // Complete job
-        await completeJob(jobId, { vectorCount: pineconeIds.length })
+        await completeJob(jobId, { vectorCount: pineconeIds.length }, `Done: ${pineconeIds.length} vectors created for ${document.fileName}`)
       } catch (error: any) {
         await failJob(jobId, error.message)
         throw error
@@ -150,7 +151,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // Update status
     await updateDocumentStatus(id, status as DocumentStatus, notes)
 
-    return NextResponse.json({ success: true, jobId: status === 'approved' ? `doc-${id}` : undefined })
+    return NextResponse.json({ success: true, jobId: status === 'approved' ? jobId : undefined })
   } catch (error: any) {
     console.error('Update document error:', error)
     return NextResponse.json({ error: error.message || 'Failed to update document' }, { status: 500 })

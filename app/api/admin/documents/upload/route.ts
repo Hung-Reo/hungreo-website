@@ -6,6 +6,7 @@ import { saveDocument, uploadToBlob, type Document } from '@/lib/documentManager
 import { validateUpload } from '@/lib/uploadValidator'
 import { fileUploadRateLimit, getClientIp } from '@/lib/rateLimit'
 import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
+import { resolveJobId } from '@/lib/jobId'
 
 export const runtime = 'nodejs'
 
@@ -14,7 +15,7 @@ export const runtime = 'nodejs'
 export const maxDuration = 60 // 60 seconds
 
 export async function POST(req: NextRequest) {
-  const jobId = `doc-upload-${Date.now()}`
+  let jobId = resolveJobId(null, 'document-upload')
 
   try {
     // Check authentication
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     const formData = await req.formData()
+    jobId = resolveJobId(formData.get('jobId'), 'document-upload')
     const file = formData.get('file') as File
 
     if (!file) {
@@ -133,7 +135,7 @@ export async function POST(req: NextRequest) {
       fileName: document.fileName,
       wordCount: document.metadata.wordCount,
       chunks: chunks.length,
-    })
+    }, `Done: ${document.fileName} (${document.metadata.wordCount} words, ${chunks.length} chunks) ready for review`)
 
     return NextResponse.json({
       success: true,

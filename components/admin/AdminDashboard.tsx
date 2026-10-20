@@ -8,6 +8,7 @@ import { Button } from '../ui/Button'
 import { ProgressModal } from '../ui/ProgressModal'
 import { VisitorStatsModal } from './VisitorStatsModal'
 import { useSSEProgress } from '@/hooks/useSSEProgress'
+import { newJobId } from '@/lib/jobId'
 import type { ChatStats } from '@/lib/chatLogger'
 
 const fetcher = (url: string) => fetch(url).then(r => r.json())
@@ -30,14 +31,12 @@ export function AdminDashboard() {
   // SSE progress tracking
   const { job, connectionState, error: streamError } = useSSEProgress({
     jobId: currentJobId,
+    // Keep the modal open on completion/failure so the result stays visible
     onComplete: () => {
       mutate() // Refresh stats
-      setCurrentJobId(null)
-    },
-    onError: () => {
-      setCurrentJobId(null)
     },
   })
+  const [requestError, setRequestError] = useState<string | null>(null)
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/admin/login' })
@@ -46,26 +45,25 @@ export function AdminDashboard() {
   const handleScrapeWebsite = async () => {
     if (!window.confirm('This will scrape all public pages and update the knowledge base. Continue?')) return
 
+    // Open the progress stream before the request so the bar moves live
+    const jobId = newJobId('website-scrape')
+    setRequestError(null)
+    setCurrentJobId(jobId)
+
     try {
       setIsScraping(true)
       const response = await fetch('/api/admin/scrape', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId }),
       })
 
-      const data = await response.json()
-
-      if (data.success && data.jobId) {
-        // Start polling for progress
-        setCurrentJobId(data.jobId)
-      } else if (data.success) {
-        // Fallback if no jobId
-        alert(`Website scraped successfully!\n\nPages: ${data.result.pagesScraped}\nVectors: ${data.result.vectorsCreated}`)
-        mutate()
-      } else {
-        alert(`Scrape failed: ${data.error}`)
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.success) {
+        setRequestError(data.error || `Scrape failed (HTTP ${response.status})`)
       }
     } catch (error) {
-      alert('Scrape failed. Please try again.')
+      setRequestError('Scrape failed. Please try again.')
     } finally {
       setIsScraping(false)
     }
@@ -308,15 +306,16 @@ export function AdminDashboard() {
       {/* Progress Modal */}
       <ProgressModal
         isOpen={Boolean(currentJobId || isScraping)}
-        status={job?.status || 'processing'}
+        status={requestError ? 'failed' : job?.status || 'processing'}
         title="Scraping Website"
-        message={job?.progress.message || 'Starting full website scrape...'}
+        message={requestError ? 'Failed' : job?.progress.message || 'Starting full website scrape...'}
         progress={job?.progress}
-        error={(job?.status === 'failed' && job?.error) || streamError || undefined}
+        error={requestError || (job?.status === 'failed' && job?.error) || streamError || undefined}
         logs={job?.logs}
         connectionState={connectionState}
         onClose={() => {
           setCurrentJobId(null)
+          setRequestError(null)
         }}
       />
 

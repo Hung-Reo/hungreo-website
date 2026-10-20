@@ -14,6 +14,7 @@ import {
   replaceVideoEmbeddings,
 } from '@/lib/videoEmbeddingManager'
 import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
+import { resolveJobId } from '@/lib/jobId'
 
 export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 minutes for large videos
@@ -73,7 +74,7 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { category, generateEmbeddings, refetchTranscript } = await req.json()
+    const { category, generateEmbeddings, refetchTranscript, jobId: requestedJobId } = await req.json()
     if (
       (category !== undefined && !VIDEO_CATEGORIES.includes(category)) ||
       (generateEmbeddings !== undefined &&
@@ -144,7 +145,7 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
       console.log(`[Video Embedding] Creating ${prepared.chunks.length} chunks for video ${video.videoId}`)
 
       // Create job tracker
-      jobId = `video-embed-${Date.now()}`
+      jobId = resolveJobId(requestedJobId, 'video-embedding')
       await createJob(jobId, 'video-embedding', prepared.chunks.length)
       await appendLog(jobId, 'info', `Starting embedding for ${video.en.title}`)
       await emitProgress(jobId, `Processing ${video.en.title}...`, 0, prepared.chunks.length)
@@ -178,7 +179,7 @@ export async function PATCH(req: NextRequest, { params: paramsPromise }: { param
         staleVectorsDeleted: replacement.cleanupSucceeded
           ? replacement.staleIds.length
           : 0,
-      })
+      }, `Done: ${replacement.vectorIds.length} vectors for ${video.en.title}`)
 
       return NextResponse.json({
         success: true,

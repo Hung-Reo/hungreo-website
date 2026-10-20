@@ -5,6 +5,9 @@ import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '../ui/Button'
+import { ProgressModal } from '../ui/ProgressModal'
+import { useSSEProgress } from '@/hooks/useSSEProgress'
+import { newJobId } from '@/lib/jobId'
 import type { Video, VideoCategory } from '@/lib/videoManager'
 
 const CATEGORIES: VideoCategory[] = ['Leadership', 'AI Works', 'Health', 'Entertaining', 'Human Philosophy']
@@ -30,6 +33,34 @@ export function VideosManager() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
   const [isRebuilding, setIsRebuilding] = useState(false)
   const [refetchingId, setRefetchingId] = useState<string | null>(null)
+  const [embedJobId, setEmbedJobId] = useState<string | null>(null)
+  const [embedRequestError, setEmbedRequestError] = useState<string | null>(null)
+
+  // Embedding progress; the modal stays open until the admin closes it
+  const { job: embedJob, connectionState: embedConnectionState, error: embedStreamError } =
+    useSSEProgress({ jobId: embedJobId })
+
+  // Opens the progress stream before the request so the bar moves live
+  async function runEmbeddingRequest(videoId: string, body: Record<string, unknown>) {
+    const jobId = newJobId('video-embedding')
+    setEmbedRequestError(null)
+    setEmbedJobId(jobId)
+    try {
+      const response = await fetch(`/api/admin/videos/${videoId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...body, generateEmbeddings: true, jobId }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.success) {
+        setEmbedRequestError(data.error || `Failed (HTTP ${response.status})`)
+      }
+    } catch (error) {
+      setEmbedRequestError('Request failed. Please try again.')
+    } finally {
+      fetchVideos() // Refresh pineconeIds / revert loading state
+    }
+  }
 
   useEffect(() => {
     fetchVideos()
@@ -139,26 +170,7 @@ export function VideosManager() {
       ))
     }
 
-    try {
-      const response = await fetch(`/api/admin/videos/${videoId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ generateEmbeddings: true }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        alert('✅ Embeddings generated successfully! Video added to knowledge base.')
-        fetchVideos() // Refresh to get actual pineconeIds
-      } else {
-        alert(`❌ Failed: ${data.error}`)
-        fetchVideos() // Revert loading state
-      }
-    } catch (error) {
-      alert('❌ Failed to generate embeddings. Please try again.')
-      fetchVideos() // Revert loading state
-    }
+    await runEmbeddingRequest(videoId, {})
   }
 
   const handleRefetchTranscript = async (videoId: string) => {
@@ -166,22 +178,7 @@ export function VideosManager() {
 
     try {
       setRefetchingId(videoId)
-      const response = await fetch(`/api/admin/videos/${videoId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refetchTranscript: true, generateEmbeddings: true }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        alert(`✅ Transcript re-fetched and ${data.vectorsCreated} vectors created!`)
-        fetchVideos()
-      } else {
-        alert(`❌ Failed: ${data.error}`)
-      }
-    } catch (error) {
-      alert('❌ Failed to re-fetch transcript. Please try again.')
+      await runEmbeddingRequest(videoId, { refetchTranscript: true })
     } finally {
       setRefetchingId(null)
     }
@@ -377,6 +374,21 @@ export function VideosManager() {
             onDelete={handleDelete}
           />
         )}
+
+        <ProgressModal
+          isOpen={Boolean(embedJobId)}
+          status={embedRequestError ? 'failed' : embedJob?.status || 'processing'}
+          title="Creating Video Embeddings"
+          message={embedRequestError ? 'Failed' : embedJob?.progress.message || 'Starting...'}
+          progress={embedJob?.progress}
+          error={embedRequestError || (embedJob?.status === 'failed' && embedJob?.error) || embedStreamError || undefined}
+          logs={embedJob?.logs}
+          connectionState={embedConnectionState}
+          onClose={() => {
+            setEmbedJobId(null)
+            setEmbedRequestError(null)
+          }}
+        />
       </div>
     </div>
   )

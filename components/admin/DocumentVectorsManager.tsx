@@ -7,6 +7,7 @@ import { ArrowLeft, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { ProgressModal } from '../ui/ProgressModal'
 import { useSSEProgress } from '@/hooks/useSSEProgress'
+import { newJobId } from '@/lib/jobId'
 
 interface DocumentVector {
   id: string
@@ -44,13 +45,10 @@ export function DocumentVectorsManager() {
   // SSE progress tracking
   const { job, connectionState, error: streamError } = useSSEProgress({
     jobId: currentJobId,
+    // Keep the modal open on completion/failure so the result stays visible
     onComplete: () => {
       setSelectedDocs(new Set())
       fetchDocuments()
-      setCurrentJobId(null)
-    },
-    onError: () => {
-      setCurrentJobId(null)
     },
   })
 
@@ -140,17 +138,20 @@ export function DocumentVectorsManager() {
       // For single document, use SSE
       if (outOfSyncDocs.length === 1) {
         const doc = outOfSyncDocs[0]
+        // Open the progress stream before the request so the bar moves live
+        const jobId = newJobId('document-approval')
+        setCurrentJobId(jobId)
         const response = await fetch('/api/admin/documents/approve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ documentId: doc.id }),
+          body: JSON.stringify({ documentId: doc.id, jobId }),
         })
 
         const data = await response.json()
+        if (!data.success || !data.jobId) setCurrentJobId(null)
 
         if (data.success && data.jobId) {
-          // Start SSE tracking
-          setCurrentJobId(data.jobId)
+          // Progress is already streaming
         } else if (data.success) {
           // Fallback if no jobId
           alert(`Successfully re-approved ${doc.fileName}`)

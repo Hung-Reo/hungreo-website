@@ -7,6 +7,7 @@ import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { ProgressModal } from '../ui/ProgressModal'
 import { useSSEProgress } from '@/hooks/useSSEProgress'
+import { newJobId } from '@/lib/jobId'
 
 interface PageVectors {
   page: string
@@ -36,15 +37,14 @@ export function WebsiteVectorsManager() {
   // SSE progress tracking
   const { job, connectionState, error: streamError } = useSSEProgress({
     jobId: currentJobId,
+    // Keep the modal open on completion/failure so the result stays visible
+    // until the admin closes it.
     onComplete: () => {
       setSelectedPages(new Set())
       fetchPages()
-      setCurrentJobId(null)
-    },
-    onError: () => {
-      setCurrentJobId(null)
     },
   })
+  const [requestError, setRequestError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchPages()
@@ -158,30 +158,26 @@ export function WebsiteVectorsManager() {
       return
     }
 
+    // Open the progress stream before the request so the bar moves live
+    const jobId = newJobId('selective-rescrape')
+    setRequestError(null)
+    setCurrentJobId(jobId)
+
     try {
       setIsReScraping(true)
 
       const response = await fetch('/api/admin/vectors/website/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pages: selectedPagesArray }),
+        body: JSON.stringify({ pages: selectedPagesArray, jobId }),
       })
 
-      const data = await response.json()
-
-      if (data.success && data.jobId) {
-        // Start polling for progress
-        setCurrentJobId(data.jobId)
-      } else if (data.success) {
-        // Fallback if no jobId (shouldn't happen)
-        alert(`Successfully re-scraped ${data.pagesScraped} page(s)`)
-        setSelectedPages(new Set())
-        await fetchPages()
-      } else {
-        alert(`Re-scrape failed: ${data.error}`)
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || !data.success) {
+        setRequestError(data.error || `Re-scrape failed (HTTP ${response.status})`)
       }
     } catch (error) {
-      alert('Re-scrape failed. Please try again.')
+      setRequestError('Re-scrape failed. Please try again.')
       console.error('Re-scrape error:', error)
     } finally {
       setIsReScraping(false)
@@ -438,15 +434,16 @@ export function WebsiteVectorsManager() {
       {/* Progress Modal */}
       <ProgressModal
         isOpen={Boolean(currentJobId || isReScraping)}
-        status={job?.status || 'processing'}
+        status={requestError ? 'failed' : job?.status || 'processing'}
         title="Re-scraping Website Pages"
-        message={job?.progress.message || 'Starting re-scrape...'}
+        message={requestError ? 'Failed' : job?.progress.message || 'Starting re-scrape...'}
         progress={job?.progress}
-        error={(job?.status === 'failed' && job?.error) || streamError || undefined}
+        error={requestError || (job?.status === 'failed' && job?.error) || streamError || undefined}
         logs={job?.logs}
         connectionState={connectionState}
         onClose={() => {
           setCurrentJobId(null)
+          setRequestError(null)
         }}
       />
     </div>

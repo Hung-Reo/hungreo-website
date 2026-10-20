@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { scrapeSelectedPages, expandSelectedPages } from '@/lib/websiteScraper'
 import { getPineconeIndex, listAllVectorIds } from '@/lib/pinecone'
 import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
+import { resolveJobId } from '@/lib/jobId'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { pages } = await req.json()
+    const { pages, jobId: requestedJobId } = await req.json()
 
     if (!pages || !Array.isArray(pages) || pages.length === 0) {
       return NextResponse.json(
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     console.log('[Re-scrape] Original pages:', pages)
     console.log('[Re-scrape] Expanded to:', expandedPages)
 
-    const jobId = `rescrape-${Date.now()}`
+    const jobId = resolveJobId(requestedJobId, 'selective-rescrape')
 
     try {
       const index = await getPineconeIndex()
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
         totalVectors: result.totalVectors,
         deletedVectors: vectorIdsToDelete.length,
         errors: result.errors
-      })
+      }, `Done: ${result.pagesScraped} pages, ${result.totalVectors} vectors`)
 
       console.log(`[Re-scrape] Successfully re-scraped ${result.pagesScraped} pages with ${result.totalVectors} vectors`)
 

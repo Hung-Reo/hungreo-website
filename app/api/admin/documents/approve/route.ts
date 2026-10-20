@@ -5,6 +5,7 @@ import { getPineconeIndex } from '@/lib/pinecone'
 import { createEmbedding } from '@/lib/openai'
 import { chunkText } from '@/lib/textUtils'
 import { createJob, emitProgress, appendLog, completeJob, failJob } from '@/lib/jobTracker'
+import { resolveJobId } from '@/lib/jobId'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -15,7 +16,7 @@ export const maxDuration = 300 // 5 minutes for large documents
  * Approve a document and generate vectors for RAG
  */
 export async function POST(req: NextRequest) {
-  const jobId = `doc-approve-${Date.now()}`
+  let jobId = resolveJobId(null, 'document-approval')
 
   try {
     const session = await auth()
@@ -23,7 +24,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { documentId } = await req.json()
+    const { documentId, jobId: requestedJobId } = await req.json()
+    jobId = resolveJobId(requestedJobId, 'document-approval')
 
     if (!documentId) {
       return NextResponse.json({ error: 'Document ID is required' }, { status: 400 })
@@ -175,7 +177,7 @@ export async function POST(req: NextRequest) {
       fileName: document.fileName,
       vectorsCreated: pineconeIds.length,
       chunks: chunks.length,
-    })
+    }, `Done: ${pineconeIds.length} vectors created for ${document.fileName}`)
 
     return NextResponse.json({
       success: true,

@@ -9,6 +9,7 @@ import { Tooltip } from '../ui/Tooltip'
 import { DocumentReviewModal } from './DocumentReviewModal'
 import { ProgressModal } from '../ui/ProgressModal'
 import { useSSEProgress } from '@/hooks/useSSEProgress'
+import { newJobId } from '@/lib/jobId'
 import type { Document, DocumentStatus } from '@/lib/documentManager'
 
 interface DocumentStats {
@@ -92,10 +93,14 @@ export function DocumentsManager() {
   }
 
   const uploadFile = async (file: File) => {
+    // Open the progress stream before the request so the bar moves live
+    const jobId = newJobId('document-upload')
+    setUploadJobId(jobId)
     try {
       setIsUploading(true)
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('jobId', jobId)
 
       const response = await fetch('/api/admin/documents/upload', {
         method: 'POST',
@@ -104,9 +109,9 @@ export function DocumentsManager() {
 
       const data = await response.json()
 
+      if (!data.success) setUploadJobId(null)
+
       if (data.success && data.jobId) {
-        // Start SSE tracking for upload
-        setUploadJobId(data.jobId)
         setIsUploading(false)
 
         // Wait for upload to complete via SSE, then open review modal
@@ -159,6 +164,7 @@ export function DocumentsManager() {
       }
     } catch (error) {
       setIsUploading(false)
+      setUploadJobId(null)
       alert('Upload failed. Please try again.')
     }
   }
@@ -244,6 +250,9 @@ export function DocumentsManager() {
   }
 
   const handleReviewApprove = async (docId: string, editedText?: string) => {
+    // Open the progress stream before the request so the bar moves live
+    const jobId = newJobId('document-approval')
+    setApprovalJobId(jobId)
     try {
       const response = await fetch(`/api/admin/documents/${docId}`, {
         method: 'PATCH',
@@ -251,16 +260,15 @@ export function DocumentsManager() {
         body: JSON.stringify({
           status: 'approved',
           extractedText: editedText,
+          jobId,
         }),
       })
 
       const data = await response.json()
+      if (!data.success || !data.jobId) setApprovalJobId(null)
 
       if (data.success) {
-        // Start SSE tracking if jobId is returned
-        if (data.jobId) {
-          setApprovalJobId(data.jobId)
-        } else {
+        if (!data.jobId) {
           // Fallback for immediate completion
           alert('Document approved and added to Pinecone successfully!')
           fetchDocuments()
@@ -270,6 +278,7 @@ export function DocumentsManager() {
         alert(`Approval failed: ${data.error}`)
       }
     } catch (error) {
+      setApprovalJobId(null)
       alert('Approval failed. Please try again.')
     }
   }

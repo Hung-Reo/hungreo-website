@@ -11,7 +11,7 @@ interface UseSSEProgressOptions {
 }
 
 interface SSEMessage {
-  type: 'progress' | 'completed' | 'failed' | 'error' | 'heartbeat'
+  type: 'progress' | 'completed' | 'failed' | 'error' | 'heartbeat' | 'waiting'
   job?: JobStatus
   message?: string
 }
@@ -29,6 +29,13 @@ export function useSSEProgress({
   const eventSourceRef = useRef<EventSource | null>(null)
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null)
   const shouldReconnectRef = useRef(true)
+
+  // Callers pass inline callbacks; keep the latest in refs so a re-render on
+  // each progress update does not tear down and reopen the stream.
+  const onCompleteRef = useRef(onComplete)
+  const onErrorRef = useRef(onError)
+  onCompleteRef.current = onComplete
+  onErrorRef.current = onError
 
   useEffect(() => {
     if (!jobId || !enabled) {
@@ -75,7 +82,8 @@ export function useSSEProgress({
         try {
           const payload: SSEMessage = JSON.parse(event.data)
 
-          if (payload.type === 'heartbeat') {
+          // 'waiting': the request that creates the job has not landed yet
+          if (payload.type === 'heartbeat' || payload.type === 'waiting') {
             return
           }
 
@@ -84,7 +92,7 @@ export function useSSEProgress({
             setError(msg)
             setConnectionState('error')
             shouldReconnectRef.current = false
-            onError?.(msg)
+            onErrorRef.current?.(msg)
             es.close()
             return
           }
@@ -96,7 +104,7 @@ export function useSSEProgress({
           if (payload.type === 'completed' && payload.job) {
             shouldReconnectRef.current = false
             setConnectionState('closed')
-            onComplete?.(payload.job)
+            onCompleteRef.current?.(payload.job)
             es.close()
             return
           }
@@ -107,7 +115,7 @@ export function useSSEProgress({
             const msg =
               payload.job?.error || payload.message || 'Job failed'
             setError(msg)
-            onError?.(msg)
+            onErrorRef.current?.(msg)
             es.close()
           }
         } catch (err: any) {
@@ -130,7 +138,7 @@ export function useSSEProgress({
         reconnectTimerRef.current = null
       }
     }
-  }, [jobId, enabled, onComplete, onError])
+  }, [jobId, enabled])
 
   return {
     job,

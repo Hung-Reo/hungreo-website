@@ -304,7 +304,7 @@ async function scrapePageWithBrowser(browser: any, path: string): Promise<Scrape
  * Scrape all website pages using a single browser instance
  * Includes both static pages and dynamic content (blog posts, projects)
  */
-export async function scrapeAllPages(): Promise<{
+export async function scrapeAllPages(onProgress?: ProgressCallback): Promise<{
   pages: ScrapedPage[]
   expectedPaths: string[]
   complete: boolean
@@ -318,6 +318,9 @@ export async function scrapeAllPages(): Promise<{
   let scrapeFailed = false
 
   console.log(`[Scraper] Starting to scrape ${allPages.length} pages (${STATIC_PAGES.length} static + ${dynamicPages.length} dynamic)`)
+  // One extra step for the embedding/upsert phase that follows scraping
+  const totalSteps = allPages.length + 1
+  await onProgress?.({ message: `Found ${allPages.length} pages to scrape`, current: 0, total: totalSteps })
 
   try {
     // Launch browser ONCE
@@ -326,7 +329,7 @@ export async function scrapeAllPages(): Promise<{
     console.log('[Scraper] Browser launched successfully')
 
     // Scrape each page sequentially using the same browser
-    for (const path of allPages) {
+    for (const [i, path] of allPages.entries()) {
       try {
         const page = await scrapePageWithBrowser(browser, path)
         pages.push(page)
@@ -335,6 +338,7 @@ export async function scrapeAllPages(): Promise<{
         scrapeFailed = true
         console.error(`[Scraper] ❌ Skipping ${path} due to error:`, error)
       }
+      await onProgress?.({ message: `Scraped ${path}`, current: i + 1, total: totalSteps })
     }
   } catch (error) {
     scrapeFailed = true
@@ -457,7 +461,7 @@ export async function updateKnowledgeBase(
 /**
  * Main function to scrape website and update knowledge base
  */
-export async function scrapeAndUpdate(): Promise<{
+export async function scrapeAndUpdate(onProgress?: ProgressCallback): Promise<{
   pagesScraped: number
   vectorsCreated: number
   errors: string[]
@@ -466,7 +470,7 @@ export async function scrapeAndUpdate(): Promise<{
 
   try {
     // Scrape all pages
-    const { pages, expectedPaths, complete } = await scrapeAllPages()
+    const { pages, expectedPaths, complete } = await scrapeAllPages(onProgress)
 
     if (pages.length === 0) {
       errors.push('No pages were successfully scraped')
@@ -483,6 +487,11 @@ export async function scrapeAndUpdate(): Promise<{
     }
 
     // Update knowledge base — only allow stale deletion on a complete refresh
+    await onProgress?.({
+      message: 'Creating embeddings and updating Pinecone...',
+      current: expectedPaths.length,
+      total: expectedPaths.length + 1,
+    })
     const vectorsCreated = await updateKnowledgeBase(pages, complete)
 
     return {

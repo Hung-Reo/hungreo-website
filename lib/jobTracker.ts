@@ -61,14 +61,15 @@ export async function updateJobProgress(
 
 export async function completeJob(
   id: string,
-  result?: any
+  result?: any,
+  message = 'Completed successfully'
 ): Promise<void> {
   const job = await kv.get<JobStatus>(`job:${id}`)
   if (!job) return
 
   job.status = 'completed'
   job.progress.current = job.progress.total
-  job.progress.message = 'Completed successfully'
+  job.progress.message = message
   job.completedAt = Date.now()
   job.result = result
   job.lastUpdated = Date.now()
