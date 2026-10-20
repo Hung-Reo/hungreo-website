@@ -18,6 +18,7 @@ const PRIVACY_CHECK_QUESTION =
 const MIN_TOKEN_LENGTH = 32
 const EXTERNAL_ID_RE = /^[A-Za-z0-9:_-]{1,100}$/
 const MAX_TAGS = 10
+const MAX_CONTENT = 60_000 // Markdown per language; the route also caps the body at 100 KB
 
 export type TokenCheck = 'ok' | 'unauthorized' | 'not-configured'
 
@@ -39,6 +40,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function text(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
+}
+
+function wordCount(value: string): number {
+  return value ? value.split(/\s+/).filter(Boolean).length : 0
 }
 
 function slugTag(tag: unknown): string {
@@ -71,13 +76,23 @@ export function buildIngestDraft(input: unknown, id: string, now: number): Inges
     return { ok: false, error: 'en.title, en.excerpt, vi.title and vi.excerpt are required' }
   }
 
+  // Article mode: an already-approved Markdown body, kept verbatim (no truncation).
+  const rawViContent = typeof vi.content === 'string' ? vi.content.trim() : ''
+  const rawEnContent = typeof en.content === 'string' ? en.content.trim() : ''
+  if (rawViContent.length > MAX_CONTENT || rawEnContent.length > MAX_CONTENT) {
+    return { ok: false, error: `vi.content / en.content must be at most ${MAX_CONTENT} characters` }
+  }
+
   const living = normalizeLivingThought({
     occurredAt: input.occurredAt,
     structuredContent: input.structuredContent,
     uncertainties: input.uncertainties,
   })
-  if (!living.structuredContent) {
-    return { ok: false, error: 'structuredContent with at least one non-empty field is required' }
+  if (!living.structuredContent && !rawViContent && !rawEnContent) {
+    return {
+      ok: false,
+      error: 'structuredContent (Living Thought) or vi.content / en.content (article Markdown) is required',
+    }
   }
 
   // Only Hung resolves questions, in the admin UI.
@@ -102,11 +117,11 @@ export function buildIngestDraft(input: unknown, id: string, now: number): Inges
       createdAt: now,
       updatedAt: now,
       createdBy: 'openclaw',
-      en: { title: enTitle, excerpt: enExcerpt, content: '' },
-      vi: { title: viTitle, excerpt: viExcerpt, content: '' },
+      en: { title: enTitle, excerpt: enExcerpt, content: rawEnContent },
+      vi: { title: viTitle, excerpt: viExcerpt, content: rawViContent },
       category: text(input.category, 50) || 'Uncategorized',
       tags,
-      readTime: 1,
+      readTime: Math.max(1, Math.ceil(wordCount(rawViContent || rawEnContent) / 200)),
       occurredAt: living.occurredAt,
       structuredContent: living.structuredContent,
       uncertainties,

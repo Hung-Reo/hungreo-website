@@ -112,8 +112,46 @@ test('draft: rejects missing required fields and bad externalId', () => {
   assert.equal(buildIngestDraft('junk', 'id', 1).ok, false)
 })
 
-test('draft: requires some living thought content', () => {
+test('draft: requires living thought fields or article content', () => {
   assert.equal(buildIngestDraft(validBody({ structuredContent: undefined }), 'id', 1).ok, false)
+})
+
+test('article: markdown content alone is accepted and kept verbatim', () => {
+  const md = '## Heading\n\nMột đoạn **đậm** [link](https://example.com).'
+  const result = buildIngestDraft(
+    validBody({ structuredContent: undefined, vi: { title: 'Bài', excerpt: 'Tóm tắt', content: md } }),
+    'id-1',
+    1000
+  )
+  assert.ok(result.ok)
+  if (!result.ok) return
+  assert.equal(result.post.vi.content, md)
+  assert.equal(result.post.en.content, '')
+  assert.equal(result.post.structuredContent, undefined)
+  assert.equal(result.post.status, 'draft')
+  assert.ok((result.post.uncertainties || []).some((u) => u.id === PRIVACY_CHECK_ID))
+})
+
+test('article: readTime follows the content length', () => {
+  const md = Array.from({ length: 1000 }, () => 'chữ').join(' ')
+  const result = buildIngestDraft(
+    validBody({ structuredContent: undefined, vi: { title: 'Bài', excerpt: 'Tóm tắt', content: md } }),
+    'id-1',
+    1000
+  )
+  assert.ok(result.ok)
+  if (!result.ok) return
+  assert.equal(result.post.readTime, 5)
+})
+
+test('article: oversized content is rejected, not truncated', () => {
+  const md = 'a'.repeat(60_001)
+  const result = buildIngestDraft(
+    validBody({ structuredContent: undefined, vi: { title: 'Bài', excerpt: 'Tóm tắt', content: md } }),
+    'id-1',
+    1000
+  )
+  assert.equal(result.ok, false)
 })
 
 test('draft: tags are normalized and capped', () => {

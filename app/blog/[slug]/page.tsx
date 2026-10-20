@@ -143,6 +143,8 @@ export default function BlogPostPage() {
   // Hung writes in Vietnamese; flag the English block as a translation.
   const voiceIsTranslation = lang === 'en' && Boolean(structured?.vi.originalVoice) && thought === structured?.en
   const evolution = [...(post.thoughtEvolution || [])].sort((a, b) => a.date.localeCompare(b.date))
+  // Article body: show the other language (with a note) until a translation exists.
+  const bodyLang = post[lang].content ? lang : post[otherLang].content ? otherLang : lang
 
   return (
     <article className="container mx-auto px-4 py-12">
@@ -286,12 +288,20 @@ export default function BlogPostPage() {
         )}
 
         {/* Content */}
-        {post[lang].content && (
+        {bodyLang !== lang && post[bodyLang].content && (
+          <p className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {lang === 'en'
+              ? 'This article is currently available in Vietnamese only.'
+              : 'Bài viết hiện chỉ có bản tiếng Anh.'}
+          </p>
+        )}
+        {post[bodyLang].content && (
           <div
-            data-index-section={lang === 'en' ? 'Article' : 'Bài viết'}
+            lang={bodyLang}
+            data-index-section={bodyLang === 'en' ? 'Article' : 'Bài viết'}
             className="prose prose-slate prose-lg max-w-none mb-12"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(contentToHTML(post[lang].content || ''))
+              __html: DOMPurify.sanitize(contentToHTML(post[bodyLang].content || ''))
             }}
           />
         )}

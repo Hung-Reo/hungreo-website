@@ -32,7 +32,8 @@ Headers: `Authorization: Bearer <THOUGHT_INGEST_TOKEN>`, `Content-Type: applicat
 | `externalId` | ✔ | ID ổn định phía OpenClaw, 1–100 ký tự `[A-Za-z0-9:_-]`, ví dụ `telegram:<chat>:<message_id>`. Gửi lại cùng id → trả bản nháp cũ (`duplicate: true`), không tạo mới |
 | `en.title`, `en.excerpt` | ✔ | ≤150 / ≤300 ký tự |
 | `vi.title`, `vi.excerpt` | ✔ | ≤150 / ≤300 ký tự |
-| `structuredContent.{vi,en}.{context, originalVoice, aiEditorial}` | ✔ (ít nhất 1 ô có chữ) | `originalVoice` = **nguyên văn** lời Hưng, chỉ thay tên riêng bằng "con/bé". `aiEditorial` = phần AI hệ thống hoá (Markdown), hiển thị tách riêng và **không** đưa vào chatbot |
+| `structuredContent.{vi,en}.{context, originalVoice, aiEditorial}` | ✔ nếu không có `content` (ít nhất 1 ô có chữ) | `originalVoice` = **nguyên văn** lời Hưng, chỉ thay tên riêng bằng "con/bé". `aiEditorial` = phần AI hệ thống hoá (Markdown), hiển thị tách riêng và **không** đưa vào chatbot |
+| `vi.content`, `en.content` | ✔ nếu không có `structuredContent` | **Dạng bài viết:** thân bài Markdown đã duyệt, giữ nguyên văn (≤ 60.000 ký tự/ngôn ngữ, không cắt bớt — quá giới hạn trả 400). Trang EN tự hiện bản VI kèm ghi chú khi `en.content` trống |
 | `occurredAt` |  | `YYYY-MM-DD`, ngày sự việc diễn ra |
 | `uncertainties[].question` |  | Chỗ lời gốc nói tắt/chưa rõ — AI **không** tự suy diễn. Luôn lưu `resolved: false` |
 | `tags[]` |  | Tối đa 10, tự chuẩn hoá thường + gạch nối |
