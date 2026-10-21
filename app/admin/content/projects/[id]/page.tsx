@@ -22,6 +22,8 @@ import { StatusToggle } from '@/components/admin/StatusToggle'
 import type { Project } from '@/lib/contentManager'
 import { generateSlug } from '@/lib/utils'
 import { describeIndexResult } from '@/lib/contentIndexStatus'
+import { validateUpload } from '@/lib/uploadValidator'
+import { getUploadErrorMessage } from '@/lib/uploadClient'
 
 export default function ProjectEditorPage() {
   const params = useParams<{ id: string }>()
@@ -691,10 +693,18 @@ export default function ProjectEditorPage() {
               {(!formData.screenshots || formData.screenshots.length < 5) && (
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/gif,image/webp,image/avif"
                   onChange={async (e) => {
                     const file = e.target.files?.[0]
                     if (!file) return
+
+                    // Same rules as the server, so HEIC and oversized files are explained up front
+                    const validation = validateUpload(file, 'image')
+                    if (!validation.valid) {
+                      toast.error(`${file.name}: ${validation.error}`)
+                      e.target.value = ''
+                      return
+                    }
 
                     try {
                       const uploadFormData = new FormData()
@@ -705,7 +715,7 @@ export default function ProjectEditorPage() {
                         body: uploadFormData,
                       })
 
-                      if (!response.ok) throw new Error('Upload failed')
+                      if (!response.ok) throw new Error(await getUploadErrorMessage(response))
 
                       const { url } = await response.json()
                       setFormData({
@@ -714,7 +724,7 @@ export default function ProjectEditorPage() {
                       })
                       toast.success('Screenshot uploaded')
                     } catch (error) {
-                      toast.error('Failed to upload screenshot')
+                      toast.error(`Failed to upload screenshot: ${error instanceof Error ? error.message : 'unknown error'}`)
                     }
 
                     e.target.value = ''

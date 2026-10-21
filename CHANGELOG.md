@@ -2,77 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+> Not updated since 2025-11. Current release history: `docs/HANDOVER.md` (release table with deployment IDs); incidents and lessons: `docs/ISSUE_LOG.md`.
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-<<<<<<< HEAD
-### Added - 2025-01-11
-
-#### Puppeteer Website Scraper
-- **Upgraded Website Scraping**: Replaced Cheerio with Puppeteer for full React rendering
-  - Scrapes complete page content including dynamically rendered components
-  - Extracts all sections: Professional Journey, Education, Training, Core Competencies
-  - Fixes incomplete content extraction from React-based pages
-  - Uses `puppeteer-core` + `@sparticuz/chromium` for Vercel compatibility
-
-#### Optimized Text Chunking
-- **Improved RAG Accuracy**: Reduced chunk size from 512 to 200 words with 50-word overlap
-  - Smaller chunks = more precise context matching in vector search
-  - 50-word overlap prevents information loss between chunks (critical lesson learned)
-  - Applied to ALL features: website scraping, document upload, video transcripts
-  - Result: 3-4x more vectors with complete information coverage
-  - Example: About page now creates 4 chunks (was 2), increased from 6 to 11 total vectors
-
-**Lesson Learned #1 - Metadata Truncation Bug:**
-- **Root Cause**: `description: chunk.substring(0, 500)` was truncating ALL chunks to 500 characters
-  - Chunk 0: Only 80 words stored instead of 200 words (500 chars cut from ~1200 chars)
-  - Chunk 2: Only 72 words stored instead of 298 words (merged chunk lost "Beyond Work" section)
-  - Critical information at the end of chunks was completely lost
-- **Investigation**: Debug script showed chunks had full content during creation but were truncated in Pinecone storage
-- **Solution**: Removed `.substring(0, 500)` truncation - store FULL chunk content in metadata
-- **Impact**: All chunks now store complete content, chatbot accuracy improved from 70% → 90%
-
-**Lesson Learned #2 - Chunking Overlap Bug:**
-- **Root Cause**: Initial 25-word overlap caused critical information to fall between chunks
-  - Education section (3 degrees) was split across chunks with MBA/Bachelor completely lost
-  - Only "Insearch Institute" (last degree) appeared in vectors, chatbot couldn't answer education questions
-- **Investigation**: Debug logs showed chunks 1 and 2 had gap at ~words 350-400 where education data lived
-- **Solution**: Increased overlap from 25 to 50 words ensures important sections appear in multiple chunks
-  - Added smart merge logic: chunks <100 words merge into previous chunk
-- **Impact**: Website vectors increased from 6 to 11 (+83%), chatbot accuracy improved to 90%
-
-**Lesson Learned #3 - Structured Data Extraction Bug:**
-- **Root Cause**: Using `innerText` on entire page lost structural relationships in data
-  - Training section format: "Leader as a Coach Samsung Vina 7 Habits - Highly Effective People Kao Vietnam"
-  - Impossible to distinguish which training belongs to which company
-  - Chatbot hallucinated: said "7 Habits" was Samsung Vina training (actually Kao Vietnam)
-- **Investigation**: OpenAI model confused due to ambiguous text without clear delimiters
-- **Solution**: Implemented smart structured extraction with section-specific handling
-  - Training & Development: Format as `[Training] - [Company]` (e.g., "Leader as a Coach - Samsung Vina")
-  - Education & Expertise: Extract cards separately with headings
-  - Core Competencies: Format as bullet list
-  - Enhanced system prompt with explicit format instructions
-- **Implementation**: Added intelligent selectors in Puppeteer `page.evaluate()` to detect and format sections
-- **Impact**: Chatbot accuracy improved from 90% → 100%, zero hallucinations on structured data
-
-#### Bug Fixes
-- **Fixed**: Website scraping only captured partial content (missing React components)
-  - Solution: Puppeteer waits for `networkidle0` to ensure full React hydration
-- **Fixed**: Document metadata mismatch causing chatbot to ignore uploaded documents
-  - Solution: Updated chatbot to handle both website and document metadata structures
-- **Fixed**: Website vectors couldn't be deleted by type
-  - Solution: Added `vectorType: 'website'` metadata field
-- **Fixed**: Text cleaning regex was collapsing all whitespace
-  - Solution: Only collapse horizontal whitespace (spaces/tabs), preserve newlines
-
-#### Enhanced Features
-- **Chatbot Improvements**: Now reads from uploaded documents (CVs, PDFs)
-  - Updated system prompt to include document context
-  - Handles fallback for missing metadata fields
-  - Better context building for mixed vector types
-=======
 ### Fixed - 2025-01-12
 
 #### Critical: SessionProvider Integration
@@ -150,7 +86,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved readability with larger chat window
   - Better user experience across all chatbot features
   - Maintains streaming performance (no lag)
->>>>>>> origin/claude/sync-github-updates-011CUtQekiA2HXsUE7CyheRc
+
+### Added - 2025-01-11
+
+#### Puppeteer Website Scraper
+- **Upgraded Website Scraping**: Replaced Cheerio with Puppeteer for full React rendering
+  - Scrapes complete page content including dynamically rendered components
+  - Extracts all sections: Professional Journey, Education, Training, Core Competencies
+  - Fixes incomplete content extraction from React-based pages
+  - Uses `puppeteer-core` + `@sparticuz/chromium` for Vercel compatibility
+
+#### Optimized Text Chunking
+- **Improved RAG Accuracy**: Reduced chunk size from 512 to 200 words with 50-word overlap
+  - Smaller chunks = more precise context matching in vector search
+  - 50-word overlap prevents information loss between chunks (critical lesson learned)
+  - Applied to ALL features: website scraping, document upload, video transcripts
+  - Result: 3-4x more vectors with complete information coverage
+  - Example: About page now creates 4 chunks (was 2), increased from 6 to 11 total vectors
+
+**Lesson Learned #1 - Metadata Truncation Bug:**
+- **Root Cause**: `description: chunk.substring(0, 500)` was truncating ALL chunks to 500 characters
+  - Chunk 0: Only 80 words stored instead of 200 words (500 chars cut from ~1200 chars)
+  - Chunk 2: Only 72 words stored instead of 298 words (merged chunk lost "Beyond Work" section)
+  - Critical information at the end of chunks was completely lost
+- **Investigation**: Debug script showed chunks had full content during creation but were truncated in Pinecone storage
+- **Solution**: Removed `.substring(0, 500)` truncation - store FULL chunk content in metadata
+- **Impact**: All chunks now store complete content, chatbot accuracy improved from 70% → 90%
+
+**Lesson Learned #2 - Chunking Overlap Bug:**
+- **Root Cause**: Initial 25-word overlap caused critical information to fall between chunks
+  - Education section (3 degrees) was split across chunks with MBA/Bachelor completely lost
+  - Only "Insearch Institute" (last degree) appeared in vectors, chatbot couldn't answer education questions
+- **Investigation**: Debug logs showed chunks 1 and 2 had gap at ~words 350-400 where education data lived
+- **Solution**: Increased overlap from 25 to 50 words ensures important sections appear in multiple chunks
+  - Added smart merge logic: chunks <100 words merge into previous chunk
+- **Impact**: Website vectors increased from 6 to 11 (+83%), chatbot accuracy improved to 90%
+
+**Lesson Learned #3 - Structured Data Extraction Bug:**
+- **Root Cause**: Using `innerText` on entire page lost structural relationships in data
+  - Training section format: "Leader as a Coach Samsung Vina 7 Habits - Highly Effective People Kao Vietnam"
+  - Impossible to distinguish which training belongs to which company
+  - Chatbot hallucinated: said "7 Habits" was Samsung Vina training (actually Kao Vietnam)
+- **Investigation**: OpenAI model confused due to ambiguous text without clear delimiters
+- **Solution**: Implemented smart structured extraction with section-specific handling
+  - Training & Development: Format as `[Training] - [Company]` (e.g., "Leader as a Coach - Samsung Vina")
+  - Education & Expertise: Extract cards separately with headings
+  - Core Competencies: Format as bullet list
+  - Enhanced system prompt with explicit format instructions
+- **Implementation**: Added intelligent selectors in Puppeteer `page.evaluate()` to detect and format sections
+- **Impact**: Chatbot accuracy improved from 90% → 100%, zero hallucinations on structured data
+
+#### Bug Fixes
+- **Fixed**: Website scraping only captured partial content (missing React components)
+  - Solution: Puppeteer waits for `networkidle0` to ensure full React hydration
+- **Fixed**: Document metadata mismatch causing chatbot to ignore uploaded documents
+  - Solution: Updated chatbot to handle both website and document metadata structures
+- **Fixed**: Website vectors couldn't be deleted by type
+  - Solution: Added `vectorType: 'website'` metadata field
+- **Fixed**: Text cleaning regex was collapsing all whitespace
+  - Solution: Only collapse horizontal whitespace (spaces/tabs), preserve newlines
+
+#### Enhanced Features
+- **Chatbot Improvements**: Now reads from uploaded documents (CVs, PDFs)
+  - Updated system prompt to include document context
+  - Handles fallback for missing metadata fields
+  - Better context building for mixed vector types
 
 ### Added - 2025-01-09
 

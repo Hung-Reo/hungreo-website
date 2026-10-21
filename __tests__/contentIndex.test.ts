@@ -297,6 +297,7 @@ async function main() {
       'app/api/admin/content/blog/[id]/route.ts',
       'app/api/admin/content/projects/route.ts',
       'app/api/admin/content/projects/[id]/route.ts',
+      'app/api/admin/cleanup-corrupt-posts/route.ts',
     ]) {
       const source = readFileSync(join(process.cwd(), file), 'utf8')
       assert.ok(source.includes('syncContentIndex('), `${file} must call syncContentIndex`)

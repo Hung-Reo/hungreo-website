@@ -89,6 +89,14 @@ test('ImageUploader validates before upload and shows the server error', () => {
   assert.ok(!source.includes("toast.error('Upload failed')"), 'generic error toast must be gone')
 })
 
+test('project screenshot upload validates first and shows the server error', () => {
+  const source = readFileSync(join(process.cwd(), 'app/admin/content/projects/[id]/page.tsx'), 'utf8')
+  for (const needle of ["validateUpload(file, 'image')", 'getUploadErrorMessage(response)', 'accept="image/jpeg,image/png']) {
+    assert.ok(source.includes(needle), `projects editor must use ${needle}`)
+  }
+  assert.ok(!source.includes("throw new Error('Upload failed')"), 'generic upload error must be gone')
+})
+
 Promise.all(pending).then(() => {
   console.log(`\n${passed} passed, ${failed} failed`)
   if (failed > 0) process.exit(1)

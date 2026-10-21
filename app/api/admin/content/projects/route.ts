@@ -7,7 +7,9 @@ import {
   generateSlug,
   generateId,
   Project,
+  getProjectSlugOwner,
 } from '@/lib/contentManager'
+import { findAvailableSlug } from '@/lib/slug'
 import { syncContentIndex } from '@/lib/contentIndex'
 
 // Creating a published project also indexes it for the chatbot (lib/contentIndex.ts)
@@ -85,12 +87,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Generate slug from title if not provided
-    const slug = body.slug || generateSlug(body.en.title)
+    // Generate slug from title if not provided; never take another project's slug
+    const id = generateId()
+    const slug = await findAvailableSlug(body.slug || generateSlug(body.en.title), id, getProjectSlugOwner)
 
     const now = Date.now()
     const project: Project = {
-      id: generateId(),
+      id,
       slug,
       status: body.status || 'draft',
       featured: body.featured || false,

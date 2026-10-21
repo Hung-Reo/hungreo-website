@@ -7,7 +7,9 @@ import {
   generateSlug,
   generateId,
   calculateReadingTime,
+  getBlogSlugOwner,
 } from '@/lib/contentManager'
+import { findAvailableSlug } from '@/lib/slug'
 import type { BlogPost } from '@/lib/contentManager'
 import { normalizeLivingThought, getPublishBlockError } from '@/lib/livingThought'
 import { syncContentIndex } from '@/lib/contentIndex'
@@ -75,13 +77,14 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const slug = body.slug || generateSlug(body.en.title)
+    const id = generateId()
+    const slug = await findAvailableSlug(body.slug || generateSlug(body.en.title), id, getBlogSlugOwner)
     const content = body.en.content || ''
     const readTime = calculateReadingTime(content)
     const now = Date.now()
 
     const post: BlogPost = {
-      id: generateId(),
+      id,
       slug,
       status: body.status || 'draft',
       featured: body.featured || false,

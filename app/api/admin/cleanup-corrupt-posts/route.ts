@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getAllBlogPosts, deleteBlogPost } from '@/lib/contentManager'
+import { syncContentIndex } from '@/lib/contentIndex'
 
 /**
  * GET - List all corrupt blog posts (posts without titles)
@@ -68,11 +69,18 @@ export async function DELETE(req: NextRequest) {
     const deletePromises = corruptPosts.map(p => deleteBlogPost(p.id))
     await Promise.all(deletePromises)
 
+    // Remove their chatbot vectors too (a post without a slug has none and is skipped)
+    const index = []
+    for (const post of corruptPosts) {
+      index.push(await syncContentIndex('blog', post, null))
+    }
+
     return NextResponse.json({
       success: true,
       message: `Deleted ${corruptPosts.length} corrupt post(s)`,
       deletedCount: corruptPosts.length,
       deletedIds: corruptPosts.map(p => p.id),
+      index,
     })
   } catch (error) {
     console.error('Error deleting corrupt posts:', error)

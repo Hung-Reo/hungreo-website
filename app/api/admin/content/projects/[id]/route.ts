@@ -5,7 +5,9 @@ import {
   saveProject,
   deleteProject,
   generateSlug,
+  getProjectSlugOwner,
 } from '@/lib/contentManager'
+import { findAvailableSlug } from '@/lib/slug'
 import { syncContentIndex } from '@/lib/contentIndex'
 
 // Force Node.js runtime for PUT/DELETE support
@@ -92,11 +94,11 @@ export async function PUT(
       )
     }
 
-    // Update slug if title changed
-    const slug = body.slug || (
-      body.en.title !== existing.en.title
-        ? generateSlug(body.en.title)
-        : existing.slug
+    // Update slug if title changed; never take another project's slug
+    const slug = await findAvailableSlug(
+      body.slug || (body.en.title !== existing.en.title ? generateSlug(body.en.title) : existing.slug),
+      params.id,
+      getProjectSlugOwner
     )
 
     const project = {

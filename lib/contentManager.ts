@@ -353,6 +353,18 @@ export async function saveProject(project: Project): Promise<void> {
   }
 }
 
+/**
+ * Id of the project currently using this slug, or null if free. A stale index entry
+ * (deleted project, or one renamed to another slug) counts as free. Read errors are
+ * not swallowed: treating an unreadable slug as free could hand it to another project.
+ */
+export async function getProjectSlugOwner(slug: string): Promise<string | null> {
+  const id = await kv.get<string>(`project:slug:${slug}`)
+  if (!id) return null
+  const project = await kv.get<Project>(`project:${id}`)
+  return project?.slug === slug ? id : null
+}
+
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   try {
     const id = await kv.get<string>(`project:slug:${slug}`)
@@ -433,6 +445,14 @@ export async function saveBlogPost(post: BlogPost): Promise<void> {
     console.error('Error saving blog post:', error)
     throw error
   }
+}
+
+/** Same as getProjectSlugOwner, for blog posts. */
+export async function getBlogSlugOwner(slug: string): Promise<string | null> {
+  const id = await kv.get<string>(`blog:slug:${slug}`)
+  if (!id) return null
+  const post = await kv.get<BlogPost>(`blog:${id}`)
+  return post?.slug === slug ? id : null
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {

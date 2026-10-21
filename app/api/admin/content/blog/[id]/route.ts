@@ -6,7 +6,9 @@ import {
   deleteBlogPost,
   generateSlug,
   calculateReadingTime,
+  getBlogSlugOwner,
 } from '@/lib/contentManager'
+import { findAvailableSlug } from '@/lib/slug'
 import { normalizeLivingThought, getPublishBlockError } from '@/lib/livingThought'
 import { syncContentIndex } from '@/lib/contentIndex'
 
@@ -94,11 +96,11 @@ export async function PUT(
       )
     }
 
-    // Update slug if title changed
-    const slug = body.slug || (
-      body.en.title !== existing.en.title
-        ? generateSlug(body.en.title)
-        : existing.slug
+    // Update slug if title changed; never take another post's slug
+    const slug = await findAvailableSlug(
+      body.slug || (body.en.title !== existing.en.title ? generateSlug(body.en.title) : existing.slug),
+      params.id,
+      getBlogSlugOwner
     )
 
     // Calculate reading time from updated content

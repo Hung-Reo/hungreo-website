@@ -6,20 +6,21 @@ Personal portfolio + AI-powered knowledge platform for Hung Dinh.
 
 - **Type:** Portfolio website with AI chatbot, knowledge base, and admin CMS
 - **Owner:** Hung Dinh - BA transitioning to AI Product Builder
-- **Production:** https://hungreo.vercel.app
+- **Production:** https://hungreo.com (hungreo.vercel.app kept as fallback, noindex)
 - **Status:** Live since November 2024
+- **Current state / releases:** `docs/HANDOVER.md` · **Past incidents + lessons:** `docs/ISSUE_LOG.md`
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Next.js 14 (App Router) |
+| Framework | Next.js 15 (App Router), React 19 |
 | Language | TypeScript |
 | Styling | Tailwind CSS |
 | Data Store | Vercel KV (Redis) |
 | File Storage | Vercel Blob |
 | Vector DB | Pinecone |
-| AI | OpenAI GPT-4o-mini |
+| AI | OpenAI (chat: gpt-4.1-mini; admin tools: gpt-4o-mini; embeddings: text-embedding-3-large) |
 | Auth | NextAuth.js v5 |
 | Analytics | Vercel Analytics |
 | Deployment | Vercel |
@@ -30,7 +31,7 @@ Personal portfolio + AI-powered knowledge platform for Hung Dinh.
 app/                  # Next.js pages and API routes
   admin/              # Admin dashboard (protected)
   api/                # API endpoints
-  (public)/           # Public pages (about, projects, blog, etc.)
+  about/ blog/ projects/ tools/ ...  # Public pages
 components/           # React components
   admin/              # Admin-specific components
   layout/             # Header, Footer, Navigation
@@ -58,8 +59,8 @@ docs/                 # Documentation
 
 ### Data Storage Pattern
 - Content stored in Vercel KV with structured keys
-- Example: `about:content`, `projects:list`, `blog:posts`
-- Use `kv` from `lib/kv.ts` for all KV operations
+- Example: `content:about`, `content:home-now`, `blog:<id>`, `project:<id>`
+- Use `kv` from `lib/kv.ts` for all KV operations (no-store client; `__tests__/kvImportGuard.test.ts` enforces it)
 
 ### API Route Pattern
 ```typescript
