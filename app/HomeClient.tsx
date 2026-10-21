@@ -8,9 +8,11 @@ import type { Project, BlogPost } from '@/lib/contentManager'
 import { Loader2, ArrowRight, Calendar, Clock } from 'lucide-react'
 import { FamilyValuesDisplay } from '@/components/FamilyValuesDisplay'
 import { CVDownloadButton } from '@/components/CVDownloadButton'
+import type { HomeNowContent } from '@/lib/homeNow'
 
-export default function HomeClient() {
+export default function HomeClient({ now }: { now: HomeNowContent }) {
   const { t, language } = useLanguage()
+  const nowText = now[language]
   const router = useRouter()
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([])
   const [latestPosts, setLatestPosts] = useState<BlogPost[]>([])
@@ -109,12 +111,12 @@ export default function HomeClient() {
       <div className="container mx-auto px-4 py-12">
         {/* Now: Building / Learning */}
       <section className="py-8">
-        <p className="mb-4 text-sm text-slate-500">{t('home.now.updated')}</p>
+        <p className="mb-4 text-sm text-slate-500">{nowText.updated}</p>
         <div className="grid gap-6 md:grid-cols-2">
           <div className="rounded-lg border bg-white p-6">
             <h2 className="text-xl font-semibold text-primary-600">{t('home.now.building.title')}</h2>
-            <p className="mt-3 text-slate-600">{t('home.now.building.p1')}</p>
-            <p className="mt-3 text-slate-600">{t('home.now.building.p2')}</p>
+            <p className="mt-3 text-slate-600">{nowText.buildingP1}</p>
+            {nowText.buildingP2 && <p className="mt-3 text-slate-600">{nowText.buildingP2}</p>}
             <Link
               href="/projects/openclaw-personal-ai-operations-platform"
               className="mt-4 inline-block font-medium text-primary-600 hover:text-primary-700"
@@ -124,8 +126,8 @@ export default function HomeClient() {
           </div>
           <div className="rounded-lg border bg-white p-6">
             <h2 className="text-xl font-semibold text-primary-600">{t('home.now.learning.title')}</h2>
-            <p className="mt-3 text-slate-600">{t('home.now.learning.p1')}</p>
-            <p className="mt-3 text-slate-600">{t('home.now.learning.p2')}</p>
+            <p className="mt-3 text-slate-600">{nowText.learningP1}</p>
+            {nowText.learningP2 && <p className="mt-3 text-slate-600">{nowText.learningP2}</p>}
             <Link
               href="/tools/knowledge"
               className="mt-4 inline-block font-medium text-primary-600 hover:text-primary-700"

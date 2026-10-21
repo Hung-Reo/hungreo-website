@@ -114,14 +114,9 @@ const translations = {
     'home.featured.postsPlaceholder': 'Blog posts coming soon... Stay tuned! ✍️',
 
     // Now: Building / Learning (update monthly)
-    'home.now.updated': 'Updated October 2026',
     'home.now.building.title': 'Building now',
-    'home.now.building.p1': 'Through September and October, I\'ve been building AI agents that do real work: giving them the right tools and skills, and running them inside a sandbox so every action an AI takes in a business setting stays under control.',
-    'home.now.building.p2': 'This month the focus is Personal AI: I\'m reviewing the instructions my agents follow so they understand me better — how I work, what I prioritise and the principles I hold to.',
     'home.now.building.link': 'Explore the OpenClaw project',
     'home.now.learning.title': 'Learning now',
-    'home.now.learning.p1': 'I\'m going deeper into AI security: how to give an agent only the permissions it needs and keep it sandboxed when it acts for a real business.',
-    'home.now.learning.p2': 'Alongside that, I\'m learning more about education — how learning and teaching change when AI becomes an everyday companion.',
     'home.now.learning.link': 'Explore the knowledge library',
 
     // Origin Story Section
@@ -362,14 +357,9 @@ const translations = {
     'home.featured.postsPlaceholder': 'Blog sắp ra mắt... Hãy đón chờ! ✍️',
 
     // Now: Building / Learning (update monthly)
-    'home.now.updated': 'Cập nhật tháng 10/2026',
     'home.now.building.title': 'Đang xây',
-    'home.now.building.p1': 'Tháng 9 và tháng 10, mình tập trung xây các AI Agent làm việc thật: trang bị cho chúng công cụ (tools) và kỹ năng (skills) phù hợp, đồng thời đặt chúng trong môi trường an toàn (sandbox) để mỗi hành động của AI trong công việc kinh doanh đều nằm trong tầm kiểm soát.',
-    'home.now.building.p2': 'Tháng 10 này, trọng tâm là Personal AI: mình rà soát lại chỉ dẫn (instructions) cho các agent để chúng hiểu mình hơn — cách mình làm việc, điều mình ưu tiên và những nguyên tắc mình giữ.',
     'home.now.building.link': 'Xem dự án OpenClaw',
     'home.now.learning.title': 'Đang học',
-    'home.now.learning.p1': 'Mình đang học sâu hơn về bảo mật cho AI: làm sao để agent được giao đúng quyền cần thiết và chạy trong sandbox khi thực hiện hành động thật cho doanh nghiệp.',
-    'home.now.learning.p2': 'Song song, mình dành thời gian tìm hiểu sâu hơn về giáo dục — việc học và dạy sẽ thay đổi thế nào khi AI trở thành người đồng hành hằng ngày.',
     'home.now.learning.link': 'Khám phá thư viện kiến thức',
 
     // Origin Story Section

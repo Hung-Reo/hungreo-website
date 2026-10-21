@@ -93,6 +93,12 @@ export function AdminDashboard() {
               Statistics
             </Link>
             <Link
+              href="/admin/content/home"
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap"
+            >
+              Home Page
+            </Link>
+            <Link
               href="/admin/content/about"
               className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap"
             >
@@ -207,6 +213,13 @@ export function AdminDashboard() {
             <div className="rounded-lg bg-white p-6 shadow">
               <h2 className="mb-4 text-lg font-semibold text-slate-900">Quick Actions</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <Link
+                  href="/admin/content/home"
+                  className="rounded-lg border-2 border-dashed border-slate-300 p-4 text-center transition-colors hover:border-primary-500 hover:bg-primary-50"
+                >
+                  <div className="text-2xl">🏠</div>
+                  <div className="mt-2 text-sm font-medium text-slate-700">Edit Home: Building / Learning</div>
+                </Link>
                 <Link
                   href="/admin/content/about"
                   className="rounded-lg border-2 border-dashed border-slate-300 p-4 text-center transition-colors hover:border-primary-500 hover:bg-primary-50"
