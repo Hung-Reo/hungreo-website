@@ -38,8 +38,8 @@ Mỗi lỗi đã gặp trên Prod (hoặc suýt lên Prod) một mục. Mục đ
 
 | Mẫu | Các issue | Nguyên tắc | Guard hiện có |
 |---|---|---|---|
-| **Nuốt lỗi im lặng** | 001, 010, 014 | Lỗi phải hiện cho người dùng/admin kèm lý do; bước đọc dữ liệu để ghi lại phải throw, không trả danh sách thiếu | Test ISS-001, badge "No transcript", `readVideoStrict` |
-| **Cache trả dữ liệu cũ** | 006 (3 lần), 019 | Đọc KV chỉ qua `@/lib/kv` (no-store); không gọi HTTP nội bộ từ server | Quy ước trong CLAUDE/handover. **Chưa có test** cấm `import { kv } from '@vercel/kv'` ngoài `lib/kv.ts` — nên thêm |
+| **Nuốt lỗi im lặng** | 001, 010, 014 | Lỗi phải hiện cho người dùng/admin kèm lý do; bước đọc dữ liệu để ghi lại phải throw, không trả danh sách thiếu | Test ISS-001, badge "No transcript", `__tests__/videoIndexRead.test.ts` (ISS-014) |
+| **Cache trả dữ liệu cũ** | 006 (3 lần), 019 | Đọc KV chỉ qua `@/lib/kv` (no-store); không gọi HTTP nội bộ từ server | `__tests__/kvImportGuard.test.ts` — cấm import `@vercel/kv` trong code runtime ngoài `lib/kv.ts` (từ 21/10) |
 | **Bí mật lọt vào repo public** | 004, 005 (2 lần), 022 | Secret chỉ ở Vercel env / máy Hưng; docs dùng placeholder; không ghi IP hạ tầng | gitleaks + pre-commit, CI Secret Scanning |
 | **Thêm luật/đổi thư viện mà không chạy đường đi thật** | 001, 011, 017, 020 | Sau khi đổi validation, model, thư viện, build: chạy lại luồng UI thật + build không env như CI | CI `Security`, smoke `next start` bản copy |
 | **Xoá trước khi có bản thay** | 009, 014 | Tạo mới đủ → chuyển → mới xoá cũ; thiếu thì giữ nguyên | `videoVectorLifecycle.test.ts` |
@@ -122,7 +122,7 @@ Chặn tái diễn: gitleaks pre-commit, CI Secret Scanning. Bài học: secret 
 **Dữ liệu cũ do cache — lặp 3 lần.** Nguồn: commit `0bac7ee`, `8d0c1a2` (21/11/2025), `9297f89` (13/10/2026), `80fbf2c` (14/10/2026), `docs/HANDOVER.md`.
 Root cause: (1) 11/2025 API nội dung public bị Vercel cache tĩnh; (2) 10/2026 `@vercel/kv` gọi `fetch` với `cache: 'default'` → Next giữ kết quả đọc KV trong Data Cache vô thời hạn (video, visitor count, sitemap, metadata).
 Sửa: `force-dynamic` cho API public; `lib/kv.ts` tạo client `cache: 'no-store'`, 14 import đổi sang `@/lib/kv`.
-Chặn tái diễn: quy ước "luôn import `kv` từ `@/lib/kv`" (CLAUDE/handover). Chưa có test tự động — nên thêm test cấm import `@vercel/kv` ngoài `lib/kv.ts`.
+Chặn tái diễn: quy ước "luôn import `kv` từ `@/lib/kv`" (CLAUDE/handover) + `__tests__/kvImportGuard.test.ts` (21/10/2026): quét `app/`, `lib/`, `components/`, `contexts/`, `hooks/`, `middleware.ts`, fail nếu có import giá trị từ `@vercel/kv` ngoài `lib/kv.ts` và kiểm `lib/kv.ts` còn `cache: 'no-store'`. `scripts/` được phép (chạy ngoài Next). Đã thử cố ý thêm file import `@vercel/kv` → test FAIL đúng chỗ (VERIFIED).
 Bài học: lỗi cache lặp lại 3 lần → cần guard bằng test, không chỉ bằng ghi chú.
 
 ### ISS-007
@@ -171,7 +171,7 @@ Bài học: comment nói "đã xử lý" phải có test chứng minh.
 **Traffic ẩn danh có thể làm video biến mất khỏi website (2026-07-28).** Nguồn: `docs/CODE_REVIEW_2026-07-28.md` (mục 3), commit `11ce154`.
 Root cause: `/api/videos` (public) → phát hiện lệch số → tự rebuild: xoá `videos:all` rồi ghi lại từ danh sách mà `getVideo()` nuốt lỗi đọc → một lỗi KV thoáng qua là mất video khỏi index.
 Sửa: `readVideoStrict()` (lỗi đọc → abort rebuild), bỏ tự rebuild ở đường public, admin rebuild từ chối danh sách rỗng (409).
-Chặn tái diễn: chưa có test tự động (đã kiểm bằng giả lập lỗi tầng fetch lúc sửa). Bài học: request public không được kích hoạt thao tác ghi/xoá.
+Chặn tái diễn: `__tests__/videoIndexRead.test.ts` (21/10/2026) — giả lập KV ở tầng `fetch`: lỗi đọc 1 video → `getAllVideosComplete()` throw; cùng lỗi → `getVideo()` vẫn trả `null`; record vắng thật → bỏ qua. Đã thử cố ý đổi `getAllVideosComplete` sang `getVideo` (nuốt lỗi) → test FAIL đúng ca (VERIFIED). Bài học: request public không được kích hoạt thao tác ghi/xoá.
 
 ### ISS-015
 **Inbox "cần trả lời" đếm sai + key KV không TTL (2026-07-28).** Nguồn: `docs/CODE_REVIEW_2026-07-28.md` (mục 4, 5), commit `678c79a`.
