@@ -8,9 +8,12 @@ import {
   calculateReadingTime,
 } from '@/lib/contentManager'
 import { normalizeLivingThought, getPublishBlockError } from '@/lib/livingThought'
+import { syncContentIndex } from '@/lib/contentIndex'
 
 // Force Node.js runtime for PUT/DELETE support
 export const runtime = 'nodejs'
+// Saving a published post also re-indexes it for the chatbot (lib/contentIndex.ts)
+export const maxDuration = 60
 
 /**
  * OPTIONS - Handle CORS preflight requests
@@ -125,8 +128,9 @@ export async function PUT(
     }
 
     await saveBlogPost(post)
+    const index = await syncContentIndex('blog', existing, post)
 
-    return NextResponse.json({ success: true, post })
+    return NextResponse.json({ success: true, post, index })
   } catch (error) {
     console.error('Error updating blog post:', error)
     return NextResponse.json(
@@ -154,9 +158,11 @@ export async function DELETE(
   }
 
   try {
+    const existing = await getBlogPost(params.id)
     await deleteBlogPost(params.id)
+    const index = await syncContentIndex('blog', existing, null)
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, index })
   } catch (error) {
     console.error('Error deleting blog post:', error)
     return NextResponse.json(

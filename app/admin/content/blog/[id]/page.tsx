@@ -15,6 +15,7 @@ import { StatusToggle } from '@/components/admin/StatusToggle'
 import { LivingThoughtEditor } from '@/components/admin/LivingThoughtEditor'
 import type { LivingThoughtFields } from '@/lib/livingThought'
 import { applyTranslation } from '@/lib/applyTranslation'
+import { describeIndexResult } from '@/lib/contentIndexStatus'
 
 interface BlogPostData extends LivingThoughtFields {
   id?: string
@@ -355,6 +356,8 @@ export default function BlogEditorPage() {
 
       const result = await res.json()
       toast.success('Blog post saved successfully!')
+      const indexNote = describeIndexResult(result.index)
+      if (indexNote) toast[indexNote.kind](indexNote.message, { duration: 8000 })
       setHasUnsavedChanges(false)
 
       if (isNew && result.post) {

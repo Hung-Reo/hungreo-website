@@ -10,6 +10,10 @@ import {
 } from '@/lib/contentManager'
 import type { BlogPost } from '@/lib/contentManager'
 import { normalizeLivingThought, getPublishBlockError } from '@/lib/livingThought'
+import { syncContentIndex } from '@/lib/contentIndex'
+
+// Creating a published post also indexes it for the chatbot (lib/contentIndex.ts)
+export const maxDuration = 60
 
 /**
  * GET - Fetch all blog posts with stats
@@ -105,8 +109,9 @@ export async function POST(req: NextRequest) {
     }
 
     await saveBlogPost(post)
+    const index = await syncContentIndex('blog', null, post)
 
-    return NextResponse.json({ success: true, post }, { status: 201 })
+    return NextResponse.json({ success: true, post, index }, { status: 201 })
   } catch (error) {
     console.error('Error creating blog post:', error)
     return NextResponse.json(

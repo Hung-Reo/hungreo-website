@@ -6,9 +6,12 @@ import {
   deleteProject,
   generateSlug,
 } from '@/lib/contentManager'
+import { syncContentIndex } from '@/lib/contentIndex'
 
 // Force Node.js runtime for PUT/DELETE support
 export const runtime = 'nodejs'
+// Saving a published project also re-indexes it for the chatbot (lib/contentIndex.ts)
+export const maxDuration = 60
 
 /**
  * OPTIONS - Handle CORS preflight requests
@@ -105,8 +108,9 @@ export async function PUT(
     }
 
     await saveProject(project)
+    const index = await syncContentIndex('projects', existing, project)
 
-    return NextResponse.json({ success: true, project })
+    return NextResponse.json({ success: true, project, index })
   } catch (error) {
     console.error('Error updating project:', error)
     return NextResponse.json(
@@ -134,9 +138,11 @@ export async function DELETE(
   }
 
   try {
+    const existing = await getProject(params.id)
     await deleteProject(params.id)
+    const index = await syncContentIndex('projects', existing, null)
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, index })
   } catch (error) {
     console.error('Error deleting project:', error)
     return NextResponse.json(

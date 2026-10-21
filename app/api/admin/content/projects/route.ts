@@ -8,6 +8,10 @@ import {
   generateId,
   Project,
 } from '@/lib/contentManager'
+import { syncContentIndex } from '@/lib/contentIndex'
+
+// Creating a published project also indexes it for the chatbot (lib/contentIndex.ts)
+export const maxDuration = 60
 
 /**
  * GET - List all projects (with optional status filter)
@@ -114,9 +118,10 @@ export async function POST(req: NextRequest) {
     }
 
     await saveProject(project)
+    const index = await syncContentIndex('projects', null, project)
 
     return NextResponse.json(
-      { success: true, project },
+      { success: true, project, index },
       { status: 201 }
     )
   } catch (error) {

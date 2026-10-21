@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast, Toaster } from 'sonner'
 import type { Project } from '@/lib/contentManager'
+import { describeIndexResult } from '@/lib/contentIndexStatus'
 
 export default function ProjectsListPage() {
   const router = useRouter()
@@ -48,6 +49,8 @@ export default function ProjectsListPage() {
 
       if (res.ok) {
         toast.success('Project deleted')
+        const indexNote = describeIndexResult((await res.json().catch(() => null))?.index)
+        if (indexNote) toast[indexNote.kind](indexNote.message, { duration: 8000 })
         fetchProjects()
       } else {
         throw new Error('Delete failed')

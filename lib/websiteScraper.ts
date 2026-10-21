@@ -8,7 +8,25 @@ import chromium from '@sparticuz/chromium'
 import { getPineconeIndex, listAllVectorIds } from './pinecone'
 import { createEmbedding } from './openai'
 import { chunkText } from './textUtils'
-import { getAllProjects, getAllBlogPosts } from './contentManager'
+import { getAllProjects, getAllBlogPosts, getBlogPostBySlug, getProjectBySlug } from './contentManager'
+import { buildBlogIndexDocument, buildProjectIndexDocument } from './contentIndex'
+
+/**
+ * Blog/project pages are also indexed from CMS data on every save
+ * (lib/contentIndex.ts), in both languages. The browser only renders the default
+ * language, so use that same CMS text here; otherwise a full scrape would replace
+ * the bilingual chunks with English-only ones. Falls back to the scraped text.
+ */
+async function cmsIndexText(path: string): Promise<string | null> {
+  const match = path.match(/^\/(blog|projects)\/([^/]+)$/)
+  if (!match) return null
+  if (match[1] === 'blog') {
+    const post = await getBlogPostBySlug(match[2])
+    return post?.status === 'published' ? buildBlogIndexDocument(post).text : null
+  }
+  const project = await getProjectBySlug(match[2])
+  return project?.status === 'published' ? buildProjectIndexDocument(project).text : null
+}
 
 export interface ScrapedPage {
   url: string
@@ -388,7 +406,8 @@ export async function updateKnowledgeBase(
   }
 
   for (const page of pages) {
-    const fullContent = `${page.title}\n${page.description}\n${page.content}`
+    const fullContent =
+      (await cmsIndexText(page.url)) ?? `${page.title}\n${page.description}\n${page.content}`
 
     // Smart chunking: larger chunks for content-rich pages (blog posts, projects)
     const isBlogPost = page.url.includes('/blog/')
@@ -580,7 +599,8 @@ export async function scrapeSelectedPages(
 
   for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
     const page = pages[pageIndex]
-    const fullContent = `${page.title}\n${page.description}\n${page.content}`
+    const fullContent =
+      (await cmsIndexText(page.url)) ?? `${page.title}\n${page.description}\n${page.content}`
 
     // Smart chunking: larger chunks for content-rich pages (blog posts, projects)
     const isBlogPost = page.url.includes('/blog/')

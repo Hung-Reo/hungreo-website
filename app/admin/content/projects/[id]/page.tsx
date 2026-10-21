@@ -21,6 +21,7 @@ import { ImageUploader } from '@/components/admin/ImageUploader'
 import { StatusToggle } from '@/components/admin/StatusToggle'
 import type { Project } from '@/lib/contentManager'
 import { generateSlug } from '@/lib/utils'
+import { describeIndexResult } from '@/lib/contentIndexStatus'
 
 export default function ProjectEditorPage() {
   const params = useParams<{ id: string }>()
@@ -253,6 +254,8 @@ export default function ProjectEditorPage() {
 
       const result = await response.json()
       toast.success('Project saved successfully!')
+      const indexNote = describeIndexResult(result.index)
+      if (indexNote) toast[indexNote.kind](indexNote.message, { duration: 8000 })
       setHasUnsavedChanges(false)
 
       if (isNew && result.project) {

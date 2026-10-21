@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Trash2, Edit, Plus, Loader2, Search, FileText, BookOpen, Star as StarIcon, ArrowLeft } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
+import { describeIndexResult } from '@/lib/contentIndexStatus'
 
 interface BlogPost {
   id: string
@@ -83,6 +84,8 @@ export default function AdminBlogPage() {
       if (!res.ok) throw new Error('Failed to delete blog post')
 
       toast.success('Blog post deleted successfully')
+      const indexNote = describeIndexResult((await res.json().catch(() => null))?.index)
+      if (indexNote) toast[indexNote.kind](indexNote.message, { duration: 8000 })
       // Remove from list and update stats
       const updatedPosts = posts.filter(p => p.id !== id)
       setPosts(updatedPosts)
