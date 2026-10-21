@@ -60,9 +60,9 @@ VERIFIED / PRIOR-EVIDENCE / ASSUMPTION / UNVERIFIED cho kết luận quan trọn
    "Xem video anh Hưng chọn" lệch ngôi; nháp 74a9dcb0-… (Rùa gửi 20/10) — giữ hay xoá.
 2. Lịch: cuối tháng 10 xem Search Console (Indexing → Pages); đầu tháng 11 cập nhật Admin → Home;
    02/11 nhìn lại đợt Phiếu Học (docs/EXPERIMENT_2W_LEARNING_BOT_2026-10-16.md chưa cập nhật góp ý 19/10).
-3. Nhỏ, có thể làm khi rảnh: CI `.github/workflows/security.yml` đang Node 20 trong khi Vercel chạy 22.x →
-   nâng CI lên 22 (cũng là điều kiện cho puppeteer 25); `npm run test:ssr` chưa nằm trong `npm test`;
-   cảnh báo lệch Markdown của nút Dịch chưa so URL link/ảnh.
+3. Nhỏ, có thể làm khi rảnh: `npm run test:ssr` chưa nằm trong `npm test`; cảnh báo lệch Markdown của nút
+   Dịch chưa so URL link/ảnh. (XONG 21/10: CI `security.yml` đã Node 22 — `f4138ee`, run 39604642949 xanh,
+   không deploy; chi tiết trong HANDOVER.)
 4. Tuỳ chọn: MVP-3 (b) export .md/.json, (c) revisions lưu key riêng.
 5. Dependency: nodemailer 10 khi next-auth nới peer hoặc có @types/nodemailer 10; puppeteer 25 khi
    @sparticuz/chromium theo kịp và CI đã Node 22.
