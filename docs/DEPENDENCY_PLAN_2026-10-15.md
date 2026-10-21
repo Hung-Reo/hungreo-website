@@ -13,7 +13,7 @@ Cập nhật cho `DEPENDENCY_PLAN_2026-09-09.md`. Chưa nâng package nào; ch�
 
 | Package | Yêu cầu | Kết luận |
 |---|---|---|
-| `next@15.5.28` | react `^18.2 \|\| ^19`, Node `>=20` | OK (Vercel Node 22, CI Node 20) |
+| `next@15.5.28` | react `^18.2 \|\| ^19`, Node `>=20` | OK (Vercel Node 22, CI Node 22 từ 21/10 — `f4138ee`) |
 | `next-auth@5.0.0-beta.32` | next `^14 \|\| ^15 \|\| ^16`, react `^18.2 \|\| ^19`, **nodemailer `^7.0.7 \|\| ^8.0.5`** | OK cho Next 15. **Nodemailer 9 trong plan 09/09 không tương thích peer** → bỏ ứng viên 9.1.1 |
 | `eslint-config-next@15.5.28` | eslint `^7 \|\| ^8 \|\| ^9` | Giữ eslint 8 |
 | tiptap, md-editor, lucide, sonner, swr, @vercel/analytics, radix slot, tanstack table, react-markdown | đều nhận React 19 | OK |
@@ -59,7 +59,7 @@ Cập nhật cho `DEPENDENCY_PLAN_2026-09-09.md`. Chưa nâng package nào; ch�
   - puppeteer-core 25.15: cần Node ≥ 22.12 (CI đang Node 20) và Chromium mới hơn `@sparticuz/chromium` mới nhất (153). Chờ chromium serverless theo kịp + nâng Node CI trước. Chỉ ảnh hưởng nút cào website của admin.
   - Đã thêm `__tests__/nodemailer.test.ts` (dựng email offline: UTF-8, CRLF ở subject không tạo Bcc) để lần nâng sau có kiểm tự động.
 - [ ] **nodemailer 10.x (làm trước):** còn 8 advisory tới 10.0.5 (addressparser DoS, recipient-domain bypass, DNS cache TLS). `next-auth`/`@auth/core` bị báo high **chỉ vì kéo theo nodemailer** (VERIFIED từ `via` của `npm audit`), không phải lỗi riêng → sửa nodemailer là hết 3 dòng. Vướng: peer optional của next-auth `^7.0.7 || ^8.0.5` → thử trên branch xem `npm ci` có ERESOLVE không trước khi push. Test: trả lời 1 contact request (email của Hưng).
-- [ ] **puppeteer-core 25 (làm sau):** chuỗi `puppeteer-core → @puppeteer/browsers → proxy-agent → pac-proxy-agent → get-uri → basic-ftp` (FTP listing DoS) + `extract-zip`. App chỉ dùng ở nút cào website của admin (`lib/websiteScraper.ts`), đọc HTTPS, không dùng FTP → rủi ro thực tế rất thấp. Phải khớp phiên bản với `@sparticuz/chromium`. Test: bấm cào website 1 lần.
+- [ ] **puppeteer-core 25 (làm sau):** chuỗi `puppeteer-core → @puppeteer/browsers → proxy-agent → pac-proxy-agent → get-uri → basic-ftp` (FTP listing DoS) + `extract-zip`. App chỉ dùng ở nút cào website của admin (`lib/websiteScraper.ts`), đọc HTTPS, không dùng FTP → rủi ro thực tế rất thấp. Phải khớp phiên bản với `@sparticuz/chromium`. Test: bấm cào website 1 lần. **21/10: điều kiện Node đã xong** — CI lên Node 22 (`f4138ee`, run 39604642949 dùng v22.23.3 ≥ 22.12); còn chờ `@sparticuz/chromium` theo kịp.
 - [ ] Để sau: `mammoth`/`gray-matter` (audit gợi ý hạ cấp — sai, chờ upstream), Tailwind 4, Next 16 (kèm postcss), warning tiptap *Duplicate extension names* (`StarterKit` v3 đã có Link/Underline).
 
 Không dùng `npm audit fix --force`. Không gộp phase với thay đổi tính năng (AI agent làm sau Phase 1).
