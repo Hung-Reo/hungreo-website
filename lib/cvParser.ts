@@ -4,11 +4,9 @@
  */
 
 import { getOpenAIClient } from './openai'
+import { AI_MODEL, reasoningParams } from './aiModel'
 import { extractText } from 'unpdf'
 import mammoth from 'mammoth'
-
-// Get AI model from env
-const AI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini'
 
 /**
  * Extract text from PDF or DOCX file
@@ -53,6 +51,7 @@ export async function detectLanguage(text: string): Promise<'en' | 'vi'> {
 
     const response = await openai.chat.completions.create({
       model: AI_MODEL,
+      ...reasoningParams(),
       messages: [
         {
           role: 'system',
@@ -64,7 +63,6 @@ export async function detectLanguage(text: string): Promise<'en' | 'vi'> {
           content: text.substring(0, 1000), // First 1000 chars
         },
       ],
-      temperature: 0, // Deterministic
     })
 
     const detected = response.choices[0].message.content?.trim().toLowerCase()
@@ -192,6 +190,7 @@ export async function parseCV(text: string, language: 'en' | 'vi') {
 
     const response = await openai.chat.completions.create({
       model: AI_MODEL,
+      ...reasoningParams(),
       messages: [
         {
           role: 'system',
@@ -203,7 +202,6 @@ export async function parseCV(text: string, language: 'en' | 'vi') {
         },
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.2, // Low temperature for consistency
     })
 
     const parsed = JSON.parse(response.choices[0].message.content!)
@@ -234,6 +232,7 @@ export async function translateCVData(data: any, sourceLanguage: 'en' | 'vi') {
 
     const response = await openai.chat.completions.create({
       model: AI_MODEL,
+      ...reasoningParams(),
       messages: [
         {
           role: 'system',
@@ -245,7 +244,6 @@ export async function translateCVData(data: any, sourceLanguage: 'en' | 'vi') {
         },
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.3,
     })
 
     const translated = JSON.parse(response.choices[0].message.content!)

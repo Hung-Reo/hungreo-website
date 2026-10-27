@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOpenAIClient } from '@/lib/openai'
+import { AI_MODEL, reasoningParams } from '@/lib/aiModel'
 import { publicApiRateLimit, getClientIp } from '@/lib/rateLimit'
 import axios from 'axios'
 
@@ -111,7 +112,8 @@ Content: ${transcript}
 Please provide a concise, informative summary.`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: AI_MODEL,
+      ...reasoningParams(),
       messages: [
         {
           role: 'system',
@@ -120,8 +122,7 @@ Please provide a concise, informative summary.`
         },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.7,
-      max_tokens: 1000,
+      max_completion_tokens: 4000,
     })
 
     const summary = response.choices[0].message.content

@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { AI_MODEL, reasoningParams } from './aiModel'
 
 let openaiClient: OpenAI | null = null
 
@@ -54,10 +55,10 @@ export async function generateChatCompletion(
   const openai = getOpenAIClient()
 
   return await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: AI_MODEL,
+    ...reasoningParams(),
     messages,
     stream,
-    temperature: 0.7,
-    max_tokens: 1000,
+    max_completion_tokens: 4000,
   })
 }

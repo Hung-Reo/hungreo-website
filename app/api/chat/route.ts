@@ -14,6 +14,7 @@ import {
   extractVideoIdsFromHistory,
 } from '@/lib/chatRetrieval'
 import { buildContext } from '@/lib/chatContext'
+import { AI_MODEL, reasoningParams } from '@/lib/aiModel'
 
 // Use Node.js runtime for Pinecone compatibility
 export const runtime = 'nodejs'
@@ -273,11 +274,11 @@ Answer in a friendly, professional tone. If the user asks in Vietnamese, respond
     messages.push({ role: 'user', content: sanitizedMessage })
 
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
+      model: AI_MODEL,
+      ...reasoningParams(),
       messages,
       stream: true,
-      temperature: 0.7,
-      max_tokens: 2000, // Increased from 500 to allow longer, detailed responses
+      max_completion_tokens: 8000, // Budget includes reasoning tokens
     })
 
     // Step 7: Stream the response and collect full message

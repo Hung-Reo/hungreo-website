@@ -171,6 +171,8 @@ test('translate: calls the model once with JSON mode and returns fields + warnin
   if (!parsed.ok) return
   const result = await translateBlogFields(parsed.input, fakeClient as any)
   assert.equal(calls.length, 1)
+  assert.equal(calls[0].max_completion_tokens, 32000)
+  assert.equal(calls[0].max_tokens, undefined)
   assert.deepEqual(calls[0].response_format, { type: 'json_object' })
   assert.ok(JSON.stringify(calls[0].messages).includes('Vietnamese'))
   assert.equal(result.title, 'Education in the AI era')

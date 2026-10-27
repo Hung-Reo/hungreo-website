@@ -4,6 +4,7 @@
  */
 
 import { getOpenAIClient } from './openai'
+import { AI_MODEL, reasoningParams } from './aiModel'
 import { VideoContent } from './videoManager'
 
 /**
@@ -48,7 +49,8 @@ Return ONLY a valid JSON object with this structure:
 Do not include any other text outside the JSON object.`
 
     const response = await getOpenAIClient().chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: AI_MODEL,
+      ...reasoningParams(),
       messages: [
         {
           role: 'system',
@@ -60,7 +62,6 @@ Do not include any other text outside the JSON object.`
         },
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.3, // Lower temperature for more consistent translations
     })
 
     const translatedContent = JSON.parse(

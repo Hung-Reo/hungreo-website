@@ -12,6 +12,7 @@ import { createEmbedding, getOpenAIClient } from '../lib/openai'
 import { resolveVideoRetrievalScope, retrieveChatMatches, type RetrievalMatchLike } from '../lib/chatRetrieval'
 import { buildContext } from '../lib/chatContext'
 import { sanitizeChatHistory, validateChatMessage } from '../lib/inputValidator'
+import { getAIModel, reasoningParams } from '../lib/aiModel'
 
 config({ path: '.env.local', quiet: true })
 
@@ -69,7 +70,10 @@ async function main() {
       const answer = async (matches: RetrievalMatchLike[], contextBuilder: (matches: RetrievalMatchLike[]) => string = buildContext) => {
         const prompt = promptBody.replace('${context}', () => contextBuilder(matches)).replace('${contextInfo}', () => contextInfo)
         const result = await getOpenAIClient().chat.completions.create({
-          model: 'gpt-4.1-mini', temperature: 0.7, max_tokens: 2000,
+          // Imports are hoisted above config(), so read the model at call time.
+          model: getAIModel(),
+          ...reasoningParams(),
+          max_completion_tokens: 8000,
           messages: [{ role: 'system', content: prompt }, ...sanitizeChatHistory(payload.history), { role: 'user', content: query }],
         })
         return { text: result.choices[0]?.message?.content, usage: result.usage }

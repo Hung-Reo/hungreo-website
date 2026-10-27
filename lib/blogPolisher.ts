@@ -4,8 +4,7 @@
  */
 
 import { getOpenAIClient } from './openai'
-
-const AI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini'
+import { AI_MODEL, reasoningParams } from './aiModel'
 
 /**
  * Detect language from text
@@ -16,6 +15,7 @@ export async function detectLanguage(text: string): Promise<'en' | 'vi'> {
 
     const response = await openai.chat.completions.create({
       model: AI_MODEL,
+      ...reasoningParams(),
       messages: [
         {
           role: 'system',
@@ -27,7 +27,6 @@ export async function detectLanguage(text: string): Promise<'en' | 'vi'> {
           content: text.substring(0, 1000),
         },
       ],
-      temperature: 0,
     })
 
     const detected = response.choices[0].message.content?.trim().toLowerCase()
@@ -128,6 +127,7 @@ export async function polishBlog(rawDraft: string) {
 
     const response = await openai.chat.completions.create({
       model: AI_MODEL,
+      ...reasoningParams(),
       messages: [
         {
           role: 'system',
@@ -139,7 +139,6 @@ export async function polishBlog(rawDraft: string) {
         },
       ],
       response_format: { type: 'json_object' },
-      temperature: 0.4, // Slightly creative for better writing
     })
 
     const polished = JSON.parse(response.choices[0].message.content!)

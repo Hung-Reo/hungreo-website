@@ -88,6 +88,8 @@ temp/
 
 # local scripts (not for production)
 scripts/test-email.ts
+# script thử của agent (smoke/benchmark), không commit
+/scratch/
 
 # Infra chi tiết (IP, host) — chỉ giữ local, KHÔNG commit
 docs/INFRA_PRIVATE.local.md

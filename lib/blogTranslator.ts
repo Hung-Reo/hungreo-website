@@ -6,13 +6,11 @@
 
 import type OpenAI from 'openai'
 import { getOpenAIClient } from './openai'
+import { AI_MODEL, reasoningParams } from './aiModel'
 
-const AI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini'
-
-// gpt-4o-mini outputs at most ~16k tokens; Vietnamese needs ~1 token per 2 characters,
-// so longer posts would be cut off mid-way. Reject instead of truncating.
+// Output budget includes reasoning tokens, content cap still guards against truncation.
 export const MAX_TRANSLATE_CONTENT = 30_000
-const MAX_OUTPUT_TOKENS = 16_000
+const MAX_OUTPUT_TOKENS = 32_000
 
 type Lang = 'en' | 'vi'
 
@@ -145,10 +143,10 @@ export async function translateBlogFields(
 ): Promise<TranslateResult> {
   const response = await client.chat.completions.create({
     model: AI_MODEL,
+    ...reasoningParams(),
     messages: buildMessages(input),
     response_format: { type: 'json_object' },
-    temperature: 0.2,
-    max_tokens: MAX_OUTPUT_TOKENS,
+    max_completion_tokens: MAX_OUTPUT_TOKENS,
   })
 
   const choice = response.choices[0]
