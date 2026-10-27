@@ -41,7 +41,7 @@ A personal portfolio website showcasing my transition from Business Analyst to P
 - Public project detail pages
 
 ### ✅ Phase 3: Blog Features
-- AI-powered blog polishing (OpenAI GPT-4o-mini)
+- AI-powered blog polishing (OpenAI GPT-6 Luna)
 - Blog editor with categories & tags
 - Admin blog list with stats & filters
 - Public blog pages (list & detail)
@@ -72,7 +72,7 @@ A personal portfolio website showcasing my transition from Business Analyst to P
 | **Styling** | Tailwind CSS | Rapid development, consistency |
 | **Content** | MDX | Git-based, no database needed |
 | **Deployment** | Vercel | Free tier, zero config |
-| **AI** | OpenAI GPT-4.1-mini | Cost-effective, powerful |
+| **AI** | OpenAI GPT-6 Luna | Cost-effective, powerful |
 | **Vector DB** | Pinecone | Fast semantic search, managed service |
 | **Storage** | Vercel KV, Vercel Blob | Key-value store, file storage |
 | **Auth** | NextAuth.js | Secure admin authentication |
@@ -148,7 +148,7 @@ portfolio-website/
 ## 💰 Budget
 
 - **Phase 1:** $0 (Vercel Free Tier)
-- **Phase 2:** ~$1-2/month (OpenAI API for GPT-4.1-mini + embeddings)
+- **Phase 2:** ~$1-2/month (OpenAI API for GPT-6 Luna + embeddings)
 - **Optional:** Custom domain (~$12/year)
 
 ## 🚦 Getting Started
@@ -270,7 +270,7 @@ The website includes a comprehensive admin dashboard for content management:
 
 ### For Admin (Content Management)
 - ✅ Projects CRUD with AI-powered document parsing
-- ✅ Blog CRUD with AI polishing (GPT-4o-mini)
+- ✅ Blog CRUD with AI polishing (GPT-6 Luna)
 - ✅ Contact methods management (add/edit/delete/reorder)
 - ✅ About page content management
 - ✅ Category & tags management

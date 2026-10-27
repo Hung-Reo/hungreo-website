@@ -31,6 +31,7 @@ Mỗi lỗi đã gặp trên Prod (hoặc suýt lên Prod) một mục. Mục đ
 | [ISS-023](#iss-023) | 2026-10-19 | Lệnh deploy Prod bị từ chối 400 | Agent tự gõ SHA và gõ sai | Lấy SHA bằng `git rev-parse`, deploy lại | Đóng — quy tắc trong handover |
 | [ISS-024](#iss-024) | 2026-10-20 | Chatbot không trả lời được nội dung bài blog | Scraper chỉ đọc `<section>`, thân bài nằm trong `<div>` → không vào Pinecone | `c610de3` | Đóng |
 | [ISS-025](#iss-025) | 2026-10-20 | Thanh tiến độ của thao tác dài không chạy | Server làm xong mới trả jobId → client theo dõi khi việc đã xong | `8e33652` | Đóng |
+| [ISS-026](#iss-026) | 2026-10-27 | Chatbot/AI tool từ chối gọi GPT-6 Luna nếu đặt effort=minimal; CLI đọc sai env | Luna không hỗ trợ minimal (nhận none..xhigh, max); ES module hoist import trước khi nạp .env.local | `chore/gpt-6-luna` (chưa commit) | Đã sửa trên nhánh — chờ UAT |
 
 > ISS-001 ghi ngay khi sửa. ISS-002 → ISS-025 ghi bù ngày 21/10/2026 từ docs, git log và lịch sử session Claude Code của project; thứ tự theo ngày phát hiện. Các mục ghi bù là **PRIOR-EVIDENCE** (đọc từ nguồn ghi ở từng mục, chưa tái hiện lại), trừ chỗ ghi VERIFIED.
 
@@ -236,3 +237,12 @@ Bài học: kiểm số chữ thực sự vào index, không chỉ "scrape xong"
 **Thanh tiến độ thao tác dài không chạy (2026-10-20).** Nguồn: commit `8e33652`, Hưng góp ý trong session 20/10/2026.
 Root cause: server tạo jobId và làm xong toàn bộ rồi mới trả → client chỉ mở SSE khi việc đã xong; hook đóng/mở stream mỗi lần render.
 Sửa: client tạo id và mở SSE trước (`lib/jobId.ts`), stream chờ job tối đa 30 s, callback giữ trong ref. Chặn tái diễn: `__tests__/jobId.test.ts`.
+
+### ISS-026
+**Lỗi 400 cấu hình `minimal` cho GPT-6 Luna và bug import order với `dotenv` (2026-10-27).** Nguồn: Hưng review session migration `chore/gpt-6-luna`. Bắt được trên nhánh, chưa lên Prod.
+Triệu chứng: (1) Nếu người dùng đặt `OPENAI_REASONING_EFFORT=minimal` theo `.env.example`, OpenAI trả về HTTP 400 `Unsupported value: 'reasoning_effort' does not support 'minimal' with this model`. (2) Trong scripts CLI, hằng số `AI_MODEL` và `EFFORT` được nạp trước khi `dotenv.config()` kịp đọc `.env.local` do ES module hoisting.
+Root cause: (1) Agent dựa vào type definition của SDK `openai@^6.8.1` (`minimal | low | medium | high | null`) thay vì tài liệu chính thức của model `gpt-6-luna` (`none | low | medium | high | xhigh | max` — trang model của OpenAI, kiểm 27/10). (2) File script import `lib/aiModel` ở top-level trước khi gọi `config({ path: '.env.local' })`.
+Sửa: (1) Khai báo `SUPPORTED_REASONING_EFFORTS = ['none', 'low', 'medium', 'high', 'xhigh', 'max']`, thêm hàm validate `getReasoningEffort()` tự động fallback về `medium` nếu env sai; sửa `.env.example`. (2) Bản đầu cho `lib/aiModel.ts` tự nạp `.env.local` khi import; review 27/10 bỏ đi vì làm `npm test` nạp key thật. Script CLI tự nạp env và gọi `getAIModel()` lúc request (`scripts/replay-chat-retrieval.ts`).
+Ghi chú `temperature`: theo docs OpenAI "Using GPT-6", chỉ phải bỏ `temperature` khi reasoning effort khác `none` (smoke B1: effort mặc định + 0.7 → 400). Code bỏ hẳn ở mọi chỗ gọi để effort nào cũng chạy.
+Bài học: (1) Type definition của SDK có thể lệch với API thực tế của từng model cụ thể; kiểm chứng trực tiếp bằng request thật tới model trước khi tài liệu hoá. (2) Luôn đọc env động trong hàm hoặc đảm bảo nạp env trước mọi import application code.
+

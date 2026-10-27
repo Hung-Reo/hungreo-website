@@ -20,7 +20,7 @@ Personal portfolio + AI-powered knowledge platform for Hung Dinh.
 | Data Store | Vercel KV (Redis) |
 | File Storage | Vercel Blob |
 | Vector DB | Pinecone |
-| AI | OpenAI (chat: gpt-4.1-mini; admin tools: gpt-4o-mini; embeddings: text-embedding-3-large) |
+| AI | OpenAI (chat + admin tools: gpt-6-luna, reasoning_effort medium — `lib/aiModel.ts`, env `OPENAI_MODEL` / `OPENAI_REASONING_EFFORT`; embeddings: text-embedding-3-large) |
 | Auth | NextAuth.js v5 |
 | Analytics | Vercel Analytics |
 | Deployment | Vercel |
