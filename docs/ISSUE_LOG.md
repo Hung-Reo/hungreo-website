@@ -31,7 +31,7 @@ Mỗi lỗi đã gặp trên Prod (hoặc suýt lên Prod) một mục. Mục đ
 | [ISS-023](#iss-023) | 2026-10-19 | Lệnh deploy Prod bị từ chối 400 | Agent tự gõ SHA và gõ sai | Lấy SHA bằng `git rev-parse`, deploy lại | Đóng — quy tắc trong handover |
 | [ISS-024](#iss-024) | 2026-10-20 | Chatbot không trả lời được nội dung bài blog | Scraper chỉ đọc `<section>`, thân bài nằm trong `<div>` → không vào Pinecone | `c610de3` | Đóng |
 | [ISS-025](#iss-025) | 2026-10-20 | Thanh tiến độ của thao tác dài không chạy | Server làm xong mới trả jobId → client theo dõi khi việc đã xong | `8e33652` | Đóng |
-| [ISS-026](#iss-026) | 2026-10-27 | Chatbot/AI tool từ chối gọi GPT-6 Luna nếu đặt effort=minimal; CLI đọc sai env | Luna không hỗ trợ minimal (nhận none..xhigh, max); ES module hoist import trước khi nạp .env.local | `chore/gpt-6-luna` (chưa commit) | Đã sửa trên nhánh — chờ UAT |
+| [ISS-026](#iss-026) | 2026-10-27 | Chatbot/AI tool từ chối gọi GPT-6 Luna nếu đặt effort=minimal; CLI đọc sai env | Luna không hỗ trợ minimal (nhận none..xhigh, max); ES module hoist import trước khi nạp .env.local | `80322f2` | Đóng — lên Prod 27/10 (`dpl_rGm32JUGLBP8amwL2uhwtW8ic2qY`) |
 
 > ISS-001 ghi ngay khi sửa. ISS-002 → ISS-025 ghi bù ngày 21/10/2026 từ docs, git log và lịch sử session Claude Code của project; thứ tự theo ngày phát hiện. Các mục ghi bù là **PRIOR-EVIDENCE** (đọc từ nguồn ghi ở từng mục, chưa tái hiện lại), trừ chỗ ghi VERIFIED.
 
