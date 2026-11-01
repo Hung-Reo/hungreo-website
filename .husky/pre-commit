@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# No husky.sh source: husky is not a dependency, so .husky/_/husky.sh never
+# exists and sourcing it aborted every commit.
 
 echo "🔍 Running pre-commit security checks..."
 
