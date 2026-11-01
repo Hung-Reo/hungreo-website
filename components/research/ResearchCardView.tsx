@@ -2,6 +2,7 @@ import { BookOpen, Lightbulb, PenLine, AlertTriangle } from 'lucide-react'
 import type { Idea, ResearchCard, Section, Source } from '@/lib/research/card'
 import type { CardStatus } from '@/lib/research/questions'
 import { CertaintyMeter, LabelChip, ReadingChip, StatusBadge } from './Badges'
+import { CardSummary } from './CardSummary'
 import { Markdown, linkCitations } from './Markdown'
 
 // Shared by the private /family/research pages and, later, the public /research
@@ -9,13 +10,13 @@ import { Markdown, linkCitations } from './Markdown'
 
 type Cite = (text: string) => string
 
-function IdeaBlock({ idea, cite }: { idea: Idea; cite: Cite }) {
+function IdeaBlock({ idea, cite, id }: { idea: Idea; cite: Cite; id?: string }) {
   const { sourceSays, example, whyItMatters } = idea.parts
   const accent =
     idea.label === 'fact' ? 'border-l-emerald-500' : idea.label === 'inference' ? 'border-l-amber-500' : 'border-l-sky-500 bg-sky-50/40'
 
   return (
-    <article className={`rounded-lg border border-slate-200 border-l-4 bg-white p-4 shadow-sm sm:p-5 ${accent}`}>
+    <article id={id} className={`scroll-mt-24 rounded-lg border border-slate-200 border-l-4 bg-white p-4 shadow-sm sm:p-5 ${accent}`}>
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <LabelChip label={idea.label} />
       </div>
@@ -75,11 +76,18 @@ function IdeaBlock({ idea, cite }: { idea: Idea; cite: Cite }) {
 
 function SectionBlock({ section, cite }: { section: Section; cite: Cite }) {
   if (section.kind === 'ideas') {
+    // Facts in "3 ý chính" get #idea-N anchors, matching the summary tiles.
+    let fact = 0
     return (
       <section className="space-y-4">
         <h2 className="text-xl font-bold text-slate-900">{section.title}</h2>
         {section.ideas.map((idea, i) => (
-          <IdeaBlock key={i} idea={idea} cite={cite} />
+          <IdeaBlock
+            key={i}
+            idea={idea}
+            cite={cite}
+            id={section.title === '3 ý chính' && idea.label === 'fact' ? `idea-${++fact}` : undefined}
+          />
         ))}
         {section.extra && (
           <div className="prose prose-slate max-w-none">
@@ -194,6 +202,8 @@ export function ResearchCardView({
           <span className="self-center text-slate-500">· [số] = bấm để xem nguồn</span>
         </div>
       </header>
+
+      <CardSummary card={card} />
 
       {card.intro && (
         <div className="prose prose-slate max-w-none">

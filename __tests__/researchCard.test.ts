@@ -6,6 +6,7 @@
 import assert from 'assert'
 import { parseCard, isCardFileName } from '../lib/research/card'
 import { parseQuestions } from '../lib/research/questions'
+import { buildVisual, isStrongSource, shortHeadline, sourceShortName } from '../lib/research/visual'
 
 console.log('Running research card tests...\n')
 
@@ -217,6 +218,31 @@ test('questions: same card listed twice with different status is unknown', () =>
 test('questions: no table means empty map', () => {
   assert.strictEqual(parseQuestions('# nothing\n').size, 0)
   assert.strictEqual(parseQuestions('').size, 0)
+})
+
+test('visual: headline is the first clause without citations, capped', () => {
+  assert.strictEqual(shortHeadline('Ý một **có** nguồn [1]; phần sau bị bỏ'), 'Ý một có nguồn')
+  const long = Array.from({ length: 40 }, (_, i) => `từ${i}`).join(' ')
+  assert.ok(shortHeadline(long).endsWith('…'))
+  assert.strictEqual(shortHeadline(long).split(' ').length, 28)
+})
+
+test('visual: facts link to the sources they cite, sources classified', () => {
+  const v = buildVisual(parseCard(FORMAT_2))
+  assert.ok(v)
+  assert.strictEqual(v.facts.length, 2)
+  assert.deepStrictEqual(v.facts[0].sources.map((s) => s.n), [1])
+  assert.deepStrictEqual(v.facts[1].sources.map((s) => s.n), [2])
+  assert.strictEqual(v.inference, 'Ghép hai ý')
+  assert.strictEqual(v.tryAtHome, 'Trò chơi giả 10 phút')
+  const [a, b] = parseCard(FORMAT_2).sources
+  assert.strictEqual(sourceShortName(a), 'Nguồn A')
+  assert.strictEqual(isStrongSource(a), true)
+  assert.strictEqual(isStrongSource(b), false)
+})
+
+test('visual: no main ideas means no summary', () => {
+  assert.strictEqual(buildVisual(parseCard('---\nid: x\n---\n# t\n## Câu hỏi\nabc\n')), null)
 })
 
 console.log(`\n${passed} passed, ${failed} failed`)
