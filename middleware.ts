@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from './lib/auth'
+import { familyAccess, familyAllowlist } from './lib/research/access'
 
 function applySecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set('X-Frame-Options', 'DENY')
@@ -133,8 +134,22 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Family reading area: admin, or a reader whose email is still on the list.
+  const isFamilyRoute = pathname === '/family' || pathname.startsWith('/family/')
+  if (isFamilyRoute) {
+    const session = await auth()
+    const allowlist = familyAllowlist()
+    const user = session?.user as { role?: unknown; email?: unknown } | undefined
+    if (familyAccess(pathname, user, allowlist) === 'login') {
+      return applySecurityHeaders(NextResponse.redirect(new URL('/family/login', req.url)))
+    }
+    if (pathname === '/family' || (pathname === '/family/login' && familyAccess('/family', user, allowlist) === 'allow')) {
+      return applySecurityHeaders(NextResponse.redirect(new URL('/family/research', req.url)))
+    }
+  }
+
   const response = applySecurityHeaders(NextResponse.next())
-  if (noindexHost) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  if (noindexHost || isFamilyRoute) response.headers.set('X-Robots-Tag', 'noindex, nofollow')
   return response
 }
 

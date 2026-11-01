@@ -7,6 +7,9 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { kv } from './kv'
+import { familyAllowlist } from './research/access'
+import { emailHash, kvOtpStore, normalizeEmail, verifyOtp } from './familyOtp'
+import { familyOtpVerifyDailyRateLimit, familyOtpVerifyRateLimit } from './rateLimit'
 
 // Admin credentials from environment variables
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hungreo2005@gmail.com'
@@ -87,6 +90,33 @@ export const {
           email: credentials.email as string,
           role: 'admin',
         }
+      },
+    }),
+    // Family readers (/family/login): email on FAMILY_READER_EMAILS + emailed code.
+    // Role 'reader' opens /family/* only; every admin check requires role 'admin'.
+    Credentials({
+      id: 'family-otp',
+      name: 'Family code',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        code: { label: 'Code', type: 'text' },
+      },
+      async authorize(credentials) {
+        if (typeof credentials?.email !== 'string' || typeof credentials?.code !== 'string') return null
+        const email = normalizeEmail(credentials.email)
+        const hash = await emailHash(email)
+
+        // Same work for listed and unlisted addresses, so timing does not reveal
+        // who is on the family list (an unlisted email simply has no code in KV).
+        const [short, daily] = await Promise.all([
+          familyOtpVerifyRateLimit.limit(hash),
+          familyOtpVerifyDailyRateLimit.limit(hash),
+        ])
+        if (!short.success || !daily.success) return null
+        const valid = await verifyOtp(kvOtpStore, email, credentials.code.trim())
+        if (!valid || !familyAllowlist().has(email)) return null
+
+        return { id: `reader:${hash.slice(0, 12)}`, email, role: 'reader' }
       },
     }),
   ],

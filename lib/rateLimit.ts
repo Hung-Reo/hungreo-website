@@ -112,6 +112,49 @@ export const passwordResetRateLimit = new Ratelimit({
 })
 
 /**
+ * Rate limiters for family sign-in codes (/api/family/otp, family-otp provider).
+ * Email limits are keyed by sha256(email), never the raw address.
+ * Verify: 5 tries per 15 minutes per email, so parallel guesses cannot outrun
+ * the 5-attempt lock on a code.
+ */
+export const familyOtpIpRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5, '15 m'),
+  analytics: false,
+  prefix: 'ratelimit:family-otp:ip',
+})
+
+export const familyOtpEmailRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(3, '15 m'),
+  analytics: false,
+  prefix: 'ratelimit:family-otp:email',
+})
+
+export const familyOtpVerifyRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5, '15 m'),
+  analytics: false,
+  prefix: 'ratelimit:family-otp:verify',
+})
+
+// Daily caps: without them 5 tries / 15 min still adds up to ~480 guesses a day,
+// and code requests would eat the Gmail quota shared with contact replies.
+export const familyOtpVerifyDailyRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(20, '1 d'),
+  analytics: false,
+  prefix: 'ratelimit:family-otp:verify-day',
+})
+
+export const familyOtpEmailDailyRateLimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(10, '1 d'),
+  analytics: false,
+  prefix: 'ratelimit:family-otp:email-day',
+})
+
+/**
  * Helper function to get client IP from request
  * SECURITY: Only trust Vercel-provided headers to prevent IP spoofing
  * Falls back to 'anonymous' if IP cannot be determined
