@@ -223,6 +223,12 @@ export function ResearchCardView({
               <SourceItem key={s.n} source={s} />
             ))}
           </ol>
+          {card.sourcesExtra && (
+            <div className="prose prose-slate prose-sm mt-3 max-w-none">
+              <p className="text-xs text-slate-400">Không tách được khối, hiện nguyên văn:</p>
+              <Markdown>{cite(card.sourcesExtra)}</Markdown>
+            </div>
+          )}
         </section>
       )}
 

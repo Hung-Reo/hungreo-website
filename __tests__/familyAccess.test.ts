@@ -70,23 +70,36 @@ test('readers only see approved cards (fail-closed)', () => {
   for (const s of ['draft', 'dropped', 'unknown', undefined]) assert.strictEqual(readerCanSee(s as any), false)
 })
 
+// Mirrors the Lua in kvOtpStore: consume() runs with no await inside, so it is
+// atomic here the same way the script is atomic inside Redis.
 function memoryStore() {
   const data = new Map<string, OtpRecord>()
   const store: OtpStore = {
-    async get(key) {
-      return data.get(key) ?? null
+    async put(key, record) {
+      data.set(key, { ...record, attempts: 0 })
     },
-    async set(key, value) {
-      data.set(key, value)
-    },
-    async update(key, value) {
-      if (data.has(key)) data.set(key, value)
-    },
-    async del(key) {
-      return data.delete(key) ? 1 : 0
+    async consume(key, codeHash, now, maxAttempts) {
+      const r = data.get(key)
+      if (!r) return false
+      if (r.expiresAt <= now) return !data.delete(key)
+      if (r.codeHash === codeHash) return data.delete(key)
+      if (r.attempts + 1 >= maxAttempts) return !data.delete(key)
+      r.attempts++
+      return false
     },
   }
   return { store, data }
+}
+
+/** Holds every consume() until release(), to line up a race on purpose. */
+function gated(store: OtpStore) {
+  let release!: () => void
+  const gate = new Promise<void>((r) => (release = r))
+  const real = store.consume
+  return {
+    store: { ...store, consume: async (...args: Parameters<OtpStore['consume']>) => (await gate, real(...args)) },
+    release,
+  }
 }
 
 const T0 = 1_800_000_000_000
@@ -142,21 +155,34 @@ test('otp: a wrong guess racing a correct one cannot revive the used code', asyn
   const { store } = memoryStore()
   const code = await issueOtp(store, 'mom@example.com', T0)
   const wrong = code === '000000' ? '111111' : '000000'
-  // B reads the record, then A uses the code and deletes it, then B writes back.
-  const realGet = store.get
-  let release!: () => void
-  const gate = new Promise<void>((r) => (release = r))
-  store.get = async (key) => {
-    const value = await realGet(key)
-    await gate
-    return value
-  }
-  const late = verifyOtp(store, 'mom@example.com', wrong, T0 + 1)
-  store.get = realGet
+  const slow = gated(store)
+  const late = verifyOtp(slow.store, 'mom@example.com', wrong, T0 + 1)
   assert.strictEqual(await verifyOtp(store, 'mom@example.com', code, T0 + 2), true)
-  release()
+  slow.release()
   assert.strictEqual(await late, false)
   assert.strictEqual(await verifyOtp(store, 'mom@example.com', code, T0 + 3), false)
+})
+
+test('otp: same code sent many times at once wins exactly once', async () => {
+  const { store } = memoryStore()
+  const code = await issueOtp(store, 'mom@example.com', T0)
+  const slow = gated(store)
+  const tries = Array.from({ length: 5 }, () => verifyOtp(slow.store, 'mom@example.com', code, T0 + 1))
+  slow.release()
+  assert.strictEqual((await Promise.all(tries)).filter(Boolean).length, 1)
+})
+
+test('otp: old code in flight while a new one is issued: old fails, new still works (ISS-028)', async () => {
+  const { store } = memoryStore()
+  const first = await issueOtp(store, 'mom@example.com', T0)
+  const slow = gated(store)
+  const a = verifyOtp(slow.store, 'mom@example.com', first, T0 + 1)
+  const b = verifyOtp(slow.store, 'mom@example.com', first, T0 + 1)
+  let second = await issueOtp(store, 'mom@example.com', T0 + 2)
+  while (second === first) second = await issueOtp(store, 'mom@example.com', T0 + 2)
+  slow.release()
+  assert.deepStrictEqual(await Promise.all([a, b]), [false, false])
+  assert.strictEqual(await verifyOtp(store, 'mom@example.com', second, T0 + 3), true)
 })
 
 test('otp: malformed input is rejected', async () => {
