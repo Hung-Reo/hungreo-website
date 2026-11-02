@@ -166,6 +166,38 @@ export async function sendReplyViaGmail(data: {
 }
 
 /**
+ * Send a family sign-in code (/family/login). Gmail rather than Resend: the
+ * Resend sender in use (onboarding@resend.dev) only delivers to the account owner.
+ * The mail carries the code only, never card content; the address is not logged.
+ */
+export async function sendFamilyCodeViaGmail(toEmail: string, code: string): Promise<boolean> {
+  try {
+    const transport = getTransporter()
+    if (!transport) return false
+
+    await transport.sendMail({
+      from: `"Hưng from Hungreo" <${process.env.GMAIL_USER}>`,
+      to: toEmail,
+      subject: `Mã đăng nhập Hungreo: ${code}`,
+      text: `Mã đăng nhập khu đọc phiếu của gia đình: ${code}\n\nMã dùng một lần, hết hạn sau 10 phút. Nếu bạn không yêu cầu, cứ bỏ qua email này.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+          <p>Mã đăng nhập khu đọc phiếu của gia đình:</p>
+          <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;">${escapeHtml(code)}</p>
+          <p style="color: #64748B; font-size: 14px;">Mã dùng một lần, hết hạn sau 10 phút. Nếu bạn không yêu cầu, cứ bỏ qua email này.</p>
+        </div>
+      `,
+    })
+    return true
+  } catch (error) {
+    // nodemailer messages can quote the recipient address; log only the error code.
+    const { code, responseCode } = (error ?? {}) as { code?: string; responseCode?: number }
+    console.error('[FamilyOTP] Failed to send code via Gmail:', code ?? 'unknown', responseCode ?? '')
+    return false
+  }
+}
+
+/**
  * Helper function to escape HTML
  */
 function escapeHtml(text: string): string {

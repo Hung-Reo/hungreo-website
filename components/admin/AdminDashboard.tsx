@@ -152,6 +152,12 @@ export function AdminDashboard() {
             >
               Contact Requests
             </Link>
+            <Link
+              href="/family/research"
+              className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap"
+            >
+              Research giáo dục
+            </Link>
           </nav>
         </div>
 
