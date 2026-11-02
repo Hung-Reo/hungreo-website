@@ -61,6 +61,8 @@ export interface ResearchCard {
   intro: string
   sections: Section[]
   sources: Source[]
+  /** Lines of "## Nguồn" that are not numbered sources (notes, wrapped lines), kept verbatim. */
+  sourcesExtra: string
   sha256: string
 }
 
@@ -168,14 +170,17 @@ export function parseCard(raw: string): ResearchCard {
 
   const sections: Section[] = []
   let sources: Source[] = []
+  let sourcesExtra = ''
   for (const { title, text } of parts) {
     if (title === 'Nguồn') {
-      const lines = text.split('\n').filter((l) => /^\d+\.\s/.test(l))
-      if (lines.length) {
-        sources = lines.map((l) => {
+      const lines = text.split('\n')
+      const numbered = lines.filter((l) => /^\d+\.\s/.test(l))
+      if (numbered.length) {
+        sources = numbered.map((l) => {
           const m = l.match(/^(\d+)\.\s+(.*)$/)!
           return parseSource(Number(m[1]), m[2].trim())
         })
+        sourcesExtra = lines.filter((l) => !/^\d+\.\s/.test(l)).join('\n').trim()
         continue
       }
     }
@@ -196,6 +201,7 @@ export function parseCard(raw: string): ResearchCard {
     intro: intro.replace(/^# .+$/m, '').trim(),
     sections,
     sources,
+    sourcesExtra,
     sha256: createHash('sha256').update(raw, 'utf8').digest('hex'),
   }
 }

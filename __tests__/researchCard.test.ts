@@ -143,6 +143,18 @@ test('parses sources and keeps unparseable lines as raw', () => {
   assert.strictEqual(c.raw, 'dòng nguồn không đúng khuôn')
 })
 
+test('notes inside the sources section are kept, not dropped', () => {
+  const raw = FORMAT_2.replace(
+    '3. dòng nguồn không đúng khuôn',
+    '3. dòng nguồn không đúng khuôn\n   tiếp dòng của nguồn 3\n\n*Ghi chú: nguồn [2] chỉ đọc abstract.*'
+  )
+  const card = parseCard(raw)
+  assert.strictEqual(card.sources.length, 3)
+  assert.ok(card.sourcesExtra.includes('tiếp dòng của nguồn 3'))
+  assert.ok(card.sourcesExtra.includes('Ghi chú: nguồn [2] chỉ đọc abstract.'))
+  assert.strictEqual(parseCard(FORMAT_2).sourcesExtra, '')
+})
+
 test('format 1 card: ideas without parts or certainty', () => {
   const card = parseCard(FORMAT_1)
   assert.strictEqual(card.meta.format, 1)
